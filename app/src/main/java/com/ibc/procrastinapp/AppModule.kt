@@ -14,6 +14,8 @@ import androidx.datastore.preferences.core.Preferences
 import androidx.room.Room
 
 import com.ibc.procrastinapp.data.ai.AIService
+import com.ibc.procrastinapp.data.alarm.AlarmScheduler
+import com.ibc.procrastinapp.data.alarm.AlarmSchedulerImpl
 import com.ibc.procrastinapp.data.local.AppDatabase
 import com.ibc.procrastinapp.data.repository.TaskRepository
 import com.ibc.procrastinapp.data.service.ChatAIService
@@ -69,9 +71,10 @@ val dataModule = module {
 
     // Proporciona el DAO de tareas desde la base de datos
     single { get<AppDatabase>().taskDao() }
+    single <AlarmScheduler> { AlarmSchedulerImpl(androidContext()) }
 
     // Repositorio principal de tareas, usando DAO + base de datos (para transacciones)
-    single { TaskRepository(get(), get()) }
+    single { TaskRepository(get(), get(), get()) }
 }
 
 /**

@@ -6,6 +6,7 @@
 package com.ibc.procrastinapp.data.repository
 
 import androidx.room.withTransaction
+import com.ibc.procrastinapp.data.alarm.AlarmScheduler
 import com.ibc.procrastinapp.data.local.AppDatabase
 import com.ibc.procrastinapp.data.local.TaskDao
 import com.ibc.procrastinapp.data.local.TaskEntity
@@ -22,7 +23,8 @@ import java.time.format.DateTimeFormatter
 
 class TaskRepository(
     private val taskDao: TaskDao,
-    private val database: AppDatabase
+    private val database: AppDatabase,
+    private val alarmScheduler: AlarmScheduler
 ) {
     /**
      * Selector del filtro para la consulta
@@ -171,6 +173,11 @@ class TaskRepository(
      * Elimina una tarea y todas sus subtareas.
      */
     suspend fun deleteTask(taskId: Long) {
+
+        // Eliminar la alarma asociada a la tarea
+        alarmScheduler.cancel(taskId)
+
+        // Eliminar la tarea y todas sus subtareas
         taskDao.deleteTaskById(taskId)
     }
 
@@ -227,6 +234,8 @@ class TaskRepository(
         Logger.d("IBC-TaskRepository", "saveTaskWithSubtasks 2: ->insert taskEntity=$taskEntity")
 
         val taskId = taskDao.insertTask(taskEntity)
+        alarmScheduler.schedule(task.copy(id = taskId))
+
 
         Logger.d("IBC-TaskRepository", "saveTaskWithSubtasks 3: <-insert taskId=$taskId")
 

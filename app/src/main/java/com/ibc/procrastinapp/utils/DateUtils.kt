@@ -5,9 +5,11 @@
  */
 package com.ibc.procrastinapp.utils
 
+import android.util.Log
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.Month
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.time.format.ResolverStyle
 import java.time.temporal.ChronoUnit
@@ -43,6 +45,20 @@ fun parseDateTime(dateText: String): LocalDateTime {
         LocalDateTime.now()
     }
 }
+
+/**
+ * Convierte el campo notify ("yyyy-MM-dd HH:mm") en milisegundos desde epoch.
+ * Devuelve null si el formato no es válido.
+ */
+ fun parseNotifyTimeForAlarm(notify: String): Long? = try {
+    val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
+    val dateTime = LocalDateTime.parse(notify, formatter)
+    dateTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+} catch (e: Exception) {
+    Log.e("AlarmScheduler", "❌ Error al parsear notify: $notify", e)
+    null
+}
+
 
 
 fun getDaysFromNow(dateTime: String): Long {
