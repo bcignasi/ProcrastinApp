@@ -5,11 +5,15 @@
  */
 package com.ibc.procrastinapp.ui.common
 
+import androidx.annotation.StringRes
+
 /**
  * Definición de las opciones del menú desplegable
  * Esto es para generalizar su funcionamiento tanto en
  * la lista de tareas como en el asistente
  */
 interface DropdownMenuOption {
-    val title: String
+    @get:StringRes // Buena práctica para indicar que es un ID de recurso de string
+    val titleResId: Int // Cambia 'title: String' por 'titleResId:Int'
+
 }

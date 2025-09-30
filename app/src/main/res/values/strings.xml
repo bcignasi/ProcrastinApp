@@ -1,3 +1,15 @@
 <resources>
     <string name="app_name">ProcrastinApp</string>
+
+    <string name="task_type_All">All Pending Tasks</string>
+    <string name="task_type_Past">Past Tasks</string>
+    <string name= "task_type_Now">Immediate Tasks</string>
+    <string name="task_type_Future">Future Tasks</string>
+    <string name="task_type_Priority">Priority Tasks</string>
+    <string name="task_type_Notification">Tasks with Notifications</string>
+    <string name="task_type_NoDate">Tasks without a Date"</string>
+    <string name="task_type_Completed">Completed Tasks</string>
+
+    <string name="assistant_type_Messages">Assistant (Messages)</string>
+    <string name="assistant_type_Tasks">Assistant (Tasks)</string>
 </resources>

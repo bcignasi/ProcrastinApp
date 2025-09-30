@@ -29,6 +29,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
 
@@ -86,7 +87,7 @@ fun <T: DropdownMenuOption> TitleDropdownMenu(
                 .padding(vertical = 4.dp)
         ) {
             Text(
-                text = currentType.title,
+                text = stringResource(currentType.titleResId),
                 style = MaterialTheme.typography.titleLarge
             )
             Spacer(modifier = Modifier.width(4.dp))
@@ -106,7 +107,7 @@ fun <T: DropdownMenuOption> TitleDropdownMenu(
                 DropdownMenuItem(
                     text = {
                         Text(
-                            text = type.title,
+                            text = stringResource(type.titleResId),
                             style = MaterialTheme.typography.bodyMedium
                         )
                     },

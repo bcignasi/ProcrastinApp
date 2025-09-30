@@ -12,3 +12,5 @@
 local.properties
 .apk
 .aab
+/hs_err_pid26376.log
+/replay_pid26376.log

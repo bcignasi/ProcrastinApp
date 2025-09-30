@@ -5,22 +5,24 @@
  */
 package com.ibc.procrastinapp.ui.tasklist
 
+import androidx.annotation.StringRes
+import com.ibc.procrastinapp.R
 import com.ibc.procrastinapp.ui.common.DropdownMenuOption
 
 /**
  * Tipos de vistas disponibles para la lista de tareas.
  * Usa el interfaz DropdownMenuOption para generalizar su funcionamiento
- * @property title Título que se muestra en la interfaz de usuario
+ * @property titleResId Código de recurso del título que se muestra en la interfaz de usuario
  */
-enum class TaskListQueryType(override val title: String) : DropdownMenuOption {
-    ALL("Todas las pendientes"),
-    PAST("Tareas postergadas"),
-    NOW("Tareas inmediatas"),
-    FUTURE("Tareas futuras"),
-    PRIORITY("Tareas prioritarias"),
-    NOTIFICATION("Con notificaciones"),
-    NO_DATE("Tareas sin fecha"),
-    COMPLETED("Tareas completadas"),
+enum class TaskListQueryType(@StringRes override val titleResId: Int) : DropdownMenuOption {
+    ALL(R.string.task_type_All),
+    PAST(R.string.task_type_Past),
+    NOW(R.string.task_type_Now),
+    FUTURE(R.string.task_type_Future),
+    PRIORITY(R.string.task_type_Priority),
+    NOTIFICATION(R.string.task_type_Notification),
+    NO_DATE(R.string.task_type_NoDate),
+    COMPLETED(R.string.task_type_Completed),
     ;
 
 //    companion object {
