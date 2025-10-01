@@ -12,4 +12,9 @@
 
     <string name="assistant_type_Messages">Assistant (Messages)</string>
     <string name="assistant_type_Tasks">Assistant (Tasks)</string>
+
+    <string name="assistant_placeholder_message">What do you need to get done?</string>
+    <string name="assistant_instruction_box">Write down your goals or tasks, and the assistant will suggest a sequence to follow.
+    You can then chat with the assistant to adjust it to your needs.
+    When you\'re happy with the plan, send it to your task list.</string>
 </resources>
