@@ -12,14 +12,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.ibc.procrastinapp.R
 
 /**
  * Mensaje cuando no hay tareas disponibles
  */
 @Composable
-fun EmptyListMessage(modifier: Modifier = Modifier.Companion) {
+fun EmptyListMessage(modifier: Modifier = Modifier) {
     Text(
-        text = "No hay tareas.\nCrea nuevas tareas con el asistente de IA.",
+        text = stringResource(id = R.string.tasklist_empty_message),
         style = MaterialTheme.typography.bodyLarge,
         textAlign = TextAlign.Companion.Center,
         modifier = modifier.padding(16.dp)

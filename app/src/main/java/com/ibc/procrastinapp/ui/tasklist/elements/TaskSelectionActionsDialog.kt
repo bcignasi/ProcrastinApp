@@ -31,6 +31,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.ibc.procrastinapp.R
 
 /**
  * Diálogo de acciones para tareas seleccionadas
@@ -56,7 +59,7 @@ fun TaskSelectionActionsDialog(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text("$selectedCount tareas seleccionadas")
+                Text(pluralStringResource(id = R.plurals.tasklist_selected_count, count = selectedCount, selectedCount))
 
                 IconButton(
                     onClick = onDismiss,
@@ -71,7 +74,7 @@ fun TaskSelectionActionsDialog(
             }
         },
         text = {
-            Text("Elige la acción que deseas realizar con las tareas seleccionadas.")
+            Text(stringResource(id = R.string.tasklist_dialog_choose_action))
         },
         confirmButton = {
             Column(
@@ -92,7 +95,7 @@ fun TaskSelectionActionsDialog(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Editar tareas")
+                    Text(stringResource(id = R.string.tasklist_edit_tasks))
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -111,7 +114,7 @@ fun TaskSelectionActionsDialog(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Completar tareas")
+                    Text(stringResource(id = R.string.tasklist_complete_tasks))
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -130,7 +133,7 @@ fun TaskSelectionActionsDialog(
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("Eliminar tareas")
+                    Text(stringResource(id = R.string.tasklist_delete_tasks))
                 }
 
 

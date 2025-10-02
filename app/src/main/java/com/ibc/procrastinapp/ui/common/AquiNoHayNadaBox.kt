@@ -21,6 +21,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ibc.procrastinapp.ui.assistant.QuoteViewModel
+import androidx.compose.ui.res.stringResource
+import com.ibc.procrastinapp.R
 
 @Composable
 fun AquiNoHayNadaBox(
@@ -45,9 +47,7 @@ fun AquiNoHayNadaBox(
             if (showIntro) {
 
                 Text(
-                    text = "Aquí no hay nada.\nEscriba sus propósitos o gestiones pendientes para que el asistente le proponga una secuencia adecuada de tareas." +
-                            " Luego puede seguir dialogando con el asistente para ajustar la propuesta a sus necesidades." +
-                            "\nCuando esté conforme con la propuesta, envíela a la lista de tareas.",
+                    text = stringResource(id = R.string.assistant_intro_text),
                     style = MaterialTheme.typography.titleSmall,
                     color = textColor,
                     textAlign = TextAlign.Justify,

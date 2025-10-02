@@ -29,6 +29,8 @@ import com.ibc.procrastinapp.ui.assistant.AssistantState.ViewModelInfo
 import com.ibc.procrastinapp.ui.assistant.QuoteViewModel
 import com.ibc.procrastinapp.ui.assistant.elements.StatusCard
 import com.ibc.procrastinapp.utils.Logger
+import androidx.compose.ui.res.stringResource
+import com.ibc.procrastinapp.R
 
 private const val logTag = "IBC-TaskView"
 
@@ -129,7 +131,7 @@ fun AssistantTasksView(
                             contentColor = MaterialTheme.colorScheme.error
                         )
                     ) {
-                        Text("Cancelar")
+                        Text(stringResource(id = R.string.assistant_cancel))
                     }
                 }
 
