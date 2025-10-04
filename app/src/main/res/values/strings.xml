@@ -38,14 +38,14 @@
     <string name="tasklist_collapse_subtasks_cd">Collapse subtasks</string>
     
     <!-- Content descriptions and UI labels moved from code -->
-    <string name="cd_close">Cerrar</string>
-    <string name="title_dropdown_change_type_cd">Cambiar tipo del dropdown</string>
-    <string name="assistant_delete_all_cd">Borrar Todo</string>
-    <string name="assistant_go_to_tasklist_cd">Ir a Lista</string>
-    <string name="tasklist_go_to_assistant_cd">Ir a IA Planner</string>
-    <string name="addtaskfab_create_new_task_cd">Crear nueva tarea</string>
-    <string name="notification_cd">Notificación</string>
-    <string name="statuscard_close_message_cd">Cerrar mensaje</string>
+    <string name="cd_close">Close</string>
+    <string name="title_dropdown_change_type_cd">Change dropdown type</string>
+    <string name="assistant_delete_all_cd">Delete all</string>
+    <string name="assistant_go_to_tasklist_cd">Go to Task List</string>
+    <string name="tasklist_go_to_assistant_cd">Go to assistant</string>
+    <string name="addtaskfab_create_new_task_cd">Create new task</string>
+    <string name="notification_cd">Notification</string>
+    <string name="statuscard_close_message_cd">Close message</string>
 
     <!-- Save to agenda button -->
     <string name="assistant_save_to_agenda_cd">Send to Agenda</string>
