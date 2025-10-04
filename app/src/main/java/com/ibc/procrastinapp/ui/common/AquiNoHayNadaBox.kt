@@ -17,12 +17,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ibc.procrastinapp.R
 import com.ibc.procrastinapp.ui.assistant.QuoteViewModel
 import androidx.compose.ui.res.stringResource
 import com.ibc.procrastinapp.R
+
 
 @Composable
 fun AquiNoHayNadaBox(
