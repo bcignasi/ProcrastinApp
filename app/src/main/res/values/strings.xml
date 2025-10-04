@@ -7,7 +7,7 @@
     <string name="task_type_Future">Future Tasks</string>
     <string name="task_type_Priority">Priority Tasks</string>
     <string name="task_type_Notification">Tasks with Notifications</string>
-    <string name="task_type_NoDate">Tasks without a Date"</string>
+    <string name="task_type_NoDate">Tasks without a Date</string>
     <string name="task_type_Completed">Completed Tasks</string>
 
     <string name="assistant_type_Messages">Assistant (Messages)</string>
@@ -36,4 +36,19 @@
     <string name="tasklist_delete">Delete</string>
     <string name="tasklist_expand_subtasks_cd">Expand subtasks</string>
     <string name="tasklist_collapse_subtasks_cd">Collapse subtasks</string>
+    
+    <!-- Content descriptions and UI labels moved from code -->
+    <string name="cd_close">Cerrar</string>
+    <string name="title_dropdown_change_type_cd">Cambiar tipo del dropdown</string>
+    <string name="assistant_delete_all_cd">Borrar Todo</string>
+    <string name="assistant_go_to_tasklist_cd">Ir a Lista</string>
+    <string name="tasklist_go_to_assistant_cd">Ir a IA Planner</string>
+    <string name="addtaskfab_create_new_task_cd">Crear nueva tarea</string>
+    <string name="notification_cd">Notificación</string>
+    <string name="statuscard_close_message_cd">Cerrar mensaje</string>
+
+    <!-- Save to agenda button -->
+    <string name="assistant_save_to_agenda_cd">Send to Agenda</string>
+    <string name="assistant_save_to_agenda_label">Save to Agenda</string>
+    <string name="assistant_done_label">Done</string>
 </resources>

@@ -11,6 +11,7 @@ import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
+import com.ibc.procrastinapp.R
 
 /**
  * Botón de acción flotante para añadir tareas
@@ -25,7 +26,7 @@ fun AddTaskFab(onClick: () -> Unit) {
     ) {
         Icon(
             imageVector = Icons.Default.Add,
-            contentDescription = "Crear nueva tarea"
+            contentDescription = androidx.compose.ui.res.stringResource(id = R.string.addtaskfab_create_new_task_cd)
         )
     }
 }

@@ -67,7 +67,7 @@ fun TaskSelectionActionsDialog(
                 ) {
                     Icon(
                         imageVector = Icons.Default.Close,
-                        contentDescription = "Cerrar",
+                        contentDescription = stringResource(id = R.string.cd_close),
                         tint = MaterialTheme.colorScheme.onSurface
                     )
                 }

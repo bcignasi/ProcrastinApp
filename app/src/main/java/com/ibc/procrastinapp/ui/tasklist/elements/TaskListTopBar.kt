@@ -20,6 +20,7 @@ import com.ibc.procrastinapp.ui.tasklist.TaskListQueryType
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
+import com.ibc.procrastinapp.R
 
 /**
  * Barra superior de la pantalla de lista de tareas.
@@ -64,7 +65,7 @@ fun TaskListTopBar(
             IconButton(
                 onClick = onGoToAssistant
             ) {
-                Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = "Ir a IA Planner")
+                Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = androidx.compose.ui.res.stringResource(id = R.string.tasklist_go_to_assistant_cd))
             }
         },
 

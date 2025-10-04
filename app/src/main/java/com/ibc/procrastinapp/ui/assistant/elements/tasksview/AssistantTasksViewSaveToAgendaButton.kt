@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.ibc.procrastinapp.R
 
 /**
  * Botón para guardar tareas en la agenda
@@ -57,15 +58,15 @@ fun AssistantTasksViewSaveToAgendaButton(
                 Icons.Default.Check
             else
                 Icons.Default.Save,
-            contentDescription = "Send to Agenda",
+            contentDescription = androidx.compose.ui.res.stringResource(id = R.string.assistant_save_to_agenda_cd),
             modifier = Modifier.size(20.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
         Text(
             text = if (isClicked)
-                "Done"
+                androidx.compose.ui.res.stringResource(id = R.string.assistant_done_label)
             else
-                "Save to Agenda",
+                androidx.compose.ui.res.stringResource(id = R.string.assistant_save_to_agenda_label),
             style = MaterialTheme.typography.labelLarge
         )
     }

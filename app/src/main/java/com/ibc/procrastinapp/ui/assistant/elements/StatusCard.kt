@@ -27,6 +27,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ibc.procrastinapp.ui.assistant.AssistantState
+import com.ibc.procrastinapp.R
 
 /**
  * Componente para mostrar mensajes de error o éxito
@@ -82,7 +83,7 @@ fun StatusCard(
 
             // 🎯 Botón de cierre manual (una X)
             IconButton(onClick = onDismiss) {
-                Icon(Icons.Default.Close, contentDescription = "Cerrar mensaje")
+                Icon(Icons.Default.Close, contentDescription = androidx.compose.ui.res.stringResource(id = R.string.statuscard_close_message_cd))
             }
 
         }

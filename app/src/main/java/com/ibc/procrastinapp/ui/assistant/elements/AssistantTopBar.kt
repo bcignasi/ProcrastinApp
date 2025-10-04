@@ -17,6 +17,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import com.ibc.procrastinapp.ui.assistant.AssistantScreenType
 import com.ibc.procrastinapp.ui.common.TitleDropdownMenu
+import com.ibc.procrastinapp.R
 
 /**
  * Barra superior de la aplicación
@@ -74,14 +75,14 @@ fun AssistantTopBar(
             IconButton(onClick = onDeleteAll) {
                 Icon(
                     imageVector = Icons.Default.Delete,
-                    contentDescription = "Borrar Todo",
+                    contentDescription = androidx.compose.ui.res.stringResource(id = R.string.assistant_delete_all_cd),
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
             }
 
             // 🎯 Ir a TaskList
             IconButton(onClick = onGoToTaskList) {
-                Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Ir a Lista")
+                Icon(Icons.AutoMirrored.Filled.List, contentDescription = androidx.compose.ui.res.stringResource(id = R.string.assistant_go_to_tasklist_cd))
             }
         },
     )
