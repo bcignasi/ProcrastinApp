@@ -126,11 +126,15 @@ class AssistantViewModel(
         val tasks = _tasks.value
         if (tasks.isEmpty()) return
 
+        // ✅ IMPORTANTE: Capturar originalTaskIds ANTES del launch
+        // para evitar race conditions con otras coroutines que puedan limpiarlo
+        val taskIdsToDelete = originalTaskIds.toList()
+
         viewModelScope.launch {
-            val isEditMode = originalTaskIds.isNotEmpty()
+            val isEditMode = taskIdsToDelete.isNotEmpty()
             if (isEditMode) {
                 try {
-                    taskRepository.deleteTasks(originalTaskIds)
+                    taskRepository.deleteTasks(taskIdsToDelete)
                 } catch (_: Exception) {}
             }
 
@@ -198,6 +202,7 @@ class AssistantViewModel(
 
 
 
+    @Suppress("SameParameterValue")
     private fun getCommitResultInfo(saved: Int, updated: Int, failed: Int): ViewModelInfo {
         return when {
             failed == 0 && updated == 0 -> {

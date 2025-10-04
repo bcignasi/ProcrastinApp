@@ -9,6 +9,7 @@ import android.content.Context
 import androidx.room.Room
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.ibc.procrastinapp.data.alarm.AlarmScheduler
 import com.ibc.procrastinapp.data.local.AppDatabase
 import com.ibc.procrastinapp.data.local.TaskDao
 import com.ibc.procrastinapp.data.model.Task
@@ -28,6 +29,17 @@ class TaskRepositoryIntegrationTest {
     private lateinit var taskDao: TaskDao
     private lateinit var db: AppDatabase
     private lateinit var repository: TaskRepository
+    
+    // Fake AlarmScheduler para tests - no hace nada real
+    private class FakeAlarmScheduler : AlarmScheduler {
+        override fun schedule(task: Task) {
+            // No hace nada en tests
+        }
+        
+        override fun cancel(idTask: Long) {
+            // No hace nada en tests
+        }
+    }
 
     // Se ejecuta antes de cada test: crea una base de datos en memoria y el repositorio
     @Before
@@ -37,7 +49,7 @@ class TaskRepositoryIntegrationTest {
             .allowMainThreadQueries() // permitido solo en tests
             .build()
         taskDao = db.taskDao()
-        repository = TaskRepository(taskDao, db)
+        repository = TaskRepository(taskDao, db, FakeAlarmScheduler())
     }
 
     // Se ejecuta después de cada test: cierra la base de datos
@@ -53,7 +65,7 @@ class TaskRepositoryIntegrationTest {
         val task = Task(
             title = "Test Task",
             priority = 3,
-            deadline = getFutureDate(1),
+            deadline = getFutureDate(2), // la consulta FUTURE recupera a partir del segundo día futuro
             subtasks = listOf(
                 Task(title = "Subtask 1"),
                 Task(title = "Subtask 2")
@@ -187,12 +199,12 @@ class TaskRepositoryIntegrationTest {
 
         val ids = tasks.map { repository.saveTask(it) }
 
-        val allBefore = repository.getTasks(TaskListQueryType.FUTURE).first()
+        val allBefore = repository.getTasks(TaskListQueryType.ALL).first()
         Assert.assertTrue(allBefore.any { it.title == "Task A" })
 
         repository.deleteTasks(ids)
 
-        val allAfter = repository.getTasks(TaskListQueryType.FUTURE).first()
+        val allAfter = repository.getTasks(TaskListQueryType.ALL).first()
         Assert.assertTrue(allAfter.none { it.title in listOf("Task A", "Task B", "Task C") })
     }
 
@@ -203,6 +215,7 @@ class TaskRepositoryIntegrationTest {
             .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))
     }
 
+    @Suppress("SameParameterValue")
     private fun getPastDate(days: Int): String {
         return LocalDateTime.now().minusDays(days.toLong())
             .format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"))

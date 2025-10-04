@@ -37,6 +37,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.ibc.procrastinapp.data.model.Task
+import androidx.compose.ui.res.stringResource
+import com.ibc.procrastinapp.R
 
 @Composable
 fun TaskItemContent(
@@ -94,7 +96,7 @@ fun TaskItemContent(
             task.periodicity.takeIf { it.isNotEmpty() }?.let {
                 Spacer(modifier = Modifier.height(6.dp))
                 Text(
-                    text = "Repetición: $it",
+                    text = stringResource(id = R.string.tasklist_periodicity_prefix, it),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.primary
                 )
@@ -111,14 +113,14 @@ fun TaskItemContent(
                         modifier = Modifier.padding(end = 8.dp), // Espacio entre botones
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
                     ) {
-                        Text("Completada")
+                        Text(stringResource(id = R.string.tasklist_complete))
                     }
                     Button(
                         onClick = { onDelete(task) },
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error) // Color distintivo para eliminar
                     ) {
-                        Text("Eliminar")
+                        Text(stringResource(id = R.string.tasklist_delete))
                     }
                 }
             }
@@ -149,7 +151,10 @@ fun TaskItemContent(
                         IconButton(onClick = { isExpanded = !isExpanded }) {
                             Icon(
                                 imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                                contentDescription = if (isExpanded) "Contraer subtareas" else "Expandir subtareas"
+                                contentDescription = if (isExpanded) 
+                                    stringResource(id = R.string.tasklist_collapse_subtasks_cd) 
+                                else 
+                                    stringResource(id = R.string.tasklist_expand_subtasks_cd)
                             )
                         }
                     }

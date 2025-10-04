@@ -32,6 +32,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.delay
+import com.ibc.procrastinapp.R
 
 /**
  * Componente de título con menú desplegable para TopAppBar.
@@ -93,7 +94,7 @@ fun <T: DropdownMenuOption> TitleDropdownMenu(
             Spacer(modifier = Modifier.width(4.dp))
             Icon(
                 imageVector = Icons.Default.KeyboardArrowDown,
-                contentDescription = "Cambiar tipo del dropdown",
+                contentDescription = stringResource(id = R.string.title_dropdown_change_type_cd),
                 modifier = Modifier.size(24.dp)
             )
         }

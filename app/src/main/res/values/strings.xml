@@ -7,14 +7,48 @@
     <string name="task_type_Future">Future Tasks</string>
     <string name="task_type_Priority">Priority Tasks</string>
     <string name="task_type_Notification">Tasks with Notifications</string>
-    <string name="task_type_NoDate">Tasks without a Date"</string>
+    <string name="task_type_NoDate">Tasks without a Date</string>
     <string name="task_type_Completed">Completed Tasks</string>
 
     <string name="assistant_type_Messages">Assistant (Messages)</string>
     <string name="assistant_type_Tasks">Assistant (Tasks)</string>
 
-    <string name="assistant_placeholder_message">What do you need to get done?</string>
-    <string name="assistant_instruction_box">Write down your goals or tasks, and the assistant will suggest a sequence to follow.
-    You can then chat with the assistant to adjust it to your needs.
-    When you\'re happy with the plan, send it to your task list.</string>
+    <!-- Assistant / Common UI strings -->
+    <string name="assistant_input_placeholder">What task do you need to plan?</string>
+    <string name="assistant_send_content_description">Send message</string>
+    <string name="assistant_cancel">Cancel</string>
+    <string name="assistant_intro_text">There\'s nothing here.\nWrite your goals or pending tasks so the assistant can propose an appropriate sequence of tasks. You can then continue dialoguing with the assistant to adjust the proposal to your needs.\nWhen you\'re satisfied with the proposal, send it to the task list.</string>
+
+    <!-- Task list / dialogs / toolbars -->
+    <string name="tasklist_back_press_to_exit">Press back again to exit</string>
+    <plurals name="tasklist_selected_count">
+        <item quantity="one">%1$d task selected</item>
+        <item quantity="other">%1$d tasks selected</item>
+    </plurals>
+    <string name="tasklist_actions">Actions</string>
+    <string name="tasklist_dialog_choose_action">Choose the action you want to perform with the selected tasks.</string>
+    <string name="tasklist_edit_tasks">Edit tasks</string>
+    <string name="tasklist_complete_tasks">Complete tasks</string>
+    <string name="tasklist_delete_tasks">Delete tasks</string>
+    <string name="tasklist_empty_message">No tasks available.\nCreate new tasks with the AI assistant.</string>
+    <string name="tasklist_periodicity_prefix">Repetition: %1$s</string>
+    <string name="tasklist_complete">Completed</string>
+    <string name="tasklist_delete">Delete</string>
+    <string name="tasklist_expand_subtasks_cd">Expand subtasks</string>
+    <string name="tasklist_collapse_subtasks_cd">Collapse subtasks</string>
+    
+    <!-- Content descriptions and UI labels moved from code -->
+    <string name="cd_close">Cerrar</string>
+    <string name="title_dropdown_change_type_cd">Cambiar tipo del dropdown</string>
+    <string name="assistant_delete_all_cd">Borrar Todo</string>
+    <string name="assistant_go_to_tasklist_cd">Ir a Lista</string>
+    <string name="tasklist_go_to_assistant_cd">Ir a IA Planner</string>
+    <string name="addtaskfab_create_new_task_cd">Crear nueva tarea</string>
+    <string name="notification_cd">Notificación</string>
+    <string name="statuscard_close_message_cd">Cerrar mensaje</string>
+
+    <!-- Save to agenda button -->
+    <string name="assistant_save_to_agenda_cd">Send to Agenda</string>
+    <string name="assistant_save_to_agenda_label">Save to Agenda</string>
+    <string name="assistant_done_label">Done</string>
 </resources>

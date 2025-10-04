@@ -18,20 +18,21 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
-import com.ibc.procrastinapp.ui.tasklist.elements.TaskListContent
-import com.ibc.procrastinapp.utils.Logger
-import org.koin.androidx.compose.koinViewModel
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.platform.LocalContext
+import com.ibc.procrastinapp.R
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.ui.tasklist.elements.AddTaskFab
 import com.ibc.procrastinapp.ui.tasklist.elements.EmptyListMessage
+import com.ibc.procrastinapp.ui.tasklist.elements.TaskListContent
 import com.ibc.procrastinapp.ui.tasklist.elements.TaskListTopBar
+import com.ibc.procrastinapp.utils.Logger
 import kotlinx.coroutines.delay
+import org.koin.androidx.compose.koinViewModel
 
 /**
  * Pantalla que muestra la lista de tareas guardadas
@@ -83,7 +84,7 @@ fun TaskListScreen(
 
             Toast.makeText(
                 context,
-                "Pulsa atrás otra vez para salir",
+                context.getString(R.string.tasklist_back_press_to_exit),
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -128,7 +129,7 @@ fun TaskListScreen(
                         uiState = uiState,
                         onTaskClick = { taskId ->
                             if (uiState.selectedTaskIds.isNotEmpty()) {
-                                viewModel.toggleTaskSelection(taskId.toLong())
+                                viewModel.toggleTaskSelection(taskId)
                             } else {
 
                                 // ==== NAVEGACIÓN ON CLICK PARA EDICIÓN ====================

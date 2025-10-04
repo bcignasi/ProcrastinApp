@@ -18,6 +18,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
+import com.ibc.procrastinapp.R
 
 /**
  * Barra de herramientas que se muestra cuando hay tareas seleccionadas
@@ -39,7 +42,7 @@ fun SelectionToolbar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "$selectionCount seleccionadas",
+            text = pluralStringResource(id = R.plurals.tasklist_selected_count, count = selectionCount, selectionCount),
             style = MaterialTheme.typography.titleMedium
         )
 
@@ -49,7 +52,7 @@ fun SelectionToolbar(
                 containerColor = MaterialTheme.colorScheme.primary
             )
         ) {
-            Text("Acciones")
+            Text(stringResource(id = R.string.tasklist_actions))
         }
     }
 }

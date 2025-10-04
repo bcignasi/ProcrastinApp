@@ -41,6 +41,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.stringResource
+import com.ibc.procrastinapp.R
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.stringResource
 import com.ibc.procrastinapp.R
@@ -68,7 +70,7 @@ fun MessageInputField(
             modifier = Modifier
                 .weight(1f)
                 .heightIn(min = 56.dp),
-            placeholder = { Text(stringResource(R.string.assistant_placeholder_message)) },
+            placeholder = { Text(stringResource(id = R.string.assistant_input_placeholder)) },
             maxLines = 5
         )
 
@@ -97,7 +99,7 @@ fun MessageInputField(
             } else {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.Send,
-                    contentDescription = "Enviar mensaje"
+                    contentDescription = stringResource(id = R.string.assistant_send_content_description)
                 )
             }
         }

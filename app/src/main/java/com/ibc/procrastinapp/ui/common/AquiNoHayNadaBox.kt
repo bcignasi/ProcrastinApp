@@ -23,6 +23,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ibc.procrastinapp.R
 import com.ibc.procrastinapp.ui.assistant.QuoteViewModel
+import androidx.compose.ui.res.stringResource
+import com.ibc.procrastinapp.R
 
 
 @Composable
@@ -48,7 +50,7 @@ fun AquiNoHayNadaBox(
             if (showIntro) {
 
                 Text(
-                    text = stringResource(R.string.assistant_instruction_box),
+                    text = stringResource(id = R.string.assistant_intro_text),
                     style = MaterialTheme.typography.titleSmall,
                     color = textColor,
                     textAlign = TextAlign.Justify,

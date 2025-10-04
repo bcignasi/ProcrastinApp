@@ -25,6 +25,7 @@ import com.ibc.procrastinapp.utils.Logger
 import com.ibc.procrastinapp.utils.getDaysFromNow
 import com.ibc.procrastinapp.utils.getRelativeDateTimeText
 import com.ibc.procrastinapp.utils.parseDateTime
+import com.ibc.procrastinapp.R
 
 @Composable
 fun ShowDatesRow(task: Task) {
@@ -102,7 +103,7 @@ private fun ShowDeadline(
 private fun ShowIcon() {
     Icon(
         imageVector = Icons.Default.Notifications,
-        contentDescription = "Notificación",
+        contentDescription = androidx.compose.ui.res.stringResource(id = R.string.notification_cd),
         tint = MaterialTheme.colorScheme.primary,
         modifier = Modifier.size(16.dp)
     )
