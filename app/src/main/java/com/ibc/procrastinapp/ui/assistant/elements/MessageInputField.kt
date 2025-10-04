@@ -44,8 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.res.stringResource
 import com.ibc.procrastinapp.R
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.res.stringResource
-import com.ibc.procrastinapp.R
+
 
 /**
  * Campo de entrada de texto con botón de envío
