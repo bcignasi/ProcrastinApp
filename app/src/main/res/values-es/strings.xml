@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">ProcrastinApp</string>
 
     <string name="task_type_All">Todas las Tareas Pendientes</string>
@@ -21,9 +21,8 @@
 
     <!-- Task list / dialogs / toolbars -->
     <string name="tasklist_back_press_to_exit">Presiona atrás de nuevo para salir</string>
-    <plurals name="tasklist_selected_count">
+    <plurals name="tasklist_selected_count" tools:ignore="MissingQuantity">
         <item quantity="one">%1$d tarea seleccionada</item>
-        <item quantity="many">%1$d tareas seleccionadas</item>
         <item quantity="other">%1$d tareas seleccionadas</item>
     </plurals>
     <string name="tasklist_actions">Acciones</string>
