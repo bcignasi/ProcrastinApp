@@ -55,7 +55,7 @@ class QuoteAIService(
     }
 
     private suspend fun fetchQuoteFromAI(): String {
-        val prompt = "Dame una frase inspiradora y motivadora para vencer la procrastinación."
+        val prompt = "Give me one short, powerful quote about overcoming procrastination, taking action, or staying disciplined. Include the name of the person who said it"
         val chatRequest = ChatRequest(messages = listOf(Message.userMessage(prompt)))
         val response = aiService.sendMessage(chatRequest)
         val assistantMessage = response.choices.firstOrNull()?.message

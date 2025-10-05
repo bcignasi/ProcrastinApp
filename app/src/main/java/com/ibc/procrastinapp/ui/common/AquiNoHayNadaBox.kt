@@ -65,9 +65,9 @@ fun AquiNoHayNadaBox(
                 val quote by it.currentQuote.collectAsStateWithLifecycle()
                 quote?.let { phrase ->
                     Text(
-                        text = "\"$phrase\"",
+                        text = phrase,
                         style = MaterialTheme.typography.headlineSmall, // 👉 también grande pero secundario
-                        color = primaryColor,                         // 👉 llamativo pero del colorScheme
+                        color = primaryColor.copy(alpha = 0.4f),                         // 👉 llamativo pero del colorScheme
                         textAlign = TextAlign.Center,
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 24.dp)
                     )
