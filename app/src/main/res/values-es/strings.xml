@@ -1,0 +1,55 @@
+<resources>
+    <string name="app_name">ProcrastinApp</string>
+
+    <string name="task_type_All">Todas las Tareas Pendientes</string>
+    <string name="task_type_Past">Tareas Pasadas</string>
+    <string name= "task_type_Now">Tareas Inmediatas</string>
+    <string name="task_type_Future">Tareas Futuras</string>
+    <string name="task_type_Priority">Tareas Prioritarias</string>
+    <string name="task_type_Notification">Tareas con Notificaciones</string>
+    <string name="task_type_NoDate">Tareas sin Fecha</string>
+    <string name="task_type_Completed">Tareas Completadas</string>
+
+    <string name="assistant_type_Messages">Asistente (Mensajes)</string>
+    <string name="assistant_type_Tasks">Asistente (Tareas)</string>
+
+    <!-- Assistant / Common UI strings -->
+    <string name="assistant_input_placeholder">¿Qué tarea necesitas planificar?</string>
+    <string name="assistant_send_content_description">Enviar mensaje</string>
+    <string name="assistant_cancel">Cancelar</string>
+    <string name="assistant_intro_text">No hay nada aquí.\nEscribe tus objetivos o tareas pendientes para que el asistente pueda proponer una secuencia apropiada de tareas. Luego puedes continuar dialogando con el asistente para ajustar la propuesta a tus necesidades.\nCuando estés satisfecho con la propuesta, envíala a la lista de tareas.</string>
+
+    <!-- Task list / dialogs / toolbars -->
+    <string name="tasklist_back_press_to_exit">Presiona atrás de nuevo para salir</string>
+    <plurals name="tasklist_selected_count">
+        <item quantity="one">%1$d tarea seleccionada</item>
+        <item quantity="many">%1$d tareas seleccionadas</item>
+        <item quantity="other">%1$d tareas seleccionadas</item>
+    </plurals>
+    <string name="tasklist_actions">Acciones</string>
+    <string name="tasklist_dialog_choose_action">Elige la acción que quieres realizar con las tareas seleccionadas.</string>
+    <string name="tasklist_edit_tasks">Editar tareas</string>
+    <string name="tasklist_complete_tasks">Completar tareas</string>
+    <string name="tasklist_delete_tasks">Eliminar tareas</string>
+    <string name="tasklist_empty_message">No hay tareas disponibles.\nCrea nuevas tareas con el asistente de IA.</string>
+    <string name="tasklist_periodicity_prefix">Repetición: %1$s</string>
+    <string name="tasklist_complete">Completado</string>
+    <string name="tasklist_delete">Eliminar</string>
+    <string name="tasklist_expand_subtasks_cd">Expandir subtareas</string>
+    <string name="tasklist_collapse_subtasks_cd">Contraer subtareas</string>
+    
+    <!-- Content descriptions and UI labels moved from code -->
+    <string name="cd_close">Cerrar</string>
+    <string name="title_dropdown_change_type_cd">Cambiar tipo de desplegable</string>
+    <string name="assistant_delete_all_cd">Eliminar todo</string>
+    <string name="assistant_go_to_tasklist_cd">Ir a Lista de Tareas</string>
+    <string name="tasklist_go_to_assistant_cd">Ir al asistente</string>
+    <string name="addtaskfab_create_new_task_cd">Crear nueva tarea</string>
+    <string name="notification_cd">Notificación</string>
+    <string name="statuscard_close_message_cd">Cerrar mensaje</string>
+
+    <!-- Save to agenda button -->
+    <string name="assistant_save_to_agenda_cd">Enviar a Agenda</string>
+    <string name="assistant_save_to_agenda_label">Guardar en Agenda</string>
+    <string name="assistant_done_label">Hecho</string>
+</resources>
