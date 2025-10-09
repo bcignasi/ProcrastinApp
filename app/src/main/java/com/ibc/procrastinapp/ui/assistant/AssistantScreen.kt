@@ -61,7 +61,7 @@ fun AssistantScreen(
 
 
     // Cuando la lista de tareas viene de TaskListVM vía ruta de navegación
-    var isEditMode = taskIdsToEdit.isNotEmpty()
+    val isEditMode = taskIdsToEdit.isNotEmpty()
 
 
     Logger.d(logTag, "taskIdsToEdit: $taskIdsToEdit")
@@ -133,17 +133,6 @@ fun AssistantScreen(
                         .fillMaxWidth()
                 ) {
                     Column {
-
-/*
-                        // En modo JSON no aparecerá el mensaje
-                        // Tampoco si tasks está vacío (como al pulsar Cancel)
-//                        if (isEditMode && !jsonViewMode && uiState.tasks.isNotEmpty()) {
-//                            EditModeHeader(
-//                                taskCount = uiState.tasks.size,
-//                                taskIdsString = tasksIdsString
-//                            )
-//                        }
-*/
 
                         if (currentScreenMode == AssistantScreenType.MESSAGES) {
                             Logger.d(logTag, "JSON MODE")
