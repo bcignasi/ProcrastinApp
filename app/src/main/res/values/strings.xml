@@ -51,4 +51,10 @@
     <string name="assistant_save_to_agenda_cd">Send to Agenda</string>
     <string name="assistant_save_to_agenda_label">Save to Agenda</string>
     <string name="assistant_done_label">Done</string>
+    
+    <!-- Splash -->
+    <string name="splash_click_to_skip">Click to skip</string>
+
+    <!-- Misc UI -->
+    <string name="task_id_suffix"> (ID: %1$d)</string>
 </resources>
