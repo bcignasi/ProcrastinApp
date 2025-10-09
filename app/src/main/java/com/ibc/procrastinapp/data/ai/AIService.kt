@@ -89,43 +89,29 @@ class AIService private constructor(apiKey: String, baseUrl: String) {
             val response = apiClient.sendMessage(request)
 
             if (response.isSuccessful) {
-                return@withContext response.body() ?: throw Exception("Respuesta vacía de la IA")
+                //return@withContext response.body() ?: throw Exception("Respuesta vacía de la IA")
+                return@withContext response.body() ?: throw AIServiceError.EmptyResponse
             } else {
-                throw Exception("Error HTTP ${response.code()}: ${response.errorBody()?.string()}")
+                //throw Exception("Error HTTP ${response.code()}: ${response.errorBody()?.string()}")
+                throw AIServiceError.Http(response.code(), response.errorBody()?.string())
             }
         } catch (e: Exception) {
             Logger.e(logTag, "Error al enviar mensaje a la IA: ${e.message}")
-            throw Exception("Error de comunicación con la IA: ${e.message}", e)
+            //throw Exception("Error de comunicación con la IA: ${e.message}", e)
+            throw AIServiceError.Communication(e.message, e)
         }
     }
 
-//    /**
-//     * Helper para crear fácilmente un mensaje de usuario
-//     */
-//    fun userMessage(content: String): Message {
-//        return Message.userMessage(content)
-//    }
-//
-//    /**
-//     * Helper para crear fácilmente un mensaje del sistema
-//     */
-//    fun systemMessage(content: String): Message {
-//        return Message.systemMessage(content)
-//    }
-//
-//    /**
-//     * Helper para crear fácilmente un mensaje del asistente
-//     */
-//    fun assistantMessage(content: String): Message {
-//        return Message.assistantMessage(content)
-//    }
-//
     /**
      * Crea un objeto Singleton para acceso global
      */
     companion object {
         @Volatile
         private var instance: AIService? = null
+
+        // Mensaje interno (no UI): no va a strings.xml
+        private const val ERROR_NOT_INITIALIZED =
+            "AIService no ha sido inicializado. Llama a AIService.initialize() en el módulo de DI (AppModule.chatAIModule) antes de usar getInstance()."
 
         /**
          * Inicializa el servicio con los parámetros de configuración
@@ -144,9 +130,10 @@ class AIService private constructor(apiKey: String, baseUrl: String) {
         /**
          * Obtiene la instancia del servicio, previamente inicializada
          */
-        fun getInstance(): AIService {
-            return instance ?: throw IllegalStateException("AIService no ha sido inicializado. Llama a initialize() primero.")
-        }
+        fun getInstance(): AIService =
+            checkNotNull(instance) { ERROR_NOT_INITIALIZED }
+            // checkNotNull sustituye a esto:
+            // return instance ?: throw IllegalStateException("AIService no ha sido inicializado. Llama a initialize() primero.")
     }
 }
 

@@ -7,8 +7,6 @@ import android.content.Intent
 import android.os.Build
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.utils.parseNotifyTimeForAlarm
-import java.time.ZoneId
-
 
 
 class AlarmSchedulerImpl(

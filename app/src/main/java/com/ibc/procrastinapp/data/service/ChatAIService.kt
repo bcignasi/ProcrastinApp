@@ -276,7 +276,7 @@ Por favor, recuerda devolver siempre la lista JSON con TODAS las tareas actualiz
      */
     private fun filterUiMessages(conversationMessages: List<Message>) : List<Message> {
 
-        var retValue = conversationMessages.filter { it.isUser || it.isAssistant }
+        val retValue = conversationMessages.filter { it.isUser || it.isAssistant }
         Logger.d(logTag, "Mensajes actualizados (size): ${retValue.size}")
         Logger.d(logTag, "Mensajes actualizados (tail): ${retValue.toString().takeLast(500)}")
         return retValue
