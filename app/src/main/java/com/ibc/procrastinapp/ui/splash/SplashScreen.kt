@@ -29,6 +29,8 @@ import androidx.media3.common.util.UnstableApi
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
 import androidx.compose.material3.Text
+import androidx.compose.ui.res.stringResource
+import com.ibc.procrastinapp.R
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -106,7 +108,7 @@ fun SplashScreen(
         )
         // Este texto se superpone encima del video
         Text(
-            text = "Click to skip",
+            text = stringResource(R.string.splash_click_to_skip),
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 64.dp)

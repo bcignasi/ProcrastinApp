@@ -22,9 +22,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.data.model.TaskPriority
+import com.ibc.procrastinapp.R
 
 
 @Composable
@@ -48,8 +50,7 @@ fun ShowUrgentRow(
         Text(
             // El caso (new) es para la visualización del asistente (tareas nuevas)
             // La quito porque no quiero trabajar con task.id en el asistente
-//            text = if (task.id == 0L) " (new)" else " (ID: ${task.id})",
-            text = if (task.id == 0L) " " else " (ID: ${task.id})",
+            text = if (task.id == 0L) " (new)" else " (ID: ${task.id})",
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
@@ -64,7 +65,7 @@ fun ShowUrgentRow(
             ) {
                 Icon(
                     imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                    contentDescription = if (isExpanded) "Contraer subtareas" else "Expandir subtareas",
+                    contentDescription = if (isExpanded) stringResource(R.string.tasklist_collapse_subtasks_cd) else stringResource(R.string.tasklist_expand_subtasks_cd),
                             modifier = Modifier.size(16.dp) // tamaño del icono
                 )
             }
