@@ -10,7 +10,6 @@ package com.ibc.procrastinapp
 import android.app.Application
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
-
 import androidx.room.Room
 
 import com.ibc.procrastinapp.data.ai.AIService
@@ -110,7 +109,13 @@ val chatAIModule = module {
     }
 
     // Servicio para la generación de frases inspiradoras usando IA
-    single { QuoteAIService(get<AIService>(), get<CoroutineScope>()) }
+    single { 
+        QuoteAIService(
+            get<AIService>(), 
+            get<CoroutineScope>(),
+            androidContext().getString(R.string.quote_prompt)
+        ) 
+    }
 
 }
 
