@@ -51,4 +51,13 @@
     <string name="assistant_save_to_agenda_cd">Send to Agenda</string>
     <string name="assistant_save_to_agenda_label">Save to Agenda</string>
     <string name="assistant_done_label">Done</string>
+    
+    <!-- Splash -->
+    <string name="splash_click_to_skip">Click to skip</string>
+
+    <!-- Misc UI -->
+    <string name="task_id_suffix"> (ID: %1$d)</string>
+    
+    <!-- AI Quotes -->
+    <string name="quote_prompt">Give me one short, powerful quote about overcoming procrastination, taking action, or staying disciplined. Include the name of the person who said it</string>
 </resources>

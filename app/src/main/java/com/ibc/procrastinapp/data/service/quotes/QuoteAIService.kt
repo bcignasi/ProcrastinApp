@@ -16,7 +16,8 @@ import java.util.LinkedList
 
 class QuoteAIService(
     private val aiService: AIService,
-    private val coroutineScope: CoroutineScope
+    private val coroutineScope: CoroutineScope,
+    private val quotePrompt: String
 ) {
     private val quotesQueue: LinkedList<String> = LinkedList()
     private val mutex = Mutex()
@@ -55,8 +56,7 @@ class QuoteAIService(
     }
 
     private suspend fun fetchQuoteFromAI(): String {
-        val prompt = "Give me one short, powerful quote about overcoming procrastination, taking action, or staying disciplined. Include the name of the person who said it"
-        val chatRequest = ChatRequest(messages = listOf(Message.userMessage(prompt)))
+        val chatRequest = ChatRequest(messages = listOf(Message.userMessage(quotePrompt)))
         val response = aiService.sendMessage(chatRequest)
         val assistantMessage = response.choices.firstOrNull()?.message
             ?: throw IllegalStateException("No se recibió respuesta de la IA")
