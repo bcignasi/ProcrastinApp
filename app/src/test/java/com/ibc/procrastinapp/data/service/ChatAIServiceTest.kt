@@ -6,6 +6,7 @@
 package com.ibc.procrastinapp.data.service
 
 import com.ibc.procrastinapp.data.ai.AIService
+import com.ibc.procrastinapp.data.ai.AIServiceError
 import com.ibc.procrastinapp.data.ai.ChatResponse
 import com.ibc.procrastinapp.data.ai.Choice
 import com.ibc.procrastinapp.data.ai.Message
@@ -125,6 +126,93 @@ class ChatAIServiceTest {
         assertNull(chatAIService.error.value)
     }
 
+    // Test para AIServiceError.EmptyResponse
+    @Test
+    fun sendMessage_handlesEmptyResponse() = runTest {
+        coEvery { mockAIService.sendMessage(any()) } throws AIServiceError.EmptyResponse
+
+        chatAIService.initSession()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        chatAIService.sendMessage("Hola")
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val error = chatAIService.error.value
+        assertNotNull(error)
+        assertTrue(error is AIServiceError.EmptyResponse)
+
+        assertFalse(chatAIService.isLoading.value)
+    }
+
+    // Test para AIServiceError.Http
+    @Test
+    fun sendMessage_handlesHttpError() = runTest {
+        val httpError = AIServiceError.Http(500, "Internal Server Error")
+        coEvery { mockAIService.sendMessage(any()) } throws httpError
+
+        chatAIService.initSession()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        chatAIService.sendMessage("Hola")
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val error = chatAIService.error.value
+        assertNotNull(error)
+        assertTrue(error is AIServiceError.Http)
+        assertEquals(500, (error as AIServiceError.Http).code)
+        assertEquals("Internal Server Error", error.body)
+
+        assertFalse(chatAIService.isLoading.value)
+    }
+
+    // Test para AIServiceError.Communication
+    @Test
+    fun sendMessage_handlesCommunicationError() = runTest {
+        val commError = AIServiceError.Communication("Network timeout", Exception("Timeout"))
+        coEvery { mockAIService.sendMessage(any()) } throws commError
+
+        chatAIService.initSession()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        chatAIService.sendMessage("Hola")
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val error = chatAIService.error.value
+        assertNotNull(error)
+        assertTrue(error is AIServiceError.Communication)
+        assertEquals("Network timeout", (error as AIServiceError.Communication).detail)
+
+        assertFalse(chatAIService.isLoading.value)
+    }
+
+    // Test para SaveMessagesException (si la creaste)
+    @Test
+    fun saveMessages_handlesSaveError() = runTest {
+        // Mock para que falle el guardado
+        coEvery { mockMessageStorage.saveMessages(any()) } throws Exception("Database error")
+
+        chatAIService.initSession()
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        // Simula un mensaje que gatille saveMessages internamente
+        val mockResponse = ChatResponse(
+            choices = listOf(
+                Choice(
+                    message = Message.assistantMessage("Respuesta del asistente")
+                )
+            )
+        )
+        coEvery { mockAIService.sendMessage(any()) } returns mockResponse
+
+        chatAIService.sendMessage("Hola")
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        val error = chatAIService.error.value!!
+        assertNotNull(error)
+        assertTrue(error is SaveMessagesException)
+        assertEquals("Database error", error.cause?.message)
+    }
+
     // Verifica que sendMessage captura excepciones y actualiza el estado de error
     @Test
     fun sendMessage_handlesError() = runTest {
@@ -136,7 +224,13 @@ class ChatAIServiceTest {
         chatAIService.sendMessage("Hola")
         testDispatcher.scheduler.advanceUntilIdle()
 
-        assertEquals("Error: Error de comunicación", chatAIService.error.value)
+        // Verifica que hay un error
+        val error = chatAIService.error.value
+        assertNotNull(error)
+        assertTrue(error is Exception)
+        assertFalse(error is AIServiceError)  // No es un AIServiceError
+        assertEquals("Error de comunicación", error!!.message)
+
         assertFalse(chatAIService.isLoading.value)
         assertEquals(1, chatAIService.messages.value.size)
         //assertEquals("Hola", chatAIService.messages.value[0].content)

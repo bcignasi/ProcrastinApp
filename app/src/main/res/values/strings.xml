@@ -60,4 +60,16 @@
     
     <!-- AI Quotes -->
     <string name="quote_prompt">Give me one short, powerful quote about overcoming procrastination, taking action, or staying disciplined. Include the name of the person who said it</string>
+
+    <!-- AIService errors -->
+    <string name="error_ai_empty_response">No response received from AI</string>
+    <string name="error_ai_http">HTTP Error %1$d: %2$s</string>
+    <string name="error_ai_communication">Communication error: %1$s</string>
+
+    <!-- ChatAIService errors -->
+    <string name="error_save_messages">Error saving conversation: %1$s</string>
+
+    <!-- Generic error -->
+    <string name="error_unexpected">Unexpected error: %1$s</string>
+
 </resources>
