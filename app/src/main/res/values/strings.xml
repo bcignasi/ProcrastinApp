@@ -72,4 +72,11 @@
     <!-- Generic error -->
     <string name="error_unexpected">Unexpected error: %1$s</string>
 
+    <!-- Alarm receiver -->
+    <string name="default_alarm_message">Alarm!</string>
+    <string name="alarm_notification_channel_name">ProcrastinApp Alarms</string>
+    <string name="alarm_notification_channel_description">Channel for alarm notifications</string>
+    <string name="alarm_notification_title">ProcrastinApp Alarm</string>
+
+
 </resources>

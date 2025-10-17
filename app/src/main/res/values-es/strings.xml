@@ -72,5 +72,11 @@
     <!-- Error genérico -->
     <string name="error_unexpected">Error inesperado: %1$s</string>
 
+    <!-- Alarm receiver -->
+    <string name="default_alarm_message">¡Alarma!</string>
+    <string name="alarm_notification_channel_name">Alarmas de ProcrastinApp</string>
+    <string name="alarm_notification_channel_description">Canal para las notificaciones de alarmas</string>
+    <string name="alarm_notification_title">Alarma de ProcrastinApp</string>
+
 </resources>
 
