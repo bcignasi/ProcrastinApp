@@ -1,38 +1,40 @@
 [versions]
 agp = "8.13.0"
-converterGson = "2.11.0"
+converterGson = "3.0.0"
 coreTesting = "2.2.0"
 datastorePreferences = "1.1.7"
-gson = "2.12.1"
-koinAndroid = "3.5.3"
-koinAndroidxCompose = "3.5.3"
-kotlin = "2.1.10"
-ksp = "2.1.10-1.0.29"  # Debe coincidir con tu versión de Kotlin
-coreKtx = "1.16.0"
+gson = "2.13.2"
+koinAndroid = "4.1.1"
+koinAndroidxCompose = "4.1.1"
+kotlin = "2.2.20"
+ksp = "2.2.20-2.0.3"  # Debe coincidir con tu versión de Kotlin
+# Ojo que esta versión también está a pelo en settings.gradle.kts
+# En teoría kotlin va por la 2.2.20, pero el plugin para el 2.2.20 falla
+coreKtx = "1.17.0"
 junit = "4.13.2"
-junitVersion = "1.2.1"
-espressoCore = "3.6.1"
-kotlinxCoroutinesTest = "1.8.0"
-kotlinxSerializationJson = "1.7.3"
-lifecycleRuntimeKtx = "2.9.0"
-activityCompose = "1.10.1"
-composeBom = "2025.05.01"
-loggingInterceptor = "4.12.0"
+junitVersion = "1.3.0"
+espressoCore = "3.7.0"
+kotlinxCoroutinesTest = "1.10.2"
+kotlinxSerializationJson = "1.9.0"
+lifecycleRuntimeKtx = "2.9.4"
+activityCompose = "1.11.0"
+composeBom = "2025.10.00"
+loggingInterceptor = "5.2.1"
 
 materialIconsCoreAndroid = "1.7.8"
 materialIconsExtended = "1.7.8"
-media3Exoplayer = "1.7.1"
-mockk = "1.13.5"
-mockkAndroid = "1.13.5"
-navigationCompose = "2.9.0"
-retrofit = "2.11.0"
-robolectric = "4.14.1"
-room = "2.7.1"
+media3Exoplayer = "1.8.0"
+mockk = "1.14.6"
+mockkAndroid = "1.14.6"
+navigationCompose = "2.9.5"
+retrofit = "3.0.0"
+robolectric = "4.16"
+room = "2.8.2"
 
-mockitoAndroidVersion = "5.10.0"
-mockitoCoreVersion = "5.12.0"
-mockitoKotlinVersion = "5.4.0"
-workRuntimeKtx = "2.10.1"
+mockitoAndroidVersion = "5.20.0"
+mockitoCoreVersion = "5.20.0"
+mockitoKotlinVersion = "6.1.0"
+workRuntimeKtx = "2.10.5"
 uiVersion = "1.9.3"
 
 [libraries]
@@ -65,13 +67,6 @@ compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling
 compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 compose-material3 = { group = "androidx.compose.material3", name = "material3" }
-
-#androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
-#androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
-#androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-#androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
-#androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
-#androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
 
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinAndroid" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroidxCompose" }

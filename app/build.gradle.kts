@@ -1,4 +1,5 @@
 import java.util.Properties
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget // Make sure to add this import
 
 plugins {
     alias(libs.plugins.android.application)
@@ -11,8 +12,6 @@ plugins {
 android {
     namespace = "com.ibc.procrastinapp"
     compileSdk = 36
-
-
 
     val openAiKey: String by lazy {
         val props = Properties()
@@ -56,10 +55,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    kotlinOptions {
-        jvmTarget = "11"
-    }
-
     testOptions {
         unitTests {
             isIncludeAndroidResources = true
@@ -77,6 +72,12 @@ android {
         }
     }
 
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget.set(JvmTarget.JVM_11)
+    }
 }
 
 dependencies {
