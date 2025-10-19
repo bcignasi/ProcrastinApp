@@ -10,12 +10,12 @@ import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
 import com.ibc.procrastinapp.R
 
-sealed class TaskPriority(val level: Int, @param:StringRes val labelResId: Int) {
+sealed class TaskPriority(@param:StringRes val labelResId: Int) {
 
-    object Low : TaskPriority(0, R.string.task_priority_low)
-    object Normal : TaskPriority(1, R.string.task_priority_normal)
-    object High : TaskPriority(2, R.string.task_priority_high)
-    object Urgent : TaskPriority(3, R.string.task_priority_urgent)
+    object Low : TaskPriority(R.string.task_priority_low)
+    object Normal : TaskPriority(R.string.task_priority_normal)
+    object High : TaskPriority(R.string.task_priority_high)
+    object Urgent : TaskPriority(R.string.task_priority_urgent)
 
 
     companion object {
