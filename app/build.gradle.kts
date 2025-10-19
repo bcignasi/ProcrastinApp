@@ -10,7 +10,7 @@ plugins {
 
 android {
     namespace = "com.ibc.procrastinapp"
-    compileSdk = 35
+    compileSdk = 36
 
 
 
@@ -30,7 +30,7 @@ android {
         buildConfigField("String", "OPENAI_API_KEY", "\"$openAiKey\"")
         applicationId = "com.ibc.procrastinapp"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         versionCode = 1
         versionName = "1.0"
 
@@ -81,108 +81,78 @@ android {
 
 dependencies {
 
+    // --- Core y Lifecycle ---
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
+
+    // --- Compose ---
+    // El BOM gestiona las versiones de las librerías de Compose.
     implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.ui)
+    implementation(libs.androidx.activity.compose) // Alias estandarizado
+
+    // UI
+    implementation(libs.androidx.compose.ui) // Única implementación, alias correcto
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
-    implementation(libs.androidx.material3)
 
-    // Iconos de material3 (ExpandMore, ExpandLess)
-    implementation(libs.androidx.material3.android)
+    // Material
+    implementation(libs.androidx.material3)
     implementation(libs.androidx.material.icons.core.android)
     implementation(libs.androidx.material.icons.extended)
 
+    // Navigation
+    implementation(libs.androidx.navigation.compose)
+
+    // --- Testing ---
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+    // El BOM también aplica a las dependencias de test
     androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
 
-    // AIClient dependencies
-    implementation(libs.ui) // Versión actual de Compose
-    //implementation(libs.androidx.material)
-    implementation(libs.androidx.activity.compose)
+    // --- AI, Redes y Serialización ---
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
-    implementation(libs.logging.interceptor) // Para depurar las solicitudes HTTP
+    implementation(libs.logging.interceptor)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.gson)
 
-    // Koin dependencies
+    // --- Koin (Inyección de dependencias) ---
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
 
-    // DataStore dependencies
+    // --- DataStore ---
     implementation(libs.androidx.datastore.preferences)
-    implementation(libs.kotlinx.serialization.json) //If you need to serialize to json
 
-    // For function "extractJSON"
-    //implementation(libs.gson)
-    // https://mvnrepository.com/artifact/com.google.code.gson/gson
-    implementation(libs.gson)
-
-    // Room Database
+    // --- Room (Base de datos) ---
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
-    // kapt("androidx.room:room-compiler:2.5.2")
-    // ksp(libs.room.compiler)
-    // add("ksp", libs.room.compiler)  // ¡Prueba con add("ksp", ...)
-    ksp(libs.room.compiler)  // ¡Esta es la forma correcta de usar KSP con Kotlin DSL!
+    ksp(libs.room.compiler)
 
-    // Mockito (tests para Room
-    testImplementation(libs.mockito.core)
-    androidTestImplementation(libs.mockito.android)
-    testImplementation(libs.mockito.kotlin)
-
-    androidTestImplementation(libs.junit) // or newer version if available
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-
-    // Kotlin stdlib for test code:
-    //androidTestImplementation(libs.kotlin.stdlib.jdk8)
-
-    // Kotlin coroutines test library
-    testImplementation(libs.kotlinx.coroutines.test)
-    androidTestImplementation(libs.kotlinx.coroutines.test)
-
-    // Compose Navigation dependencies
-    implementation(libs.androidx.navigation.compose)
-
-    // WorkManager dependencies
+    // --- WorkManager ---
     implementation(libs.androidx.work.runtime.ktx)
 
-    // Dependencias para testing
-    testImplementation(libs.androidx.core.testing)
-    androidTestImplementation(libs.androidx.core.testing)
-
-    // Si también necesitas la librería de corrutinas para testing
-    testImplementation(libs.kotlinx.coroutines.test)
-    androidTestImplementation(libs.kotlinx.coroutines.test)
-
-    // Robolectric sirve para testing de UI
-    testImplementation(libs.robolectric)
-
-    // Para los tests de Mockito
-    testImplementation(libs.mockito.kotlin)
-    androidTestImplementation(libs.mockito.kotlin)
-
-    // MockK para testing
-    testImplementation(libs.mockk)
-    androidTestImplementation(libs.mockk.android)
-
-// Para las reglas de arquitectura usadas en los tests (InstantTaskExecutorRule)
-    testImplementation(libs.androidx.core.testing)
-
-    // Splash screen video
-    // ExoPlayer (Media3)
+    // --- Media3 (ExoPlayer) ---
     implementation(libs.androidx.media3.exoplayer)
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.common)
 
-    // Navegación Compose
-    implementation(libs.androidx.navigation.compose)
-
+    // --- Librerías de Testing Adicionales ---
+    // Mockito
+    testImplementation(libs.mockito.core)
+    androidTestImplementation(libs.mockito.android)
+    testImplementation(libs.mockito.kotlin)
+    androidTestImplementation(libs.mockito.kotlin) // Duplicado, pero agrupado por claridad
+    // MockK
+    testImplementation(libs.mockk)
+    androidTestImplementation(libs.mockk.android)
+    // Otros
+    testImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(libs.kotlinx.coroutines.test) // Duplicado
+    testImplementation(libs.androidx.core.testing)
+    androidTestImplementation(libs.androidx.core.testing) // Duplicado
+    testImplementation(libs.robolectric)
 }

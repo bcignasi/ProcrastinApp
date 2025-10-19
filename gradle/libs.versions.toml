@@ -28,13 +28,13 @@ mockkAndroid = "1.13.5"
 navigationCompose = "2.9.0"
 retrofit = "2.11.0"
 robolectric = "4.14.1"
-ui = "1.8.2"
 room = "2.7.1"
 
 mockitoAndroidVersion = "5.10.0"
 mockitoCoreVersion = "5.12.0"
 mockitoKotlinVersion = "5.4.0"
 workRuntimeKtx = "2.10.1"
+uiVersion = "1.9.3"
 
 [libraries]
 
@@ -81,12 +81,12 @@ mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 mockk-android = { module = "io.mockk:mockk-android", version.ref = "mockkAndroid" }
 retrofit = { module = "com.squareup.retrofit2:retrofit", version.ref = "retrofit" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
-ui = { module = "androidx.compose.ui:ui", version.ref = "ui" }
 
 # Room dependencies
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "uiVersion" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
