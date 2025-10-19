@@ -1,13 +1,13 @@
 [versions]
 agp = "8.13.0"
 converterGson = "2.11.0"
-#coreKtxVersion = "1.6.1"
 coreTesting = "2.2.0"
 datastorePreferences = "1.1.7"
 gson = "2.12.1"
 koinAndroid = "3.5.3"
 koinAndroidxCompose = "3.5.3"
 kotlin = "2.1.10"
+ksp = "2.1.10-1.0.29"  # Debe coincidir con tu versión de Kotlin
 coreKtx = "1.16.0"
 junit = "4.13.2"
 junitVersion = "1.2.1"
@@ -19,7 +19,6 @@ activityCompose = "1.10.1"
 composeBom = "2025.05.01"
 loggingInterceptor = "4.12.0"
 
-material3Android = "1.3.2"
 materialIconsCoreAndroid = "1.7.8"
 materialIconsExtended = "1.7.8"
 media3Exoplayer = "1.7.1"
@@ -45,7 +44,6 @@ androidx-datastore-preferences = { module = "androidx.datastore:datastore-prefer
 # Splash screen
 androidx-material-icons-core-android = { module = "androidx.compose.material:material-icons-core-android", version.ref = "materialIconsCoreAndroid" }
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "materialIconsExtended" }
-androidx-material3-android = { module = "androidx.compose.material3:material3-android", version.ref = "material3Android" }
 androidx-media3-common = { module = "androidx.media3:media3-common", version.ref = "media3Exoplayer" }
 androidx-media3-exoplayer = { module = "androidx.media3:media3-exoplayer", version.ref = "media3Exoplayer" }
 androidx-media3-ui = { module = "androidx.media3:media3-ui", version.ref = "media3Exoplayer" }
@@ -60,13 +58,21 @@ androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-co
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
-androidx-ui = { group = "androidx.compose.ui", name = "ui" }
-androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
-androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
-androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
-androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
-androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
-androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+
+compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+compose-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+compose-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+compose-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+compose-material3 = { group = "androidx.compose.material3", name = "material3" }
+
+#androidx-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
+#androidx-ui-tooling = { group = "androidx.compose.ui", name = "ui-tooling" }
+#androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+#androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
+#androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
+#androidx-material3 = { group = "androidx.compose.material3", name = "material3" }
+
 koin-android = { module = "io.insert-koin:koin-android", version.ref = "koinAndroid" }
 koin-androidx-compose = { module = "io.insert-koin:koin-androidx-compose", version.ref = "koinAndroidxCompose" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxCoroutinesTest" }
@@ -93,4 +99,5 @@ android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-android = { id = "org.jetbrains.kotlin.android", version.ref = "kotlin" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 kotlinSerialization= { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" } # Aquí lo añadimos
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 

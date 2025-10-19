@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlinSerialization) // Usando alias
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -92,11 +92,11 @@ dependencies {
 
     // UI
     implementation(libs.androidx.compose.ui) // Única implementación, alias correcto
-    implementation(libs.androidx.ui.graphics)
-    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.compose.ui.graphics)
+    implementation(libs.compose.ui.tooling.preview)
 
     // Material
-    implementation(libs.androidx.material3)
+    implementation(libs.compose.material3)
     implementation(libs.androidx.material.icons.core.android)
     implementation(libs.androidx.material.icons.extended)
 
@@ -109,9 +109,9 @@ dependencies {
     androidTestImplementation(libs.androidx.espresso.core)
     // El BOM también aplica a las dependencias de test
     androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    debugImplementation(libs.compose.ui.tooling)
+    debugImplementation(libs.compose.ui.test.manifest)
 
     // --- AI, Redes y Serialización ---
     implementation(libs.retrofit)
