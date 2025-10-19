@@ -18,8 +18,8 @@ class AlarmSchedulerImpl(
     override fun schedule(task: Task) {
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             // Puedes pasar datos extra al BroadcastReceiver
-            putExtra("EXTRA_MESSAGE", task.title)
-            putExtra("EXTRA_ALARM_ID", task.id.toInt())
+            putExtra(AlarmReceiver.EXTRA_MESSAGE, task.title)
+            putExtra(AlarmReceiver.EXTRA_ALARM_ID, task.id.toInt())
             // Es importante que el action o los data sean únicos por PendingIntent
             // si quieres tener múltiples alarmas distintas.
             // O usar el id en el requestCode del PendingIntent.

@@ -62,15 +62,6 @@ fun AssistantTopBar(
 
         // Iconos de botones de acción: Info y Delete
         actions = {
-//            // Botón para alternar entre visualización de tareas/mensajes completos
-//            IconButton(onClick = onToggleViewMode) {
-//                Icon(
-//                    imageVector = Icons.Default.SwapHoriz,
-//                    contentDescription = "Cambiar modo de vista (tasks/messages)",
-//                    tint = MaterialTheme.colorScheme.onPrimaryContainer
-//                )
-//            }
-
             // Botón para borrar todos los mensajes
             IconButton(onClick = onDeleteAll) {
                 Icon(

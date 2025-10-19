@@ -78,5 +78,11 @@
     <string name="alarm_notification_channel_description">Canal para las notificaciones de alarmas</string>
     <string name="alarm_notification_title">Alarma de ProcrastinApp</string>
 
+    <!-- Task priority -->
+    <string name="task_priority_low">Baja</string>
+    <string name="task_priority_normal">Normal</string>
+    <string name="task_priority_high">Alta</string>
+    <string name="task_priority_urgent">Urgente</string>
+
 </resources>
 

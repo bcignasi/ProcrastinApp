@@ -21,6 +21,7 @@ package com.ibc.procrastinapp.data.ai
  */
 data class ChatRequest(
     val model: String = "gpt-3.5-turbo",
+    // TODO: subir a gpt-4o-mini
     val messages: List<Message>
 )
 
