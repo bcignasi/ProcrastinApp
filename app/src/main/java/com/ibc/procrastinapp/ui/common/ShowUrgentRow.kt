@@ -80,7 +80,7 @@ fun ShowUrgentRow(
             modifier = Modifier.padding(start = 4.dp)
         ) {
             Text(
-                text = priority.label.uppercase(),
+                text = stringResource(id = priority.labelResId).uppercase(),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onPrimary,
                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)

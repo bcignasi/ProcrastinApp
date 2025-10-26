@@ -63,7 +63,7 @@ class AssistantViewModelTest {
         chatAIService = mock {
             on { messages } doReturn MutableStateFlow<List<Message>>(emptyList()) as StateFlow<List<Message>>
             on { isLoading } doReturn MutableStateFlow(false) as StateFlow<Boolean>
-            on { error } doReturn MutableStateFlow(null) as StateFlow<String?>
+            on { error } doReturn MutableStateFlow(null) as StateFlow<Throwable?>
         }
         viewModel = AssistantViewModel(chatAIService, taskRepository)
 

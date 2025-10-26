@@ -19,8 +19,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.ibc.procrastinapp.R
+import com.ibc.procrastinapp.data.ai.AIServiceError
+import com.ibc.procrastinapp.data.service.SaveMessagesException
 import com.ibc.procrastinapp.ui.assistant.AssistantState
 import com.ibc.procrastinapp.ui.assistant.AssistantState.ViewModelInfo
 import com.ibc.procrastinapp.ui.assistant.QuoteViewModel
@@ -55,10 +59,26 @@ fun AssistantMessagesView(
             .padding(16.dp)
     ) {
         // Mostrar error si existe
-        uiState.chatAIServiceError?.let { errorMessage ->
-            val message = ViewModelInfo.Error(errorMessage)
+        uiState.chatAIServiceError?.let { error ->
+            val errorMessage = when (error) {
+                is AIServiceError.EmptyResponse ->
+                    stringResource(R.string.error_ai_empty_response)
+
+                is AIServiceError.Http ->
+                    stringResource(R.string.error_ai_http, error.code, error.body ?: "")
+
+                is AIServiceError.Communication ->
+                    stringResource(R.string.error_ai_communication, error.detail ?: "desconocido")
+
+                is SaveMessagesException ->
+                    stringResource(R.string.error_save_messages, error.cause?.message ?: "")
+
+                else ->
+                    stringResource(R.string.error_unexpected, error.message ?: "")
+            }
+
             StatusCard(
-                viewModelInfo = message,
+                viewModelInfo = ViewModelInfo.Error(errorMessage),
                 onDismiss = onClearViewModelInfo,
                 modifier = Modifier.fillMaxWidth()
             )
@@ -118,7 +138,7 @@ fun AssistantMessagesView(
 fun MessagesViewInfoPreview() {
     val viewModelInfo = ViewModelInfo.Success("Tarea guardada bien")
     val uiState = AssistantState(
-        chatAIServiceError = "No se pudo salvar la tarea",
+        chatAIServiceError = AIServiceError.Communication("No se pudo salvar la tarea", null),
         viewModelInfo = viewModelInfo
     )
     AssistantMessagesView(

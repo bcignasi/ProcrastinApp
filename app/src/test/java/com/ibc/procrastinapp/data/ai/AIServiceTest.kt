@@ -5,6 +5,9 @@
  */
 package com.ibc.procrastinapp.data.ai
 
+import com.ibc.procrastinapp.data.ai.Message.Companion.ROLE_ASSISTANT
+import com.ibc.procrastinapp.data.ai.Message.Companion.ROLE_SYSTEM
+import com.ibc.procrastinapp.data.ai.Message.Companion.ROLE_USER
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.spyk
@@ -36,7 +39,7 @@ class AIServiceTest {
         val message = Message.userMessage("Hola")
 
         // Assert
-        assertEquals("user", message.role)
+        assertEquals(ROLE_USER, message.role)
         assertEquals("Hola", message.content)
         assertTrue(message.isUser)
     }
@@ -47,7 +50,7 @@ class AIServiceTest {
         val message = Message.systemMessage("Instrucción")
 
         // Assert
-        assertEquals("system", message.role)
+        assertEquals(ROLE_SYSTEM, message.role)
         assertEquals("Instrucción", message.content)
         assertTrue(message.isSystem)
     }
@@ -58,7 +61,7 @@ class AIServiceTest {
         val message = Message.assistantMessage("Respuesta")
 
         // Assert
-        assertEquals("assistant", message.role)
+        assertEquals(ROLE_ASSISTANT, message.role)
         assertEquals("Respuesta", message.content)
         assertTrue(message.isAssistant)
     }

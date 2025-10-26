@@ -24,30 +24,33 @@ data class Message private constructor (
 ) {
     /** Indica si el mensaje proviene del usuario. */
     val isUser: Boolean
-        get() = role == "user"
+        get() = role == ROLE_USER
 
     /** Indica si el mensaje proviene del sistema. */
     val isSystem: Boolean
-        get() = role == "system"
+        get() = role == ROLE_SYSTEM
 
     /** Indica si el mensaje proviene del asistente. */
     val isAssistant: Boolean
-        get() = role == "assistant"
+        get() = role == ROLE_ASSISTANT
 
     companion object {
+        internal const val ROLE_USER = "user"
+        internal const val ROLE_SYSTEM = "system"
+        internal const val ROLE_ASSISTANT = "assistant"
         /** Crea un mensaje de usuario. */
         fun userMessage(content: String): Message {
-            return Message("user", content)
+            return Message(ROLE_USER, content)
         }
 
         /** Crea un mensaje del sistema. */
         fun systemMessage(content: String): Message {
-            return Message("system", content)
+            return Message(ROLE_SYSTEM, content)
         }
 
         /** Crea un mensaje del asistente. */
         fun assistantMessage(content: String): Message {
-            return Message("assistant", content)
+            return Message(ROLE_ASSISTANT, content)
         }
     }
 }

@@ -21,7 +21,7 @@ data class AssistantState(
     val messages: List<Message> = emptyList(),
     val tasks: List<Task> = emptyList(),
     val isLoading: Boolean = false,
-    val chatAIServiceError: String? = null,
+    val chatAIServiceError: Throwable? = null,
     val viewModelInfo: ViewModelInfo? = null,
 ) {
     val hasTasks: Boolean get() = tasks.isNotEmpty()

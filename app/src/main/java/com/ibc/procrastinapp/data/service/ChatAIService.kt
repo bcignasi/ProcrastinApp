@@ -7,6 +7,7 @@
 package com.ibc.procrastinapp.data.service
 
 import com.ibc.procrastinapp.data.ai.AIService
+import com.ibc.procrastinapp.data.ai.AIServiceError
 import com.ibc.procrastinapp.data.ai.ChatRequest
 import com.ibc.procrastinapp.data.ai.Message
 //import com.ibc.procrastinapp.data.model.Task
@@ -18,6 +19,10 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+
+
+// Para distinguir el error de salvado de mensajes del Exception genérico
+class SaveMessagesException(cause: Throwable) : Exception(cause)
 
 /**
  * Implementación simplificada de servicio para la gestión de tareas mediante IA.
@@ -54,9 +59,10 @@ class ChatAIService(
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
-    // Estado de error
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error.asStateFlow()
+    // Estado de error (cambio de String a Throwable (no me vale AIService error
+    // porque quiero incluir una nueva excepción genérica en esta clase)
+    private val _error = MutableStateFlow<Throwable?>(null)
+    val error: StateFlow<Throwable?> = _error.asStateFlow()
 
     init {
         // Inicializamos cargando los mensajes guardados
@@ -218,9 +224,16 @@ Por favor, recuerda devolver siempre la lista JSON con TODAS las tareas actualiz
             Logger.d(logTag, "saveMessages()")
             saveMessages()
 
+        } catch (e: AIServiceError) {
+
+            // Pasamos el error tal cual
+            // Los mensajes de error se retrasan hasta llegar al composable
+            Logger.e(logTag, "Error de AIService: ${e.message}")
+            _error.value = e
+
         } catch (e: Exception) {
-            Logger.e(logTag, "Error al enviar mensaje: ${e.message}")
-            _error.value = "Error: ${e.message}"
+            Logger.e(logTag, "Error inesperado en ChatAIService: ${e.message}")
+            _error.value = e    // Este error conserva su tipo Exception
 
         } finally {
             _isLoading.value = false
@@ -276,7 +289,7 @@ Por favor, recuerda devolver siempre la lista JSON con TODAS las tareas actualiz
      */
     private fun filterUiMessages(conversationMessages: List<Message>) : List<Message> {
 
-        var retValue = conversationMessages.filter { it.isUser || it.isAssistant }
+        val retValue = conversationMessages.filter { it.isUser || it.isAssistant }
         Logger.d(logTag, "Mensajes actualizados (size): ${retValue.size}")
         Logger.d(logTag, "Mensajes actualizados (tail): ${retValue.toString().takeLast(500)}")
         return retValue
@@ -323,7 +336,7 @@ Por favor, recuerda devolver siempre la lista JSON con TODAS las tareas actualiz
             messageStorage.saveMessages(conversationMessages)
             Logger.d(logTag, "Mensajes guardados correctamente")
         } catch (e: Exception) {
-            _error.value = "Error al guardar la conversación: ${e.message}"
+            _error.value = SaveMessagesException(e) // Para distinguirlo del error genérico
             Logger.e(logTag, "${_error.value}")
         }
     }

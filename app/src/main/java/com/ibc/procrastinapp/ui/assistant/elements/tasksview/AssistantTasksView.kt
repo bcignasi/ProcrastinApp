@@ -31,6 +31,8 @@ import com.ibc.procrastinapp.ui.assistant.elements.StatusCard
 import com.ibc.procrastinapp.utils.Logger
 import androidx.compose.ui.res.stringResource
 import com.ibc.procrastinapp.R
+import com.ibc.procrastinapp.data.ai.AIServiceError
+import com.ibc.procrastinapp.data.service.SaveMessagesException
 
 private const val logTag = "IBC-TaskView"
 
@@ -61,10 +63,26 @@ fun AssistantTasksView(
             .padding(8.dp)
     ) {
         // Mostrar error si existe
-        uiState.chatAIServiceError?.let { errorMessage ->
-            val message = ViewModelInfo.Error(errorMessage)
+        uiState.chatAIServiceError?.let { error ->
+            val errorMessage = when (error) {
+                is AIServiceError.EmptyResponse ->
+                    stringResource(R.string.error_ai_empty_response)
+
+                is AIServiceError.Http ->
+                    stringResource(R.string.error_ai_http, error.code, error.body ?: "")
+
+                is AIServiceError.Communication ->
+                    stringResource(R.string.error_ai_communication, error.detail ?: "desconocido")
+
+                is SaveMessagesException ->
+                    stringResource(R.string.error_save_messages, error.cause?.message ?: "")
+
+                else ->
+                    stringResource(R.string.error_unexpected, error.message ?: "")
+            }
+
             StatusCard(
-                viewModelInfo = message,
+                viewModelInfo = ViewModelInfo.Error(errorMessage),
                 onDismiss = onClearViewModelInfo,
                 modifier = Modifier.fillMaxWidth()
             )

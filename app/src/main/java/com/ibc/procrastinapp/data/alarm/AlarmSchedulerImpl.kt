@@ -7,8 +7,6 @@ import android.content.Intent
 import android.os.Build
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.utils.parseNotifyTimeForAlarm
-import java.time.ZoneId
-
 
 
 class AlarmSchedulerImpl(
@@ -20,8 +18,8 @@ class AlarmSchedulerImpl(
     override fun schedule(task: Task) {
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             // Puedes pasar datos extra al BroadcastReceiver
-            putExtra("EXTRA_MESSAGE", task.title)
-            putExtra("EXTRA_ALARM_ID", task.id)
+            putExtra(AlarmReceiver.EXTRA_MESSAGE, task.title)
+            putExtra(AlarmReceiver.EXTRA_ALARM_ID, task.id.toInt())
             // Es importante que el action o los data sean únicos por PendingIntent
             // si quieres tener múltiples alarmas distintas.
             // O usar el id en el requestCode del PendingIntent.

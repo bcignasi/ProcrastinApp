@@ -5,15 +5,18 @@
  */
 package com.ibc.procrastinapp.data.model
 
+import androidx.annotation.StringRes
 import androidx.compose.material3.ColorScheme
 import androidx.compose.ui.graphics.Color
+import com.ibc.procrastinapp.R
 
-sealed class TaskPriority(val level: Int, val label: String) {
+sealed class TaskPriority(@param:StringRes val labelResId: Int) {
 
-    object Low : TaskPriority(0, "Baja")
-    object Normal : TaskPriority(1, "Normal")
-    object High : TaskPriority(2, "Alta")
-    object Urgent : TaskPriority(3, "Urgente")
+    object Low : TaskPriority(R.string.task_priority_low)
+    object Normal : TaskPriority(R.string.task_priority_normal)
+    object High : TaskPriority(R.string.task_priority_high)
+    object Urgent : TaskPriority(R.string.task_priority_urgent)
+
 
     companion object {
         fun fromLevel(level: Int): TaskPriority = when (level) {
@@ -23,16 +26,6 @@ sealed class TaskPriority(val level: Int, val label: String) {
             3 -> Urgent
             else -> Normal // valor por defecto si hay error
         }
-
-        fun fromLabel(label: String): TaskPriority = when (label.lowercase()) {
-            "baja" -> Low
-            "media", "normal" -> Normal
-            "alta" -> High
-            "urgente" -> Urgent
-            else -> Normal
-        }
-
-        val values = listOf(Low, Normal, High, Urgent)
     }
 
     fun color(colorScheme: ColorScheme): Color = when (this) {
@@ -48,6 +41,4 @@ sealed class TaskPriority(val level: Int, val label: String) {
         Normal -> colorScheme.primaryContainer.copy(alpha = 0.7f)
         Low -> colorScheme.surfaceVariant
     }
-
-    override fun toString(): String = label
 }
