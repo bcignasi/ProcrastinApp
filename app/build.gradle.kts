@@ -3,7 +3,6 @@ import org.jetbrains.kotlin.gradle.dsl.JvmTarget // Make sure to add this import
 
 plugins {
     alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.kotlinSerialization) // Usando alias
     alias(libs.plugins.ksp)
@@ -11,7 +10,7 @@ plugins {
 
 android {
     namespace = "com.ibc.procrastinapp"
-    compileSdk = 36
+    compileSdk = 37
 
     val openAiKey: String by lazy {
         val props = Properties()
@@ -29,7 +28,7 @@ android {
         buildConfigField("String", "OPENAI_API_KEY", "\"$openAiKey\"")
         applicationId = "com.ibc.procrastinapp"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 

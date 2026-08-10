@@ -16,8 +16,11 @@ pluginManagement {
 
     plugins {
         // Ojo con la versión hardcoded aquí. Puede diverger con la de libs.version.toml
-        id("com.google.devtools.ksp") version "2.2.20-2.0.3" apply false
+        id("com.google.devtools.ksp") version "2.3.11" apply false
     }
+}
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "1.0.0"
 }
 
 dependencyResolutionManagement {

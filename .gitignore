@@ -16,3 +16,4 @@ local.properties
 /hs_err_pid26376.log
 /replay_pid26376.log
 *.patch
+.artifacts/
