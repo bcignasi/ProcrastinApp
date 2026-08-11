@@ -11,7 +11,7 @@ plugins {
 
 android {
     namespace = "com.ibc.procrastinapp"
-    compileSdk = 36
+    compileSdk = 37
 
     val openAiKey: String by lazy {
         val props = Properties()
@@ -29,7 +29,8 @@ android {
         buildConfigField("String", "OPENAI_API_KEY", "\"$openAiKey\"")
         applicationId = "com.ibc.procrastinapp"
         minSdk = 26
-        targetSdk = 36
+        @Suppress("AndroidTargetSdkEdit")
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 
@@ -51,8 +52,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 
     testOptions {
@@ -69,6 +70,7 @@ android {
     packaging {
         resources {
             excludes += setOf("META-INF/LICENSE.md", "META-INF/LICENSE-notice.md")
+            pickFirsts += "dispatcher.jar"
         }
     }
 
@@ -76,7 +78,7 @@ android {
 
 kotlin {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_11)
+        jvmTarget.set(JvmTarget.JVM_17)
     }
 }
 
@@ -85,6 +87,7 @@ dependencies {
     // --- Core y Lifecycle ---
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.lifecycle.runtime.compose)
 
     // --- Compose ---
     // El BOM gestiona las versiones de las librerías de Compose.
@@ -109,7 +112,6 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     // El BOM también aplica a las dependencias de test
-    androidTestImplementation(platform(libs.androidx.compose.bom))
     androidTestImplementation(libs.compose.ui.test.junit4)
     debugImplementation(libs.compose.ui.tooling)
     debugImplementation(libs.compose.ui.test.manifest)
@@ -142,18 +144,18 @@ dependencies {
     implementation(libs.androidx.media3.common)
 
     // --- Librerías de Testing Adicionales ---
-    // Mockito
+    // Unit Testing
     testImplementation(libs.mockito.core)
-    androidTestImplementation(libs.mockito.android)
     testImplementation(libs.mockito.kotlin)
-    androidTestImplementation(libs.mockito.kotlin) // Duplicado, pero agrupado por claridad
-    // MockK
     testImplementation(libs.mockk)
-    androidTestImplementation(libs.mockk.android)
-    // Otros
     testImplementation(libs.kotlinx.coroutines.test)
-    androidTestImplementation(libs.kotlinx.coroutines.test) // Duplicado
     testImplementation(libs.androidx.core.testing)
-    androidTestImplementation(libs.androidx.core.testing) // Duplicado
     testImplementation(libs.robolectric)
+
+    // Instrumented Testing
+    androidTestImplementation(libs.mockito.android)
+    androidTestImplementation(libs.mockito.kotlin)
+    androidTestImplementation(libs.mockk.android)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+    androidTestImplementation(libs.androidx.core.testing)
 }
