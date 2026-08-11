@@ -34,6 +34,7 @@ import com.ibc.procrastinapp.ui.tasklist.elements.TaskListTopBar
 import com.ibc.procrastinapp.utils.Logger
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Pantalla que muestra la lista de tareas guardadas
@@ -68,7 +69,7 @@ fun TaskListScreen(
     // Si está activo, lanzamos un efecto que lo desactiva tras 2 segundos
     if (backPressedOnce) {
         LaunchedEffect(Unit) {
-            delay(2000)
+            delay(2000.milliseconds)
             backPressedOnce = false
         }
     }
