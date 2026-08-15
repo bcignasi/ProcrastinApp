@@ -35,7 +35,6 @@ mockitoAndroidVersion = "5.23.0"
 mockitoCoreVersion = "5.23.0"
 mockitoKotlinVersion = "6.3.0"
 workRuntimeKtx = "2.11.2"
-uiVersion = "1.12.0"
 
 [libraries]
 
@@ -58,6 +57,7 @@ junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
 androidx-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycleRuntimeKtx" }
+androidx-lifecycle-runtime-compose = { group = "androidx.lifecycle", name = "lifecycle-runtime-compose", version.ref = "lifecycleRuntimeKtx" }
 androidx-activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activityCompose" }
 androidx-compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "composeBom" }
 
@@ -89,7 +89,7 @@ robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectr
 room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
-androidx-compose-ui = { group = "androidx.compose.ui", name = "ui", version.ref = "uiVersion" }
+androidx-compose-ui = { group = "androidx.compose.ui", name = "ui" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

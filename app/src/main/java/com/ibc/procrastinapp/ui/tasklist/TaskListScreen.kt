@@ -22,6 +22,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.ibc.procrastinapp.R
@@ -33,6 +34,7 @@ import com.ibc.procrastinapp.ui.tasklist.elements.TaskListTopBar
 import com.ibc.procrastinapp.utils.Logger
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
+import kotlin.time.Duration.Companion.milliseconds
 
 /**
  * Pantalla que muestra la lista de tareas guardadas
@@ -67,13 +69,14 @@ fun TaskListScreen(
     // Si está activo, lanzamos un efecto que lo desactiva tras 2 segundos
     if (backPressedOnce) {
         LaunchedEffect(Unit) {
-            delay(2000)
+            delay(2000.milliseconds)
             backPressedOnce = false
         }
     }
 
 
     // Interceptamos el botón "atrás" del sistema
+    val backExitMessage = stringResource(R.string.tasklist_back_press_to_exit)
     BackHandler {
         if (backPressedOnce) {
             // Si el usuario ya pulsó una vez, se cierra la app forzadamente
@@ -84,7 +87,7 @@ fun TaskListScreen(
 
             Toast.makeText(
                 context,
-                context.getString(R.string.tasklist_back_press_to_exit),
+                backExitMessage,
                 Toast.LENGTH_SHORT
             ).show()
         }
