@@ -67,7 +67,11 @@ android {
 
     packaging {
         resources {
-            excludes += setOf("META-INF/LICENSE.md", "META-INF/LICENSE-notice.md")
+            excludes += setOf(
+                "META-INF/LICENSE.md",
+                "META-INF/LICENSE-notice.md",
+                "dispatcher.jar" // Resuelve conflicto de duplicados entre MockK y Mockito (dexmaker) en Android Tests
+            )
         }
     }
 
@@ -114,6 +118,8 @@ dependencies {
     debugImplementation(libs.compose.ui.test.manifest)
 
     // --- AI, Redes y Serialización ---
+    implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.kotlinx.coroutines.core)
     implementation(libs.retrofit)
     implementation(libs.converter.gson)
     implementation(libs.logging.interceptor)
