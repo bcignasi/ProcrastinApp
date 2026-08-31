@@ -9,12 +9,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.gson.GsonBuilder
 import com.ibc.procrastinapp.data.model.Task
+import com.ibc.procrastinapp.data.repository.AssistantRepository
 import com.ibc.procrastinapp.data.repository.TaskRepository
 import com.ibc.procrastinapp.data.service.AssistantResponse
-import com.ibc.procrastinapp.data.service.AssistantResponseParserImpl
-import com.ibc.procrastinapp.data.service.ChatAIService
-import com.ibc.procrastinapp.data.service.TaskJsonExtractor
-import com.ibc.procrastinapp.ui.assistant.AssistantState.ViewModelInfo
+import com.ibc.procrastinapp.ui.assistant.AssistantState.AssistantEvent
+import com.ibc.procrastinapp.ui.assistant.AssistantState.LoadTaskError
 import com.ibc.procrastinapp.utils.Logger
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -22,25 +21,17 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class AssistantViewModel(
-    private val chatAIService: ChatAIService,
+    private val assistantRepository: AssistantRepository,
     private val taskRepository: TaskRepository
 ) : ViewModel() {
 
-    private val taskJsonExtractor = TaskJsonExtractor()
-    private val responseParser = AssistantResponseParserImpl()
-
-    // Mantiene la relación de tareas presente en AssistantScreen
-    private val _tasks = MutableStateFlow<List<Task>>(emptyList())
-
-    // Muestra mensajes de confirmación o error
-    private val _viewModelInfo = MutableStateFlow<ViewModelInfo?>(null)
+    // Evento tipado que la UI traduce a string localizada
+    private val _event = MutableStateFlow<AssistantEvent?>(null)
 
     // Señaliza el final de la tarea asíncrona de guardado de tareas
     private val _commitFinished = MutableSharedFlow<Unit>()
@@ -50,20 +41,23 @@ class AssistantViewModel(
     // en caso de que se acepten los cambios - se insertarán como nuevas)
     private val originalTaskIds = mutableListOf<Long>()
 
+    // Estado derivado correspondiente al parsing del último mensaje
+    val lastResponse: StateFlow<AssistantResponse?> = assistantRepository.lastResponse
+
     // Unifica los varios flows en un UiState común
     val uiState: StateFlow<AssistantState> = combine(
-        chatAIService.messages,
-        _tasks,
-        chatAIService.isLoading,
-        chatAIService.error,
-        _viewModelInfo
-    ) { messages, tasks, isLoading, error, viewModelInfo ->
+        assistantRepository.messages,
+        assistantRepository.tasks,
+        assistantRepository.isLoading,
+        assistantRepository.error,
+        _event
+    ) { messages, tasks, isLoading, error, event ->
         AssistantState(
             messages = messages,
             tasks = tasks,
             isLoading = isLoading,
             chatAIServiceError = error,
-            viewModelInfo = viewModelInfo
+            event = event
         )
     }.stateIn(
         viewModelScope,
@@ -71,63 +65,24 @@ class AssistantViewModel(
         AssistantState()
     )
 
-    // Estado derivado correspondiente al parsing del último mensaje
-    private val _lastResponse = MutableStateFlow<AssistantResponse?>(null)
-    val lastResponse: StateFlow<AssistantResponse?> = _lastResponse.asStateFlow()
-
-    init {
-        // Se crea la corrutina que recibe los mensajes del asistente
-        viewModelScope.launch {
-            // Escuchar permanentemente el flujo de mensajes
-            chatAIService.messages.collectLatest { messages ->
-
-                // Obtener el último mensaje de la conversación (si existe)
-                val lastMessage = messages.lastOrNull()
-
-                if (lastMessage != null) {
-                    // Intentar extraer un bloque JSON del contenido del último mensaje
-                    val response = responseParser.parse(lastMessage.content)
-
-                    Logger.d("IBC-AssistantViewModel", "response = $response")
-
-                    if (response.hasJson) {
-                        // Si se ha encontrado JSON válido → extraer tareas y asignarlas
-                        _tasks.value = taskJsonExtractor.extractTasksFromText(response.json)
-                        // Guardar el AssistantResponse para CommentsCard o similares
-                        _lastResponse.value = response
-                    } else {
-                        // Si no se encontró JSON → anular lastResponse --> NO: se pierde el comentario
-                        // _lastResponse.value = null
-                        _lastResponse.value = response
-                    }
-                } else {
-                    // Si no hay ningún mensaje → anular lastResponse
-                    _lastResponse.value = null
-                }
-            }
-        }
-    }
-
     fun startNewSession() {
         viewModelScope.launch {
-            chatAIService.initSession()
-            _tasks.value = emptyList()
-            _viewModelInfo.value = null
+            assistantRepository.initSession()
             originalTaskIds.clear()
+            _event.value = null
         }
     }
 
     fun sendMessage(message: String) {
         if (message.isBlank()) return
-        viewModelScope.launch { chatAIService.sendMessage(message) }
+        viewModelScope.launch { assistantRepository.sendMessage(message) }
     }
 
     fun commitTasksFromAssistant() {
-        val tasks = _tasks.value
+        val tasks = assistantRepository.tasks.value
         if (tasks.isEmpty()) return
 
-        // ✅ IMPORTANTE: Capturar originalTaskIds ANTES del launch
-        // para evitar race conditions con otras coroutines que puedan limpiarlo
+        // Capturar originalTaskIds ANTES del launch para evitar race conditions
         val taskIdsToDelete = originalTaskIds.toList()
 
         viewModelScope.launch {
@@ -138,107 +93,69 @@ class AssistantViewModel(
                 } catch (_: Exception) {}
             }
 
-            val tasksSaved = mutableListOf<Long>()
             var saved = 0
             var failed = 0
 
             tasks.forEach { task ->
                 try {
-                    val id = taskRepository.saveTask(task)
-                    tasksSaved.add(id)
+                    taskRepository.saveTask(task)
                     saved++
                 } catch (_: Exception) {
                     failed++
                 }
             }
 
-            _viewModelInfo.value = getCommitResultInfo(saved, 0, failed)
-            Logger.d("IBC13-AssistantViewModel", "getCommitResultInfo(): _viewModelInfo.value = ${_viewModelInfo.value}")
+            _event.value = AssistantEvent.CommitDone(saved = saved, updated = 0, failed = failed)
+            Logger.d("IBC13-AssistantViewModel", "commitTasksFromAssistant(): saved=$saved, failed=$failed")
             _commitFinished.emit(Unit)
             Logger.d("IBC13-AssistantViewModel", "commitFinished.emit: guardado finalizado")
             delay(3000)
-            _viewModelInfo.value = null
+            _event.value = null
             originalTaskIds.clear()
-            _tasks.value = emptyList()
-            //loadTasksForEditing(tasksSaved)
+            assistantRepository.clearTasks()
         }
     }
 
-
-
-
-    fun clearViewModelInfo() {
-        _viewModelInfo.value = null
+    fun clearEvent() {
+        _event.value = null
     }
 
     fun loadTasksForEditing(taskIds: List<Long>) {
         viewModelScope.launch {
             val tasks = mutableListOf<Task>()
-            val loadErrors = mutableListOf<String>()
+            val loadErrors = mutableListOf<LoadTaskError>()
             taskIds.forEach { id ->
                 try {
                     taskRepository.getTask(id)?.let { tasks.add(it) }
-                        ?: loadErrors.add("❌ No encontrada tarea ID $id")
+                        ?: loadErrors.add(LoadTaskError.NotFound(id))
                 } catch (e: Exception) {
-                    loadErrors.add("❌ Error tarea $id: ${e.message}")
+                    loadErrors.add(LoadTaskError.TaskException(id, e.message))
                 }
             }
             if (tasks.isNotEmpty()) {
-                _tasks.value = tasks
                 originalTaskIds.clear()
                 originalTaskIds.addAll(taskIds)
                 val userMessage = if (tasks.size == 1) "Tarea para editar"
                 else "Tareas para edición múltiple"
                 val json = convertListTaskToJSON(tasks)
-                chatAIService.addUserAndAssistantMessage(userMessage, json)
+                assistantRepository.addUserAndAssistantMessage(userMessage, json)
             }
 
             if (loadErrors.isNotEmpty()) {
-                _viewModelInfo.value = ViewModelInfo.Error(loadErrors.joinToString("\n"))
+                _event.value = AssistantEvent.LoadFailed(loadErrors)
             }
         }
     }
-
-
-
-
-    @Suppress("SameParameterValue")
-    private fun getCommitResultInfo(saved: Int, updated: Int, failed: Int): ViewModelInfo {
-        return when {
-            failed == 0 && updated == 0 -> {
-                val msg = if (saved == 1) "✓ Una tarea guardada"
-                else "✓ $saved tareas guardadas"
-                ViewModelInfo.Success(msg)
-            }
-            failed == 0 && saved == 0 -> {
-                val msg = if (updated == 1) "Una tarea actualizada"
-                else "✓ $updated tareas actualizadas"
-                ViewModelInfo.Success(msg)
-            }
-            failed == 0 -> {
-                val savedMsg = if (saved == 1) "$saved nueva" else "$saved nuevas"
-                val updatedMsg = if (updated == 1) "$updated actualizada" else "$updated actualizadas"
-                ViewModelInfo.Success("✓ $savedMsg + $updatedMsg")
-            }
-            saved + updated > 0 -> ViewModelInfo.Warning("⚠️ nuevas: $saved, actualizadas + $updated; fallidas: $failed")
-            else -> ViewModelInfo.Error("❌ Ninguna tarea guardada")
-        }
-    }
-
-
-//    private fun convertListTaskToJSON(tasks: List<Task>) =
-//        Gson().toJson(mapOf("propuesta" to mapOf("tasks" to tasks)))
-    private fun convertListTaskToJSON(tasks: List<Task>): String {
-        val gson = GsonBuilder()
-            .setPrettyPrinting()  // Esto añade indentación y saltos de línea
-            .create()
-
-        return gson.toJson(mapOf("propuesta" to mapOf("tasks" to tasks)))
-    }
-
 
     fun cancelEdit() {
-        _tasks.value = emptyList()
+        assistantRepository.clearTasks()
         originalTaskIds.clear()
+    }
+
+    private fun convertListTaskToJSON(tasks: List<Task>): String {
+        val gson = GsonBuilder()
+            .setPrettyPrinting()
+            .create()
+        return gson.toJson(mapOf("propuesta" to mapOf("tasks" to tasks)))
     }
 }
