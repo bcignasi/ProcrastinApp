@@ -125,6 +125,7 @@ fun ProcAppMVVMTheme(
         MaterialTheme(
             colorScheme = colorScheme,
             typography = Typography,
+            shapes = SerenaShapes,
             content = content
         )
     }

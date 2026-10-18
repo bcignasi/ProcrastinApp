@@ -137,9 +137,19 @@ private val DmSans = FontFamily(
 
 Los cuatro estilos personalizados conservan sus tamaños, interlineados, espaciados y pesos; solo cambia `fontFamily = DmSans`. Para los otros once estilos se utiliza, por ejemplo, `DefaultTypography.bodyMedium.copy(fontFamily = DmSans)`: `copy` mantiene los valores de Material y sustituye únicamente la familia. Así los 15 estilos comparten DM Sans y los menús o botones no se quedan con la fuente anterior.
 
-`Theme.kt` ya entrega `Typography` a `MaterialTheme`, por lo que no necesita cambios. La fuente se aplica tanto en claro como en oscuro y queda incluida en el APK para funcionar sin conexión. Las formas y la distribución siguen pendientes.
+`Theme.kt` ya entrega `Typography` a `MaterialTheme`, por lo que no necesita cambios para la fuente. La fuente se aplica tanto en claro como en oscuro y queda incluida en el APK para funcionar sin conexión. Las formas se incorporan en el siguiente incremento; la distribución se trabaja después.
 
 Procedencia: archivos estáticos sin modificar del [repositorio oficial DM Fonts](https://github.com/googlefonts/dm-fonts/tree/d0520ba03bd780f5dccb3024854463d44f699b78/Sans/fonts/ttf), revisión `d0520ba03bd780f5dccb3024854463d44f699b78`. Su licencia SIL OFL 1.1 se incluye también en el APK como `assets/licenses/dm_sans_OFL.txt`. Referencia de implementación: [fuentes locales en Compose](https://developer.android.com/develop/ui/compose/text/fonts).
+
+## 8. Formas compartidas de Serena
+
+`ui/theme/Shape.kt` define `SerenaShapes`: `small` tiene esquinas de 8 dp, `medium` de 12 dp y `large` y `extraLarge` de 16 dp. `extraSmall` conserva el valor predeterminado de Material. `dp` es la unidad de tamaño independiente de la densidad de pantalla.
+
+En `Theme.kt`, la línea `shapes = SerenaShapes` entrega estas formas a `MaterialTheme` en ambos modos. Los componentes que utilizan las formas del tema las reciben automáticamente; por ejemplo, la tarjeta exterior de la agenda utiliza `medium`.
+
+En `TaskItemContent.kt`, la tarjeta interior pasa de `RoundedCornerShape(8.dp)` a `MaterialTheme.shapes.medium` (12 dp). Los botones de completar y borrar reciben `shape = MaterialTheme.shapes.small` (8 dp). Sus acciones, colores y espaciados se conservan. Se elimina el import de `RoundedCornerShape` de ese archivo porque ya no se utiliza.
+
+Este cambio centraliza la escala de redondeos. Las formas escritas explícitamente en otros componentes, como las burbujas del asistente, se revisarán al trabajar sus pantallas.
 
 ## Qué revisar al probar
 

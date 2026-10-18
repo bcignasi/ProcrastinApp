@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -58,7 +57,7 @@ fun TaskItemContent(
         modifier = modifier
             .fillMaxWidth()
             .padding(start = paddingStart, top = 8.dp, bottom = 4.dp, end = 8.dp),
-        shape = RoundedCornerShape(8.dp),
+        shape = MaterialTheme.shapes.medium,
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
 //        colors = CardDefaults.cardColors(
 //            containerColor = TaskPriority.fromLevel(task.priority).color(MaterialTheme.colorScheme)
@@ -110,6 +109,7 @@ fun TaskItemContent(
                 ) {
                     Button(
                         onClick = { onComplete(task) },
+                        shape = MaterialTheme.shapes.small,
                         modifier = Modifier.padding(end = 8.dp), // Espacio entre botones
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
                     ) {
@@ -117,6 +117,7 @@ fun TaskItemContent(
                     }
                     Button(
                         onClick = { onDelete(task) },
+                        shape = MaterialTheme.shapes.small,
                         contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error) // Color distintivo para eliminar
                     ) {
