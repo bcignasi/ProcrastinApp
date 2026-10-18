@@ -33,6 +33,7 @@ Dependencia: 0. Alcance: medio.
 ## 2. Navegar entre Agenda y Asistente
 
 - [x] Barra inferior Agenda / Asistente conectada a la ruta actual; engranaje conservado e iconos superiores duplicados retirados.
+- [x] Acabado Serena de la barra: iconos vectoriales de contorno, icono y texto en horizontal, selección rectangular de 12 dp y separador superior de 1 dp. Compilación, 94 pruebas existentes y lint correctos; revisión visual a cargo de Ignasi.
 - [x] Seis pruebas de navegación y dos del ViewModel verifican estado, ViewModels retenidos, ausencia de duplicados y solicitudes explícitas de sesión/edición.
 - [ ] Ignasi revisa las pestañas, filtro, borrador, edición, botón atrás, Ajustes y teclado en el móvil.
 
