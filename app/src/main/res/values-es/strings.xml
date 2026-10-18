@@ -1,12 +1,12 @@
 <resources>
     <string name="app_name">ProcrastinApp</string>
 
-    <string name="task_type_All">Todas las tareas pendientes</string>
+    <string name="task_type_All">Tareas pendientes</string>
     <string name="task_type_Past">Tareas pasadas</string>
     <string name= "task_type_Now">Tareas inmediatas</string>
     <string name="task_type_Future">Tareas futuras</string>
     <string name="task_type_Priority">Tareas prioritarias</string>
-    <string name="task_type_Notification">Tareas con notificaciones</string>
+    <string name="task_type_Notification">Tareas con aviso</string>
     <string name="task_type_NoDate">Tareas sin fecha</string>
     <string name="task_type_Completed">Tareas completadas</string>
 
