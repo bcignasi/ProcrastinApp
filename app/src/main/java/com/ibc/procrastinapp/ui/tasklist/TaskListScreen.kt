@@ -18,6 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -55,7 +56,7 @@ fun TaskListScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     // Estado para controlar qué lista se muestra (inicialmente, todas las tareas)
-    var currentListType by remember { mutableStateOf(TaskListQueryType.ALL) }
+    var currentListType by rememberSaveable { mutableStateOf(TaskListQueryType.ALL) }
 
     // Efecto para cargar las tareas según el tipo de lista
     LaunchedEffect(currentListType) {
@@ -99,6 +100,7 @@ fun TaskListScreen(
         topBar = {
             TaskListTopBar(
                 onGoToAssistant = { navController.navigate("chat") },
+                onOpenSettings = { navController.navigate("settings") },
                 currentListType = currentListType,
                 onCurrentListTypeChange = { newType -> // Proporciona la lógica para cambiar el estado
                     currentListType = newType

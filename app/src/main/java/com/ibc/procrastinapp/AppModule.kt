@@ -16,6 +16,8 @@ import com.ibc.procrastinapp.data.ai.AIService
 import com.ibc.procrastinapp.data.alarm.AlarmScheduler
 import com.ibc.procrastinapp.data.alarm.AlarmSchedulerImpl
 import com.ibc.procrastinapp.data.local.AppDatabase
+import com.ibc.procrastinapp.data.preferences.ThemePreferences
+import com.ibc.procrastinapp.data.preferences.themeSettingsDataStore
 import com.ibc.procrastinapp.data.repository.TaskRepository
 import com.ibc.procrastinapp.data.repository.AssistantRepository
 import com.ibc.procrastinapp.data.service.ChatAIService
@@ -25,6 +27,7 @@ import com.ibc.procrastinapp.data.service.quotes.QuoteAIService
 import com.ibc.procrastinapp.ui.assistant.AssistantViewModel
 import com.ibc.procrastinapp.ui.assistant.QuoteViewModel
 import com.ibc.procrastinapp.ui.tasklist.TaskListViewModel
+import com.ibc.procrastinapp.ui.settings.ThemeSettingsViewModel
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -36,6 +39,8 @@ import org.koin.dsl.module
 
 // Módulo para dependencias globales de la aplicación (disponibles en toda la app)
 val appModule = module {
+
+    single { ThemePreferences(androidContext().themeSettingsDataStore) }
 
     // Proporciona la instancia de DataStore<Preferences> usando el contexto de la aplicación
     single<DataStore<Preferences>> {
@@ -124,6 +129,8 @@ val chatAIModule = module {
  * Cada ViewModel se construye con las dependencias necesarias desde otros módulos.
  */
 val viewModelModule = module {
+
+    viewModel { ThemeSettingsViewModel(get()) }
 
     // ViewModel del asistente con IA (chats + tareas)
     viewModel { AssistantViewModel(get<AssistantRepository>(), get<TaskRepository>()) }

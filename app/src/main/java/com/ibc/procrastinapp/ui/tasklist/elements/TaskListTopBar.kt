@@ -7,6 +7,7 @@ package com.ibc.procrastinapp.ui.tasklist.elements
 
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Chat
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,6 +39,7 @@ fun TaskListTopBar(
     currentListType: TaskListQueryType,
     onCurrentListTypeChange: (TaskListQueryType) -> Unit,
     onGoToAssistant: () -> Unit,
+    onOpenSettings: () -> Unit,
 ) {
     TopAppBar(
         title = {
@@ -66,6 +68,12 @@ fun TaskListTopBar(
                 onClick = onGoToAssistant
             ) {
                 Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = androidx.compose.ui.res.stringResource(id = R.string.tasklist_go_to_assistant_cd))
+            }
+            IconButton(onClick = onOpenSettings) {
+                Icon(
+                    Icons.Default.Settings,
+                    contentDescription = androidx.compose.ui.res.stringResource(R.string.settings_open)
+                )
             }
         },
 

@@ -28,6 +28,9 @@ import com.ibc.procrastinapp.R
 import com.ibc.procrastinapp.ui.assistant.AssistantScreen
 import com.ibc.procrastinapp.ui.splash.SplashScreen
 import com.ibc.procrastinapp.ui.tasklist.TaskListScreen
+import com.ibc.procrastinapp.ui.settings.SettingsScreen
+import com.ibc.procrastinapp.ui.settings.ThemeSettingsState
+import com.ibc.procrastinapp.ui.theme.LocalAppDarkTheme
 
 // Utilidades
 import kotlinx.coroutines.delay
@@ -37,7 +40,10 @@ import kotlinx.coroutines.delay
  * Define las rutas y la navegación entre las diferentes pantallas.
  */
 @Composable
-fun AppNavigation() {
+fun AppNavigation(
+    themeSettings: ThemeSettingsState,
+    onDarkThemeChange: (Boolean) -> Unit
+) {
 
     // Crea y recuerda una instancia del controlador de navegación
     // Se mantiene durante recomposiciones
@@ -54,6 +60,16 @@ fun AppNavigation() {
         startDestination = "splash"    // Ruta inicial de la aplicación
                                         // TODO: flag para ejecutar splash o no
     ) {
+        composable("settings") {
+            SettingsScreen(
+                darkTheme = LocalAppDarkTheme.current,
+                isSaving = themeSettings.isSaving,
+                saveFailed = themeSettings.saveFailed,
+                onDarkThemeChange = onDarkThemeChange,
+                onBack = { navController.popBackStack() }
+            )
+        }
+
         // Definición de la ruta de navegación splash
         composable("splash") {
 

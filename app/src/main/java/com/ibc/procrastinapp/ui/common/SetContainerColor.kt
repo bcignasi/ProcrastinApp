@@ -6,7 +6,6 @@
 package com.ibc.procrastinapp.ui.common
 
 import android.content.res.Configuration
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ibc.procrastinapp.data.model.Task
+import com.ibc.procrastinapp.ui.theme.LocalAppDarkTheme
 import com.ibc.procrastinapp.utils.getDaysFromNow
 import java.time.LocalDate
 
@@ -41,7 +41,7 @@ fun setContainerColor(task: Task): Color {
     }
 
     val daysDiff = getDaysFromNow(deadline)
-    val isDark = isSystemInDarkTheme()
+    val isDark = LocalAppDarkTheme.current
 
     val pastAyer     = if (isDark) Color(0xFF897357) else Color(0xFFFFF8F3)
     val pastSemana   = if (isDark) Color(0xFF6F5C3F) else Color(0xFFFFEFDC)

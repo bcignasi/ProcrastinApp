@@ -1,6 +1,15 @@
 <resources>
     <string name="app_name">ProcrastinApp</string>
 
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_open">Open settings</string>
+    <string name="settings_back">Back</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_dark_theme">Dark theme</string>
+    <string name="settings_dark_theme_summary">Turn off to use the light theme.</string>
+    <string name="settings_save_failed">Could not save the theme. Please try again.</string>
+
     <string name="task_type_All">All Pending Tasks</string>
     <string name="task_type_Past">Past Tasks</string>
     <string name= "task_type_Now">Immediate Tasks</string>
