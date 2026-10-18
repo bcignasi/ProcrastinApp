@@ -118,11 +118,32 @@ También se adaptan los pares secundarios, terciarios e inversos y los niveles `
 
 En `ui/theme/Theme.kt`, `darkColorScheme` conecta cada valor con su papel. El selector evalúa primero `darkTheme -> DarkColors`: en oscuro siempre aplica Serena. Los colores dinámicos del sistema se mantienen disponibles solo en claro, para que Android 12 o posterior no sustituya Serena por una paleta derivada del teléfono. El modo claro y la preferencia guardada mantienen su funcionamiento.
 
-Los componentes que consultan `MaterialTheme.colorScheme` reciben los nuevos colores automáticamente. Las tarjetas con colores propios por fecha, en `SetContainerColor.kt`, siguen pendientes de adaptar en el incremento de las filas de la agenda. Este paso solo aplica colores; la fuente, las formas y la distribución se trabajan después.
+Los componentes que consultan `MaterialTheme.colorScheme` reciben los nuevos colores automáticamente. Las tarjetas con colores propios por fecha, en `SetContainerColor.kt`, siguen pendientes de adaptar en el incremento de las filas de la agenda. Este paso solo aplica colores; la fuente se incorpora en el siguiente incremento.
+
+## 7. Tipografía local DM Sans
+
+Los cuatro archivos `.ttf` están en `app/src/main/res/font/`: `dm_sans_regular`, `dm_sans_medium`, `dm_sans_semibold` y `dm_sans_bold`. Android genera sus identificadores `R.font`, que utilizamos en `ui/theme/Type.kt`:
+
+```kotlin
+private val DmSans = FontFamily(
+    Font(R.font.dm_sans_regular, FontWeight.Normal),
+    Font(R.font.dm_sans_medium, FontWeight.Medium),
+    Font(R.font.dm_sans_semibold, FontWeight.SemiBold),
+    Font(R.font.dm_sans_bold, FontWeight.Bold)
+)
+```
+
+`FontFamily` agrupa los archivos de una misma familia. Cada `Font` asocia un recurso con su peso: 400, 500, 600 o 700. Compose elige el archivo correspondiente al peso del texto. La negrita conserva el aspecto de los títulos que ya utilizaban `FontWeight.Bold`.
+
+Los cuatro estilos personalizados conservan sus tamaños, interlineados, espaciados y pesos; solo cambia `fontFamily = DmSans`. Para los otros once estilos se utiliza, por ejemplo, `DefaultTypography.bodyMedium.copy(fontFamily = DmSans)`: `copy` mantiene los valores de Material y sustituye únicamente la familia. Así los 15 estilos comparten DM Sans y los menús o botones no se quedan con la fuente anterior.
+
+`Theme.kt` ya entrega `Typography` a `MaterialTheme`, por lo que no necesita cambios. La fuente se aplica tanto en claro como en oscuro y queda incluida en el APK para funcionar sin conexión. Las formas y la distribución siguen pendientes.
+
+Procedencia: archivos estáticos sin modificar del [repositorio oficial DM Fonts](https://github.com/googlefonts/dm-fonts/tree/d0520ba03bd780f5dccb3024854463d44f699b78/Sans/fonts/ttf), revisión `d0520ba03bd780f5dccb3024854463d44f699b78`. Su licencia SIL OFL 1.1 se incluye también en el APK como `assets/licenses/dm_sans_OFL.txt`. Referencia de implementación: [fuentes locales en Compose](https://developer.android.com/develop/ui/compose/text/fonts).
 
 ## Qué revisar al probar
 
-Ignasi realiza las comprobaciones visuales en el móvil. Para ver este incremento: ejecutar la app desde Android Studio y activar «Tema oscuro» en Ajustes.
+Ignasi realiza las comprobaciones visuales en el móvil. Para ver los incrementos: ejecutar la app desde Android Studio. DM Sans se aplica en ambos modos; Serena se activa con «Tema oscuro» en Ajustes.
 
 1. Abrir Ajustes desde el engranaje y cambiar el interruptor.
 2. Volver a la agenda y comprobar tanto el fondo como las tarjetas.
