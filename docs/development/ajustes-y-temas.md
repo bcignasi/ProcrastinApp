@@ -93,7 +93,36 @@ El operador `?:` usa el valor de la izquierda si existe; si es `null`, usa el de
 
 `ProcAppMVVMTheme`, en `ui/theme/Theme.kt`, selecciona la paleta y la proporciona a los componentes mediante `MaterialTheme`. También comparte `LocalAppDarkTheme`, para que los colores específicos de las tarjetas respeten la elección y no consulten el teléfono por separado.
 
+## 6. Primer paso de Serena: colores oscuros
+
+En `ui/theme/Color.kt` se sustituyen los valores de la paleta oscura. Por ejemplo:
+
+```kotlin
+val md_theme_dark_primary = Color(0xFFA8DBC3)
+val md_theme_dark_onPrimary = Color(0xFF17382A)
+```
+
+`primary` es el acento menta; `onPrimary` es el texto o icono situado encima de ese acento. En `0xFFA8DBC3`, `FF` indica opacidad completa y `A8DBC3` es el color RGB.
+
+| Papel | Valor Serena | Uso |
+|---|---|---|
+| `background` | `#171E1C` | Fondo general |
+| `surface` | `#202A26` | Superficies |
+| `onSurface` | `#E8F2ED` | Texto principal sobre superficies |
+| `onSurfaceVariant` | `#AFC3B8` | Texto secundario |
+| `primary` | `#A8DBC3` | Acento de controles |
+| `primaryContainer` | `#2C4035` | Contenedor destacado |
+| `outlineVariant` | `#35483E` | Separadores suaves |
+
+También se adaptan los pares secundarios, terciarios e inversos y los niveles `surfaceContainer`, `surfaceDim` y `surfaceBright`. Así los componentes Material que usan distintas superficies reciben tonos de Serena. Los colores de error se conservan.
+
+En `ui/theme/Theme.kt`, `darkColorScheme` conecta cada valor con su papel. El selector evalúa primero `darkTheme -> DarkColors`: en oscuro siempre aplica Serena. Los colores dinámicos del sistema se mantienen disponibles solo en claro, para que Android 12 o posterior no sustituya Serena por una paleta derivada del teléfono. El modo claro y la preferencia guardada mantienen su funcionamiento.
+
+Los componentes que consultan `MaterialTheme.colorScheme` reciben los nuevos colores automáticamente. Las tarjetas con colores propios por fecha, en `SetContainerColor.kt`, siguen pendientes de adaptar en el incremento de las filas de la agenda. Este paso solo aplica colores; la fuente, las formas y la distribución se trabajan después.
+
 ## Qué revisar al probar
+
+Ignasi realiza las comprobaciones visuales en el móvil. Para ver este incremento: ejecutar la app desde Android Studio y activar «Tema oscuro» en Ajustes.
 
 1. Abrir Ajustes desde el engranaje y cambiar el interruptor.
 2. Volver a la agenda y comprobar tanto el fondo como las tarjetas.
