@@ -32,11 +32,12 @@ Dependencia: 0. Alcance: medio.
 
 ## 2. Navegar entre Agenda y Asistente
 
-- [ ] Barra inferior con dos destinos, selección visible y engranaje accesible.
-- [ ] Cambiar de pestaña conserva filtros y conversación; volver y abrir teclado no duplican pantallas ni ocultan acciones esenciales.
+- [x] Barra inferior Agenda / Asistente conectada a la ruta actual; engranaje conservado e iconos superiores duplicados retirados.
+- [x] Seis pruebas de navegación y dos del ViewModel verifican estado, ViewModels retenidos, ausencia de duplicados y solicitudes explícitas de sesión/edición.
+- [ ] Ignasi revisa las pestañas, filtro, borrador, edición, botón atrás, Ajustes y teclado en el móvil.
 
-Verificación: recorrido de navegación en Compose y en AQUOS; :app:assembleDebug.
-Archivos previstos: AppNavigation.kt, barra inferior compartida, TaskListScreen.kt, AssistantScreen.kt.
+Verificación técnica completada: NavHostController real en Robolectric, 94 pruebas unitarias aprobadas (ocho nuevas), compilación de app y pruebas de interfaz, lint con 0 errores y 29 advertencias existentes. Revisión del resultado y del teclado en AQUOS a cargo de Ignasi.
+Archivos: AppNavigation.kt, MainNavigation.kt, MainBottomBar.kt, ambas pantallas y cabeceras, AssistantViewModel.kt, manifiesto, textos y pruebas. [Guía del código](../docs/development/navegacion-agenda-asistente.md).
 Dependencia: 1. Alcance: medio.
 
 ## Punto de control: base y navegación

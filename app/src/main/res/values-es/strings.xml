@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">ProcrastinApp</string>
 
+    <string name="navigation_agenda">Agenda</string>
+    <string name="navigation_assistant">Asistente</string>
+
     <string name="task_type_All">Tareas pendientes</string>
     <string name="task_type_Past">Tareas pasadas</string>
     <string name= "task_type_Now">Tareas inmediatas</string>
@@ -43,8 +46,6 @@
     <string name="cd_collapse">Contraer</string>
     <string name="title_dropdown_change_type_cd">Cambiar tipo del desplegable</string>
     <string name="assistant_delete_all_cd">Eliminar todo</string>
-    <string name="assistant_go_to_tasklist_cd">Ir a la lista de tareas</string>
-    <string name="tasklist_go_to_assistant_cd">Ir al asistente</string>
     <string name="addtaskfab_create_new_task_cd">Crear nueva tarea</string>
     <string name="notification_cd">Notificación</string>
     <string name="statuscard_close_message_cd">Cerrar mensaje</string>

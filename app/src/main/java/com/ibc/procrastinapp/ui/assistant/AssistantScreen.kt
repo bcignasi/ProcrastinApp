@@ -16,12 +16,15 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
+import androidx.activity.compose.BackHandler
+import com.ibc.procrastinapp.ui.navigation.AGENDA_ROUTE
+import com.ibc.procrastinapp.ui.navigation.openMainDestination
 import com.ibc.procrastinapp.ui.assistant.elements.AssistantTopBar
 import com.ibc.procrastinapp.ui.assistant.elements.MessageInputField
 import com.ibc.procrastinapp.ui.assistant.elements.messagesview.AssistantMessagesView
@@ -56,8 +59,10 @@ fun AssistantScreen(
     val lastResponse by assistantViewModel.lastResponse.collectAsStateWithLifecycle()
 
     // Estados locales de la pantalla
-    var agendaButtonClicked by remember { mutableStateOf(false) }
-    var currentScreenMode by remember { mutableStateOf(AssistantScreenType.TASKS) }
+    var agendaButtonClicked by rememberSaveable { mutableStateOf(false) }
+    var currentScreenMode by rememberSaveable { mutableStateOf(AssistantScreenType.TASKS) }
+
+    BackHandler { navController.openMainDestination(AGENDA_ROUTE) }
 
 
     // Cuando la lista de tareas viene de TaskListVM vía ruta de navegación
@@ -65,10 +70,8 @@ fun AssistantScreen(
 
 
     Logger.d(logTag, "taskIdsToEdit: $taskIdsToEdit")
-    LaunchedEffect(taskIdsToEdit) {
-        if (taskIdsToEdit.isNotEmpty()) {
-            assistantViewModel.loadTasksForEditing(taskIdsToEdit)
-        }
+    LaunchedEffect(assistantViewModel) {
+        assistantViewModel.enterFromNavigation(taskIdsToEdit, initSession)
     }
 
     val showSaveButton = uiState.tasks.isNotEmpty() && !uiState.isLoading
@@ -86,16 +89,8 @@ fun AssistantScreen(
 
             //NO NAVEGO - TENGO QUE VER LO QUE EXPLICA ASSISTANT
             // Navegar solo después de que se complete el guardado
-            navController.navigate("task_list")
+            navController.openMainDestination(AGENDA_ROUTE)
 
-        }
-    }
-
-    // Cuando se navega a esta pantalla vía FAB de TaskList, se inicia una nueva sesión
-    LaunchedEffect(initSession) {
-        if (initSession) {
-            // Limpiar la lista de mensajes aquí
-            assistantViewModel.startNewSession()
         }
     }
 
@@ -110,7 +105,6 @@ fun AssistantScreen(
     Scaffold(
         topBar = {
             AssistantTopBar(
-                onGoToTaskList = { navController.navigate("task_list") },
                 onDeleteAll = { assistantViewModel.startNewSession() },
                 currentScreenMode = currentScreenMode,
                 onCurrentScreenModeChange = { newMode ->

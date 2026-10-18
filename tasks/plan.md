@@ -1,7 +1,7 @@
 # Plan: Serena y Refugio élfico como temas seleccionables
 
 Fecha: 14 de octubre de 2026.
-Estado: selector claro/oscuro y corrección de cabecera guardados en feature/theme-settings. La rama feature/serena-agenda parte de esa versión e incluye colores oscuros de Serena, tipografía local DM Sans y formas compartidas: compilación y 86 pruebas unitarias correctas, lint con 0 errores y 29 advertencias. Ignasi confirma haber visto colores, tipografía y formas en el móvil. El siguiente paso, explicado pero todavía sin implementar, es la barra inferior Agenda / Asistente. Integración en master pendiente.
+Estado: selector claro/oscuro y corrección de cabecera guardados en feature/theme-settings. La rama feature/serena-agenda incluye la base Serena (colores, DM Sans y formas), que Ignasi confirma ver en el móvil, y la barra inferior Agenda / Asistente. La navegación conserva el estado al cambiar de pestaña y distingue retomar el asistente de iniciar una sesión o edición nueva. Compilación de app y pruebas de interfaz correcta; 94 pruebas unitarias aprobadas, ocho nuevas; lint con 0 errores y 29 advertencias anteriores. Revisión visual de navegación a cargo de Ignasi e integración en master pendientes.
 Tareas: [todo.md](todo.md).
 
 ## Resultado solicitado
@@ -39,7 +39,7 @@ Referencia elegida: [Serena Agenda primero](../docs/design/references/serena-age
 - `ui/theme/Theme.kt` centraliza MaterialTheme: Serena mantiene su paleta oscura fija y los colores dinámicos del sistema siguen disponibles en claro.
 - `ui/theme/Type.kt` aplica DM Sans local a los 15 estilos Material, conservando tamaños e interlineados anteriores. `Shape.kt` centraliza las formas; Theme.kt las aplica y TaskItemContent.kt las utiliza en tarjeta y botones. La distribución se trabaja después.
 - `MainActivity.kt` aplica el tema alrededor de la navegación: es el punto para observar la apariencia elegida.
-- `AppNavigation.kt` contiene agenda, asistente, splash y Ajustes; su integración está guardada en el commit `043827e`.
+- `AppNavigation.kt` contiene el Scaffold con la barra inferior, agenda, splash y Ajustes. `MainNavigation.kt` agrupa las rutas del asistente y las acciones de guardar/restaurar estado. [Explicación del código](../docs/development/navegacion-agenda-asistente.md).
 - DataStore Preferences ya está incluido. `ThemePreferences.kt` guarda la luminosidad en `theme_settings`, separada de los mensajes. Sus tres pruebas y las tres del ViewModel pasaron, con 86 pruebas unitarias del conjunto aprobadas.
 - `SetContainerColor.kt` ya consulta `LocalAppDarkTheme` para respetar la luminosidad elegida. Sus colores por fecha todavía requieren adaptación a Serena.
 

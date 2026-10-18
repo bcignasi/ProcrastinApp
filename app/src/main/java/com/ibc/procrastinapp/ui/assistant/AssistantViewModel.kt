@@ -65,6 +65,16 @@ class AssistantViewModel(
         AssistantState()
     )
 
+    private var navigationInitialized = false
+
+    // A restored tab keeps its ViewModel: do not replay its initial request.
+    fun enterFromNavigation(taskIds: List<Long>, initSession: Boolean) {
+        if (navigationInitialized) return
+        navigationInitialized = true
+        if (initSession) startNewSession()
+        else if (taskIds.isNotEmpty()) loadTasksForEditing(taskIds)
+    }
+
     fun startNewSession() {
         viewModelScope.launch {
             assistantRepository.initSession()

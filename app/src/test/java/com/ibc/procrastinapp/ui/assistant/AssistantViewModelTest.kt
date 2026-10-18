@@ -79,6 +79,38 @@ class AssistantViewModelTest {
     }
 
     @Test
+    fun `returning to a new session does not clear its proposal again`() = testScope.runTest {
+        every { assistantRepository.initSession() } answers { tasksFlow.value = emptyList() }
+        viewModel.enterFromNavigation(emptyList(), initSession = true)
+        advanceUntilIdle()
+        val proposal = Task(title = "Practicar entrevista")
+        tasksFlow.value = listOf(proposal)
+
+        viewModel.enterFromNavigation(emptyList(), initSession = true)
+        advanceUntilIdle()
+
+        assertEquals(listOf(proposal), tasksFlow.value)
+    }
+
+    @Test
+    fun `returning to editing does not overwrite changes with the original task`() = testScope.runTest {
+        val original = Task(id = 42L, title = "Original")
+        coEvery { taskRepository.getTask(42L) } returns original
+        every { assistantRepository.addUserAndAssistantMessage(any(), any()) } answers {
+            tasksFlow.value = listOf(original)
+        }
+        viewModel.enterFromNavigation(listOf(42L), initSession = false)
+        advanceUntilIdle()
+        val edited = original.copy(title = "Propuesta corregida")
+        tasksFlow.value = listOf(edited)
+
+        viewModel.enterFromNavigation(listOf(42L), initSession = false)
+        advanceUntilIdle()
+
+        assertEquals(listOf(edited), tasksFlow.value)
+    }
+
+    @Test
     fun `should delete old tasks and insert new ones on commit`() = testScope.runTest {
         val oldTaskId = 1L
         val oldTask = Task(id = oldTaskId, title = "Vieja tarea")

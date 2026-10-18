@@ -1,6 +1,9 @@
 <resources>
     <string name="app_name">ProcrastinApp</string>
 
+    <string name="navigation_agenda">Agenda</string>
+    <string name="navigation_assistant">Assistant</string>
+
     <!-- Settings -->
     <string name="settings_title">Settings</string>
     <string name="settings_open">Open settings</string>
@@ -52,8 +55,6 @@
     <string name="cd_collapse">Collapse</string>
     <string name="title_dropdown_change_type_cd">Change dropdown type</string>
     <string name="assistant_delete_all_cd">Delete all</string>
-    <string name="assistant_go_to_tasklist_cd">Go to Task List</string>
-    <string name="tasklist_go_to_assistant_cd">Go to assistant</string>
     <string name="addtaskfab_create_new_task_cd">Create new task</string>
     <string name="notification_cd">Notification</string>
     <string name="statuscard_close_message_cd">Close message</string>

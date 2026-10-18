@@ -38,7 +38,6 @@ class SettingsScreenTest {
                     TaskListTopBar(
                         currentListType = TaskListQueryType.ALL,
                         onCurrentListTypeChange = {},
-                        onGoToAssistant = {},
                         onOpenSettings = { openedSettings = true }
                     )
                 }

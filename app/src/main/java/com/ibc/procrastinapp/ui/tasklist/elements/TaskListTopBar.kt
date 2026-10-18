@@ -6,7 +6,6 @@
 package com.ibc.procrastinapp.ui.tasklist.elements
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Chat
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -27,18 +26,17 @@ import com.ibc.procrastinapp.R
  * Barra superior de la pantalla de lista de tareas.
  *
  * Muestra el tipo de vista seleccionada mediante un menú desplegable
- * y un botón para acceder al asistente de IA.
+ * y un botón para acceder a Ajustes.
  *
  * @param currentListType Tipo actual de consulta de tareas.
  * @param onCurrentListTypeChange Función que se invoca cuando se selecciona un nuevo tipo de consulta.
- * @param onGoToAssistant Acción a realizar al pulsar el botón que navega al asistente de IA.
+ * @param onOpenSettings Acción para abrir Ajustes.
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskListTopBar(
     currentListType: TaskListQueryType,
     onCurrentListTypeChange: (TaskListQueryType) -> Unit,
-    onGoToAssistant: () -> Unit,
     onOpenSettings: () -> Unit,
 ) {
     TopAppBar(
@@ -63,12 +61,6 @@ fun TaskListTopBar(
                 style = MaterialTheme.typography.titleMedium
             )
 
-            // 🎯 Ir al Assistant
-            IconButton(
-                onClick = onGoToAssistant
-            ) {
-                Icon(Icons.AutoMirrored.Filled.Chat, contentDescription = androidx.compose.ui.res.stringResource(id = R.string.tasklist_go_to_assistant_cd))
-            }
             IconButton(onClick = onOpenSettings) {
                 Icon(
                     Icons.Default.Settings,
@@ -77,17 +69,5 @@ fun TaskListTopBar(
             }
         },
 
-        /*
-        SUPRIMO LAS FLECHAS DE NAVEGACIÓN ESTÁNDAR A LA IZQUIERDA DE LA TOOLBAR
-        Solo hay dos pantallas, y el icono de la derecha ya se hace cargo de la navegación
-//        navigationIcon = {
-//            IconButton(onClick = onBackClick) {
-//                Icon(
-//                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-//                    contentDescription = "Volver atrás"
-//                )
-//            }
-//        }
-         */
     )
 }

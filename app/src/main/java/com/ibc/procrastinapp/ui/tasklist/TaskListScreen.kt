@@ -28,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import com.ibc.procrastinapp.R
 import com.ibc.procrastinapp.data.model.Task
+import com.ibc.procrastinapp.ui.navigation.openAssistant
 import com.ibc.procrastinapp.ui.tasklist.elements.AddTaskFab
 import com.ibc.procrastinapp.ui.tasklist.elements.EmptyListMessage
 import com.ibc.procrastinapp.ui.tasklist.elements.TaskListContent
@@ -99,7 +100,6 @@ fun TaskListScreen(
     Scaffold(
         topBar = {
             TaskListTopBar(
-                onGoToAssistant = { navController.navigate("chat") },
                 onOpenSettings = { navController.navigate("settings") },
                 currentListType = currentListType,
                 onCurrentListTypeChange = { newType -> // Proporciona la lógica para cambiar el estado
@@ -111,7 +111,7 @@ fun TaskListScreen(
         floatingActionButton = {
             AddTaskFab(onClick = {
                 // ==== NAVEGACIÓN ON CLICK =================================
-                navController.navigate("chat?initSession=true")
+                navController.openAssistant("chat?initSession=true")
                 // ==========================================================
             })
         }
@@ -138,7 +138,7 @@ fun TaskListScreen(
                             } else {
 
                                 // ==== NAVEGACIÓN ON CLICK PARA EDICIÓN ====================
-                                navController.navigate("chat/$taskId")
+                                navController.openAssistant("chat/$taskId")
                                 // ==========================================================
 
                             }
@@ -149,7 +149,7 @@ fun TaskListScreen(
                         onEditTasksClick = {
                             val selectedTasksIds = uiState.selectedTaskIds.joinToString(",")
                             Logger.d("IBC11-TaskListScreen", "onEditTasksClick: $selectedTasksIds")
-                            navController.navigate("chat/$selectedTasksIds")
+                            navController.openAssistant("chat/$selectedTasksIds")
                         },
                         onDismissDialog = {
                             viewModel.clearSelections()
