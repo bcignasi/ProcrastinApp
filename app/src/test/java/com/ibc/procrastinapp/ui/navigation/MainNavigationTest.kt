@@ -72,6 +72,7 @@ class MainNavigationTest {
         val editing = navigation.currentBackStackEntry!!
         val session = ViewModelProvider(editing)[SessionState::class.java]
         navigation.openMainDestination(AGENDA_ROUTE)
+        assertEquals(AGENDA_ROUTE, navigation.currentDestination?.route)
         navigation.openMainDestination(ASSISTANT_ROUTE)
         val restored = navigation.currentBackStackEntry!!
         assertEquals("12,34", restored.arguments?.getString("taskId"))
@@ -92,8 +93,21 @@ class MainNavigationTest {
         assertNull(fresh.savedStateHandle.get<String>("draft"))
 
         navigation.openMainDestination(AGENDA_ROUTE)
+        assertEquals(AGENDA_ROUTE, navigation.currentDestination?.route)
         navigation.openMainDestination(ASSISTANT_ROUTE)
         assertEquals(fresh.id, navigation.currentBackStackEntry!!.id)
+    }
+
+    @Test
+    fun plusOnFirstLaunchCanReturnToAgendaAndRestoreTheSameSession() {
+        navigation.openAssistant("chat?initSession=true")
+        val session = navigation.currentBackStackEntry!!.id
+
+        navigation.openMainDestination(AGENDA_ROUTE)
+        assertEquals(AGENDA_ROUTE, navigation.currentDestination?.route)
+
+        navigation.openMainDestination(ASSISTANT_ROUTE)
+        assertEquals(session, navigation.currentBackStackEntry!!.id)
     }
 
     @Test

@@ -14,13 +14,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.Icon
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -50,6 +52,7 @@ import com.ibc.procrastinapp.R
  * @param onCurrentListTypeChange Función que se invoca cuando se selecciona un nuevo tipo de consulta.
  * @param onOpenSettings Acción para abrir Ajustes.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TaskListTopBar(
     currentListType: TaskListQueryType,
@@ -69,7 +72,7 @@ fun TaskListTopBar(
     )
 
     Surface(color = colors.background) {
-        Column(Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 16.dp)) {
+        Column(Modifier.fillMaxWidth().windowInsetsPadding(TopAppBarDefaults.windowInsets).padding(horizontal = 16.dp)) {
             Row(
                 Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically

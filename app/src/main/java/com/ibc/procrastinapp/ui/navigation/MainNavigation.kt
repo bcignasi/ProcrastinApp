@@ -19,6 +19,10 @@ fun NavDestination.mainDestination(): String? = hierarchy.firstOrNull {
 
 fun NavController.openMainDestination(route: String) {
     if (currentDestination?.mainDestination() == route) return
+    if (route == AGENDA_ROUTE) {
+        popBackStack(AGENDA_ROUTE, inclusive = false, saveState = true)
+        return
+    }
     navigate(route) {
         popUpTo(AGENDA_ROUTE) { saveState = true }
         launchSingleTop = true
