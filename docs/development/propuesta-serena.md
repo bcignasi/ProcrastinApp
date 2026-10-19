@@ -10,7 +10,9 @@ Los pasos se muestran directamente. Los niveles adicionales mantienen su sangrí
 
 Las casillas son indicadores de solo lectura (`onCheckedChange = null`). El estado accesible de cada fila incluye «Completada/Pendiente. Solo lectura» con traducción inglesa. Los números y los estados aportan información sin depender únicamente del color. Los títulos y los metadatos permiten varias líneas; no se fija la altura de las filas ni se recortan los textos.
 
-La fila muestra solo la fecha del aviso mediante el formateador ya usado en Agenda. Notas, repetición, fecha límite y prioridad siguen accesibles en un bloque «Detalles» desplegable. La cabecera también conserva ahí su aviso, si lo tiene. Los botones de Detalles tienen etiquetas accesibles con el título de la tarea para distinguirlos. La fecha de referencia procede del mismo `today` de `AssistantScreen`, que se renueva cada minuto.
+La fila muestra solo la fecha del aviso mediante el formateador ya usado en Agenda. Notas, repetición, fecha límite y las prioridades superiores a cero siguen accesibles en un bloque «Detalles» desplegable. La cabecera también conserva ahí su aviso, si lo tiene. Los botones de Detalles tienen etiquetas accesibles con el título de la tarea para distinguirlos. La fecha de referencia procede del mismo `today` de `AssistantScreen`, que se renueva cada minuto.
+
+Decisión confirmada por Ignasi el 20 de octubre de 2026: la etiqueta «Baja» (`priority = 0`) se mantiene oculta, también en Detalles, para evitar que reste importancia a realizar la tarea. El valor se conserva en el modelo y el JSON; su omisión visual es intencionada. El hallazgo de auditoría que proponía mostrarlo queda retirado. Si ese es el único metadato de la tarea, el botón Detalles también permanece oculto.
 
 Este incremento conserva el JSON, `Task.subtasks`, los ViewModels, la base de datos y las acciones de guardar/cancelar. La cabecera general «Revisa tu plan», los comentarios y el acabado de los botones de Propuesta quedan para los siguientes pasos visuales. La reorganización funcional de tareas y subtareas se decidirá después.
 
