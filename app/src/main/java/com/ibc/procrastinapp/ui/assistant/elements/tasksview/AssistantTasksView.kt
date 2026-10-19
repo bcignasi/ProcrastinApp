@@ -36,6 +36,7 @@ import com.ibc.procrastinapp.ui.assistant.AssistantState.ViewModelInfo
 import com.ibc.procrastinapp.ui.assistant.QuoteViewModel
 import com.ibc.procrastinapp.ui.assistant.elements.StatusCard
 import com.ibc.procrastinapp.utils.Logger
+import java.time.LocalDate
 
 private const val logTag = "IBC-TaskView"
 
@@ -54,7 +55,8 @@ fun AssistantTasksView(
     onCancelEdit: () -> Unit,
     modifier: Modifier = Modifier,
     //tasksIdsString: String,
-    quoteViewModel: QuoteViewModel
+    quoteViewModel: QuoteViewModel,
+    referenceDate: LocalDate = LocalDate.now()
 
 ) {
 
@@ -155,7 +157,8 @@ fun AssistantTasksView(
             AssistantTasksViewList(
                 tasks = uiState.tasks,
                 modifier = Modifier.fillMaxSize(),
-                quoteViewModel = quoteViewModel
+                quoteViewModel = quoteViewModel,
+                referenceDate = referenceDate
             )
         }
 

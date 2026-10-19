@@ -162,6 +162,7 @@ fun AssistantScreen(
                                 onClearViewModelInfo = { assistantViewModel.clearEvent() },
                                 onAgendaButtonClick = { assistantViewModel.commitTasksFromAssistant() },
                                 onCancelEdit = { assistantViewModel.cancelEdit() },
+                                referenceDate = today,
                                 //tasksIdsString = tasksIdsString,
                                 quoteViewModel = quoteViewModel,
                                 // Quita el padding inferior para dejar espacio al input

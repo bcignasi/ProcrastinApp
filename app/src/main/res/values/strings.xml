@@ -142,4 +142,16 @@
     <string name="task_mark_pending_cd">Mark %1$s as pending</string>
 
     <string name="assistant_proposal_ready">Your plan is available in Proposal. You can ask me for changes here.</string>
+    <plurals name="proposal_steps_progress">
+        <item quantity="one">%1$d of %2$d step</item>
+        <item quantity="other">%1$d of %2$d steps</item>
+    </plurals>
+    <string name="proposal_completed_read_only">Completed. Read only.</string>
+    <string name="proposal_pending_read_only">Pending. Read only.</string>
+    <string name="proposal_details">Details</string>
+    <string name="proposal_show_details_cd">Show details for %1$s</string>
+    <string name="proposal_hide_details_cd">Hide details for %1$s</string>
+    <string name="proposal_deadline">Deadline: %1$s</string>
+    <string name="proposal_reminder">Reminder: %1$s</string>
+    <string name="proposal_priority">Priority: %1$s</string>
 </resources>

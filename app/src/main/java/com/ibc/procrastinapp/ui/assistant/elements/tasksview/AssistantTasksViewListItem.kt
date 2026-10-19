@@ -6,14 +6,14 @@
 package com.ibc.procrastinapp.ui.assistant.elements.tasksview
 
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import com.ibc.procrastinapp.data.model.Task
-import com.ibc.procrastinapp.ui.common.TaskItemContent
-import com.ibc.procrastinapp.ui.common.setContainerColor
+import androidx.compose.ui.unit.dp
+import java.time.LocalDate
 
 /**
  * Componente que muestra una tarea individual
@@ -21,28 +21,24 @@ import com.ibc.procrastinapp.ui.common.setContainerColor
 @Composable
 fun AssistantTasksViewListItem(
     task: Task,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    referenceDate: LocalDate = LocalDate.now()
 ) {
-    Card(
+    Column(
         modifier = modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(setContainerColor(task)),
-//            containerColor = when (task.priority) {
-//                3 -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.7f) // Urgente
-//                2 -> MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.4f) // Alta
-//                1 -> MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.7f) // Media
-//                else -> MaterialTheme.colorScheme.surfaceVariant // Normal
-//            }
-//        )
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // TaskItemContent es solo para visualización aquí
-        TaskItemContent(
-            task = task,
-            modifier = modifier,
-            depth = 0,
-            actionsEnabled = false,
-            onComplete = {  },
-            onDelete = {  }
-        )
+        if (task.subtasks.isEmpty()) {
+            ProposalStepRow(task = task, number = null, referenceDate = referenceDate)
+        } else {
+            ProposalGoalHeader(task = task, referenceDate = referenceDate)
+            task.subtasks.forEachIndexed { index, subtask ->
+                ProposalStepRow(
+                    task = subtask, number = "${index + 1}", referenceDate = referenceDate,
+                    connectBefore = index > 0, connectAfter = index < task.subtasks.lastIndex
+                )
+            }
+        }
     }
 }
 

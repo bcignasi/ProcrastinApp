@@ -98,6 +98,9 @@ Dependencia: 4. Alcance: medio.
 
 ## 6. Pulir la propuesta y verificar el recorrido
 
+- [x] Cabecera del objetivo con contador/progreso real y filas de pasos numeradas, conexiones verticales, niveles anidados y casillas de solo lectura. Tareas independientes sin progreso ficticio; aviso en la fila y metadatos conservados en Detalles. [Guía del código](../docs/development/propuesta-serena.md).
+- [ ] Ignasi revisa Propuesta con el objetivo real de diez pasos, desplazamiento, niveles anidados, Detalles, letra ampliada y ambos temas.
+- [ ] Acabar la cabecera «Revisa tu plan», los comentarios y los botones de Propuesta siguiendo la maqueta.
 - [ ] Pasos, subtareas, fechas y Guardar en agenda claros; volver a la conversación permite pedir ajustes.
 - [ ] Objetivo → propuesta → guardado → agenda funciona con datos actuales; Ajustes y diálogos conservan legibilidad.
 

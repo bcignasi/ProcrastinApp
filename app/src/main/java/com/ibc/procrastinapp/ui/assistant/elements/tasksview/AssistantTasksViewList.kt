@@ -15,6 +15,7 @@ import com.ibc.procrastinapp.R
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.ui.assistant.QuoteViewModel
 import com.ibc.procrastinapp.ui.common.AquiNoHayNadaBox
+import java.time.LocalDate
 
 /**
  * Lista de tareas extraídas
@@ -23,7 +24,8 @@ import com.ibc.procrastinapp.ui.common.AquiNoHayNadaBox
 fun AssistantTasksViewList(
     tasks: List<Task>,
     modifier: Modifier = Modifier,
-    quoteViewModel: QuoteViewModel
+    quoteViewModel: QuoteViewModel,
+    referenceDate: LocalDate = LocalDate.now()
 ) {
     if (tasks.isEmpty()) {
         AquiNoHayNadaBox(modifier, quoteViewModel, R.string.assistant_proposal_empty_text)
@@ -31,10 +33,10 @@ fun AssistantTasksViewList(
     } else {
         LazyColumn(
             modifier = modifier,
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             items(tasks) { task ->
-                AssistantTasksViewListItem(task)
+                AssistantTasksViewListItem(task, referenceDate = referenceDate)
             }
         }
     }
