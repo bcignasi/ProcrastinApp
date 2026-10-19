@@ -6,6 +6,7 @@
 package com.ibc.procrastinapp.ui.tasklist.elements
 
 import androidx.compose.foundation.layout.padding
+import androidx.annotation.StringRes
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -19,9 +20,12 @@ import com.ibc.procrastinapp.R
  * Mensaje cuando no hay tareas disponibles
  */
 @Composable
-fun EmptyListMessage(modifier: Modifier = Modifier) {
+fun EmptyListMessage(
+    modifier: Modifier = Modifier,
+    @StringRes messageResId: Int = R.string.tasklist_empty_message
+) {
     Text(
-        text = stringResource(id = R.string.tasklist_empty_message),
+        text = stringResource(id = messageResId),
         style = MaterialTheme.typography.bodyLarge,
         textAlign = TextAlign.Companion.Center,
         modifier = modifier.padding(16.dp)

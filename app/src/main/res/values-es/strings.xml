@@ -6,6 +6,14 @@
 
     <string name="task_type_All">Tareas pendientes</string>
     <string name="task_type_Today">Hoy</string>
+    <string name="agenda_title">Tu agenda</string>
+    <string name="agenda_date_today">Hoy, %1$s</string>
+    <string name="agenda_pending">Pendientes</string>
+    <string name="agenda_done">Hechas</string>
+    <string name="agenda_overdue">Atrasadas</string>
+    <string name="agenda_empty_today">No tienes tareas para hoy.</string>
+    <string name="agenda_empty_pending">No tienes tareas pendientes.</string>
+    <string name="agenda_empty_done">Aún no hay tareas completadas.</string>
     <string name="task_type_Past">Tareas pasadas</string>
     <string name= "task_type_Now">Tareas inmediatas</string>
     <string name="task_type_Future">Tareas futuras</string>

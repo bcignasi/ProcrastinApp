@@ -57,13 +57,17 @@ Verificación: tareas largas, subtareas y texto ampliado en el móvil; :app:asse
 Archivos previstos: TaskItemContent.kt, TaskItemSelectable.kt, ShowTitleRow.kt, ShowDatesRow.kt, SetContainerColor.kt. Separar otros ajustes de metadatos si requieren más componentes.
 Dependencia: 2. Alcance: medio por grupo de componentes.
 
-## 4. Presentar los filtros de estado
+## 4. Cabecera Serena y filtros Hoy / Pendientes / Hechas
 
-- [ ] Pendientes / Todas / Hechas tiene un significado definido; Todas no se conecta por error a la consulta actual de pendientes.
-- [ ] Filtros por fecha, prioridad y notificaciones accesibles; selección conservada al volver de Ajustes.
+- [x] Cabecera con marca, engranaje, Tu agenda y fecha; tres pestañas visibles Hoy / Pendientes / Hechas.
+- [x] Hoy como vista inicial: pendientes con fecha límite de hoy; atrasadas en sección separada usando PAST. Pendientes usa ALL y Hechas usa COMPLETED.
+- [x] Los demás filtros permanecen en el código sin mostrarse en Agenda. Se conserva el rememberSaveable del filtro al volver de Ajustes o Asistente; cambiar de pestaña limpia la selección de tareas.
+- [x] Actualizar fecha y consultas al cambiar el día; no cambiar la estructura ni el filtrado existente de subtareas.
+- [x] Cinco pruebas con Room en memoria para fechas, completado y jerarquía; tres del ViewModel para secciones, cambio de pestaña y cambio de día. Suite local: 102 pruebas aprobadas, cero fallos. Prueba de cabecera estrecha actualizada y compilada, sin ejecutarla en el móvil.
+- [ ] Ignasi revisa cabecera, pestañas y listas en el móvil.
 
 Verificación: datos con tareas pendientes y completadas; pruebas de consultas si cambian y comprobación en el móvil.
-Archivos previstos: TaskListTopBar.kt, TaskListScreen.kt, TaskListQueryType.kt; repositorio y su prueba en un incremento funcional separado si hace falta.
+Archivos previstos: TaskListTopBar.kt, TaskListScreen.kt, TaskListQueryType.kt, TaskListViewModel.kt, TaskListState.kt, TaskListContent.kt, TaskList.kt, repositorio, textos y pruebas.
 Dependencia: 3. Alcance: medio por incremento visual o funcional.
 
 ## 5. Pulir la conversación

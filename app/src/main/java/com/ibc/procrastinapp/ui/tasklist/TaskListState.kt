@@ -7,6 +7,7 @@
 package com.ibc.procrastinapp.ui.tasklist
 
 import com.ibc.procrastinapp.data.model.Task
+import java.time.LocalDate
 
 /**
  * Clase que representa el estado de la UI de la lista de tareas
@@ -18,6 +19,9 @@ import com.ibc.procrastinapp.data.model.Task
  */
 data class TaskListUiState(
     val tasks: List<Task> = emptyList(),
+    val overdueTasks: List<Task> = emptyList(),
+    val filter: TaskListQueryType = TaskListQueryType.TODAY,
+    val date: LocalDate = LocalDate.now(),
 //    val isLoading: Boolean = false,
     val selectedTaskIds: Set<Long> = emptySet(),
     val result: TaskListResult? = null,

@@ -15,6 +15,7 @@ import com.ibc.procrastinapp.R
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.ui.common.TaskPresentation
 import com.ibc.procrastinapp.ui.tasklist.TaskListResult
+import com.ibc.procrastinapp.ui.tasklist.TaskListQueryType
 import com.ibc.procrastinapp.ui.tasklist.TaskListUiState
 
 /**
@@ -66,6 +67,8 @@ fun TaskListContent(
         // Lista de tareas
         TaskList(
             tasks = uiState.tasks,
+            overdueTasks = uiState.overdueTasks,
+            showTodaySections = uiState.filter == TaskListQueryType.TODAY,
             presentation = TaskPresentation.FLAT,
             selectedTaskIds = uiState.selectedTaskIds,
             onTaskClick = onTaskClick,

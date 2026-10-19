@@ -93,3 +93,11 @@ Una vez terminado el recorrido Agenda primero, se prepararán los recursos élfi
 - Concretar las fuentes y el recorte adaptable de la ilustración élfica al preparar los recursos.
 
 Estas cuestiones no impiden empezar por la preferencia persistente, la estructura común y el selector.
+
+## Cabecera y filtros aprobados el 19 de octubre de 2026
+
+- Sustituir el desplegable de Agenda por Hoy / Pendientes / Hechas, con Hoy como vista inicial. No mostrar los demás filtros, pero conservar sus consultas y tipos en el código.
+- Cabecera Serena con marca, engranaje, Tu agenda y fecha localizada. Conservar la navegación y la elección de pestaña al volver.
+- Hoy combina dos secciones: atrasadas (PAST) y pendientes con fecha límite de hoy (TODAY). Pendientes usa ALL y Hechas usa COMPLETED; no crear una lista que mezcle pendientes y completadas.
+- Reutilizar la consulta de intervalo existente para TODAY y renovar los límites al cambiar el día. Mantener la selección de tareas principales y su jerarquía actual.
+- Verificar con Room en memoria, pruebas del ViewModel, compilación y lint; Ignasi realiza la revisión visual en el móvil. [Explicación del código](../docs/development/cabecera-y-filtros-agenda.md).

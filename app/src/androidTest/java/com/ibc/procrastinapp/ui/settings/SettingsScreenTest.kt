@@ -10,9 +10,11 @@ import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
+import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.compose.ui.Modifier
@@ -30,14 +32,15 @@ class SettingsScreenTest {
     val compose = createComposeRule()
 
     @Test
-    fun narrowAgendaKeepsTheFilterArrowAndSettingsReachable() {
+    fun narrowAgendaKeepsThreeTabsAndSettingsReachable() {
         var openedSettings = false
+        var selected by mutableStateOf(TaskListQueryType.TODAY)
         compose.setContent {
             ProcAppMVVMTheme {
                 Box(Modifier.width(320.dp)) {
                     TaskListTopBar(
-                        currentListType = TaskListQueryType.ALL,
-                        onCurrentListTypeChange = {},
+                        currentListType = selected,
+                        onCurrentListTypeChange = { selected = it },
                         onOpenSettings = { openedSettings = true }
                     )
                 }
@@ -45,8 +48,11 @@ class SettingsScreenTest {
         }
 
         val context = InstrumentationRegistry.getInstrumentation().targetContext
-        compose.onNodeWithContentDescription(context.getString(R.string.title_dropdown_change_type_cd))
-            .assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.task_type_Today)).assertIsDisplayed().assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.agenda_pending)).assertIsDisplayed().performClick().assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.agenda_done)).assertIsDisplayed().performClick().assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.task_type_Priority)).assertDoesNotExist()
+        compose.onNodeWithContentDescription(context.getString(R.string.title_dropdown_change_type_cd)).assertDoesNotExist()
         compose.onNodeWithContentDescription(context.getString(R.string.settings_open))
             .assertIsDisplayed().performClick()
         compose.runOnIdle { assertTrue(openedSettings) }

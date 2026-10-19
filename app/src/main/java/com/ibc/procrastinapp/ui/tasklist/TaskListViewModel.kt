@@ -21,6 +21,10 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.map
+import java.time.LocalDate
 
 
 /**
@@ -35,7 +39,8 @@ import kotlinx.coroutines.flow.flatMapLatest
  * - Evita estados inconsistentes
  */
 class TaskListViewModel(
-    private val taskRepository: TaskRepository
+    private val taskRepository: TaskRepository,
+    private val dateProvider: () -> LocalDate = { LocalDate.now() }
 ) : ViewModel() {
 
     // NO NECESITAMOS ESTE ESTADO PARA LAS CARGAS DESDE ROOM, QUE SON INSTANTÁNEAS
@@ -52,27 +57,36 @@ class TaskListViewModel(
     private val _isActionsDialogVisible = MutableStateFlow(false)
 
     // Estado para el filtro actual
-    private val _currentFilter = MutableStateFlow(TaskListQueryType.ALL)
+    private val _currentFilter = MutableStateFlow(TaskListQueryType.TODAY)
+
+    // Room observa los datos, pero el cambio de día también necesita renovar las consultas.
+    private val dates = flow {
+        while (true) {
+            emit(dateProvider())
+            delay(60_000)
+        }
+    }.distinctUntilChanged()
 
     /**
-     * 🔹 Este `StateFlow` se alimenta directamente del `Flow` que devuelve el repositorio
-     * y se convierte en un `StateFlow` que Compose puede observar.
-     *
-     * Usamos `stateIn()` para:
-     * - mantener el último valor emitido
-     * - no tener que hacer manualmente `_tasks.value = ...`
-     * - evitar errores al inicializar
+     * Renueva las consultas cuando cambia el filtro o la fecha.
+     * Hoy mantiene las atrasadas separadas de las tareas del día.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val tasks: StateFlow<List<Task>> = _currentFilter
-        .flatMapLatest { filter ->
-            taskRepository.getTasks(filter)
+    private val tasks = combine(_currentFilter, dates) { filter, date -> filter to date }
+        .flatMapLatest { (filter, date) ->
+            if (filter == TaskListQueryType.TODAY) {
+                combine(
+                    taskRepository.getTasks(TaskListQueryType.TODAY, date),
+                    taskRepository.getTasks(TaskListQueryType.PAST, date)
+                ) { today, overdue ->
+                    TaskListUiState(tasks = today, overdueTasks = overdue, filter = filter, date = date)
+                }
+            } else {
+                taskRepository.getTasks(filter, date).map { tasks ->
+                    TaskListUiState(tasks = tasks, filter = filter, date = date)
+                }
+            }
         }
-        .stateIn(
-            scope = viewModelScope, // ← Se cancela automáticamente si se destruye el ViewModel
-            started = SharingStarted.WhileSubscribed(5000), // ← Solo activo cuando hay observadores
-            initialValue = emptyList() // ← Valor por defecto hasta que se cargue algo
-        )
 
     // Estado combinado para la UI
     val uiState: StateFlow<TaskListUiState> = combine(
@@ -80,9 +94,8 @@ class TaskListViewModel(
         _selectedTaskIds,
         _result,
         _isActionsDialogVisible
-    ) { tasks, selectedTaskIds, result, isActionsDialogVisible ->
-        TaskListUiState(
-            tasks = tasks,
+    ) { taskState, selectedTaskIds, result, isActionsDialogVisible ->
+        taskState.copy(
             selectedTaskIds = selectedTaskIds,
             result = result,
             isActionsDialogVisible = isActionsDialogVisible
@@ -90,13 +103,15 @@ class TaskListViewModel(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000),
-        initialValue = TaskListUiState(/*isLoading = true*/)
+        initialValue = TaskListUiState(date = dateProvider())
     )
 
     /**
      * Actualiza el filtro de tareas actual
      */
     fun setTaskFilter(filter: TaskListQueryType) {
+        if (_currentFilter.value == filter) return
+        clearSelections()
         _currentFilter.value = filter
     }
 

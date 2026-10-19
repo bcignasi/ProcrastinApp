@@ -56,8 +56,8 @@ fun TaskListScreen(
     // Recolectamos todos los estados del ViewModel
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
-    // Estado para controlar qué lista se muestra (inicialmente, todas las tareas)
-    var currentListType by rememberSaveable { mutableStateOf(TaskListQueryType.ALL) }
+    // La pestaña elegida se conserva al volver de Ajustes o Asistente.
+    var currentListType by rememberSaveable { mutableStateOf(TaskListQueryType.TODAY) }
 
     // Efecto para cargar las tareas según el tipo de lista
     LaunchedEffect(currentListType) {
@@ -102,6 +102,7 @@ fun TaskListScreen(
             TaskListTopBar(
                 onOpenSettings = { navController.navigate("settings") },
                 currentListType = currentListType,
+                date = uiState.date,
                 onCurrentListTypeChange = { newType -> // Proporciona la lógica para cambiar el estado
                     currentListType = newType
                 }
@@ -126,8 +127,16 @@ fun TaskListScreen(
                 // NO NECESITAMOS ESTE ESTADO SI CARGAMOS DESDE ROOM
 //                uiState.isLoading -> LoadingIndicator(Modifier.align(Alignment.Center))
 
-                uiState.tasks.isEmpty() ->
-                    EmptyListMessage(Modifier.align(Alignment.Center))
+                uiState.tasks.isEmpty() && uiState.overdueTasks.isEmpty() ->
+                    EmptyListMessage(
+                        modifier = Modifier.align(Alignment.Center),
+                        messageResId = when (uiState.filter) {
+                            TaskListQueryType.TODAY -> R.string.agenda_empty_today
+                            TaskListQueryType.ALL -> R.string.agenda_empty_pending
+                            TaskListQueryType.COMPLETED -> R.string.agenda_empty_done
+                            else -> R.string.tasklist_empty_message
+                        }
+                    )
 
                 else ->
                     TaskListContent(

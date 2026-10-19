@@ -27,7 +27,7 @@ class AgendaFiltersTest {
     private lateinit var database: AppDatabase
     private lateinit var dao: TaskDao
     private lateinit var repository: TaskRepository
-    private val today = LocalDate.now()
+    private val today = LocalDate.of(2026, 10, 19)
 
     @Before
     fun setUp() {
@@ -55,7 +55,7 @@ class AgendaFiltersTest {
         dao.insertTask(TaskEntity(title = "Solo aviso", notify = "$today 12:00"))
         dao.insertTask(TaskEntity(title = "Hecha", deadline = "$today 12:00", completed = true))
 
-        val tasks = repository.getTasks(TaskListQueryType.valueOf("TODAY")).first()
+        val tasks = repository.getTasks(TaskListQueryType.TODAY, today).first()
 
         assertEquals(listOf(dateOnly, midnight, late), tasks.map { it.id })
     }
@@ -67,7 +67,7 @@ class AgendaFiltersTest {
         val future = dao.insertTask(TaskEntity(title = "Padre futuro", deadline = "${today.plusDays(1)}"))
         dao.insertTask(TaskEntity(title = "Hija de hoy", deadline = "$today", parentTaskId = future))
 
-        val tasks = repository.getTasks(TaskListQueryType.valueOf("TODAY")).first()
+        val tasks = repository.getTasks(TaskListQueryType.TODAY, today).first()
 
         assertEquals(listOf(root), tasks.map { it.id })
         assertEquals(listOf(child), tasks.single().subtasks.map { it.id })
@@ -76,7 +76,7 @@ class AgendaFiltersTest {
     @Test
     fun completingATaskRemovesItFromTodayAndPendingAndAddsItToDone() = runBlocking {
         val id = dao.insertTask(TaskEntity(title = "Por hacer", deadline = "$today"))
-        val todayQuery = repository.getTasks(TaskListQueryType.valueOf("TODAY"))
+        val todayQuery = repository.getTasks(TaskListQueryType.TODAY, today)
         assertEquals(listOf(id), todayQuery.first().map { it.id })
 
         repository.setTaskCompleted(id, true)
@@ -88,10 +88,22 @@ class AgendaFiltersTest {
 
     @Test
     fun originalNowStillIncludesTomorrowAndPendingStillIncludesUndatedTasks() = runBlocking {
-        val tomorrow = dao.insertTask(TaskEntity(title = "Mañana", deadline = "${today.plusDays(1)}"))
+        val tomorrow = dao.insertTask(TaskEntity(title = "Mañana", deadline = "${LocalDate.now().plusDays(1)}"))
         val undated = dao.insertTask(TaskEntity(title = "Sin fecha"))
 
         assertEquals(listOf(tomorrow), repository.getTasks(TaskListQueryType.NOW).first().map { it.id })
         assertEquals(setOf(tomorrow, undated), repository.getTasks(TaskListQueryType.ALL).first().map { it.id }.toSet())
+    }
+
+    @Test
+    fun movingTheReferenceDateAcrossNewYearMovesYesterdayIntoOverdue() = runBlocking {
+        val december = LocalDate.of(2026, 12, 31)
+        val january = december.plusDays(1)
+        val oldTask = dao.insertTask(TaskEntity(title = "Diciembre", deadline = "$december 23:59"))
+        val newTask = dao.insertTask(TaskEntity(title = "Enero", deadline = "$january 00:00"))
+
+        assertEquals(listOf(oldTask), repository.getTasks(TaskListQueryType.TODAY, december).first().map { it.id })
+        assertEquals(listOf(newTask), repository.getTasks(TaskListQueryType.TODAY, january).first().map { it.id })
+        assertEquals(listOf(oldTask), repository.getTasks(TaskListQueryType.PAST, january).first().map { it.id })
     }
 }

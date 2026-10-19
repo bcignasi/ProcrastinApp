@@ -15,6 +15,14 @@
 
     <string name="task_type_All">All Pending Tasks</string>
     <string name="task_type_Today">Today</string>
+    <string name="agenda_title">Your agenda</string>
+    <string name="agenda_date_today">Today, %1$s</string>
+    <string name="agenda_pending">Pending</string>
+    <string name="agenda_done">Done</string>
+    <string name="agenda_overdue">Overdue</string>
+    <string name="agenda_empty_today">You have no tasks for today.</string>
+    <string name="agenda_empty_pending">You have no pending tasks.</string>
+    <string name="agenda_empty_done">No completed tasks yet.</string>
     <string name="task_type_Past">Past Tasks</string>
     <string name= "task_type_Now">Immediate Tasks</string>
     <string name="task_type_Future">Future Tasks</string>
