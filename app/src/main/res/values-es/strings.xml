@@ -5,6 +5,7 @@
     <string name="navigation_assistant">Asistente</string>
 
     <string name="task_type_All">Tareas pendientes</string>
+    <string name="task_type_Today">Hoy</string>
     <string name="task_type_Past">Tareas pasadas</string>
     <string name= "task_type_Now">Tareas inmediatas</string>
     <string name="task_type_Future">Tareas futuras</string>

@@ -29,10 +29,14 @@ class TaskRepository(
     /**
      * Selector del filtro para la consulta
      */
-    fun getTasks(filter: TaskListQueryType = TaskListQueryType.PAST): Flow<List<Task>> {
+    fun getTasks(
+        filter: TaskListQueryType = TaskListQueryType.PAST,
+        date: LocalDate = LocalDate.now()
+    ): Flow<List<Task>> {
         return when (filter) {
+            TaskListQueryType.TODAY -> getTodayTasksFlow(date)
             TaskListQueryType.ALL -> getAllTasksFlow()
-            TaskListQueryType.PAST -> getPastTasksFlow()
+            TaskListQueryType.PAST -> getPastTasksFlow(date)
             TaskListQueryType.NOW -> getNowTasksFlow()
             TaskListQueryType.FUTURE -> getFutureTasksFlow()
             TaskListQueryType.PRIORITY -> getPriorityTasksFlow()
@@ -47,10 +51,19 @@ class TaskRepository(
      * En la QUERY se recibe un parámetro "now"
      * En la consulta se compara deadline, y si no existe,
      */
-    private fun getPastTasksFlow(includeHierarchy: Boolean = true): Flow<List<Task>> {
-        val now = getNowDate()
-        return processTaskQuery(taskDao.getPastTasks(now), includeHierarchy)
+    private fun getPastTasksFlow(date: LocalDate, includeHierarchy: Boolean = true): Flow<List<Task>> {
+        return processTaskQuery(taskDao.getPastTasks(date.toString()), includeHierarchy)
     }
+
+    /** Pendientes con fecha límite de hoy; mañana queda fuera del intervalo. */
+    private fun getTodayTasksFlow(date: LocalDate): Flow<List<Task>> =
+        processTaskQuery(
+            taskDao.getNowTasks(
+                now = date.toString(),
+                pastTomorrow = date.plusDays(1).toString()
+            ),
+            includeHierarchy = true
+        )
 
 
     /**

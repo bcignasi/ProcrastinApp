@@ -15,6 +15,7 @@ import com.ibc.procrastinapp.ui.common.DropdownMenuOption
  * @property titleResId Código de recurso del título que se muestra en la interfaz de usuario
  */
 enum class TaskListQueryType(@StringRes override val titleResId: Int) : DropdownMenuOption {
+    TODAY(R.string.task_type_Today),
     ALL(R.string.task_type_All),
     PAST(R.string.task_type_Past),
     NOW(R.string.task_type_Now),

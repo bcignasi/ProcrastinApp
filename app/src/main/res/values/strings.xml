@@ -14,6 +14,7 @@
     <string name="settings_save_failed">Could not save the theme. Please try again.</string>
 
     <string name="task_type_All">All Pending Tasks</string>
+    <string name="task_type_Today">Today</string>
     <string name="task_type_Past">Past Tasks</string>
     <string name= "task_type_Now">Immediate Tasks</string>
     <string name="task_type_Future">Future Tasks</string>
