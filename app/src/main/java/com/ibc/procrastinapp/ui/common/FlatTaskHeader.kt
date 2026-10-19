@@ -14,7 +14,6 @@ import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -28,6 +27,8 @@ import androidx.compose.ui.unit.dp
 import com.ibc.procrastinapp.R
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.data.model.TaskPriority
+import com.ibc.procrastinapp.ui.theme.LocalAppDarkTheme
+import com.ibc.procrastinapp.ui.theme.SerenaPriorityHigh
 import java.time.LocalDate
 
 /** Cabecera de la fila plana; completar y desplegar son acciones independientes. */
@@ -86,17 +87,18 @@ internal fun FlatTaskHeader(
                 horizontalAlignment = Alignment.End
             ) {
                 if (priority != null) {
-                    Surface(
-                        shape = MaterialTheme.shapes.extraSmall,
-                        color = MaterialTheme.colorScheme.errorContainer,
-                        contentColor = MaterialTheme.colorScheme.onErrorContainer
-                    ) {
-                        Text(
-                            text = stringResource(priority.labelResId).uppercase(locale),
-                            style = MaterialTheme.typography.labelSmall,
-                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                        )
-                    }
+                    Text(
+                        text = stringResource(
+                            if (priority == TaskPriority.High) R.string.task_priority_high_label
+                            else priority.labelResId
+                        ),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (priority == TaskPriority.High && LocalAppDarkTheme.current) {
+                            SerenaPriorityHigh
+                        } else {
+                            MaterialTheme.colorScheme.error
+                        }
+                    )
                 }
                 if (task.subtasks.isNotEmpty()) {
                     IconButton(onClick = onExpandClick) {

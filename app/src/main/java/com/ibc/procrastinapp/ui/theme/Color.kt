@@ -49,6 +49,8 @@ val md_theme_dark_onTertiary = Color(0xFF3C3220)
 val md_theme_dark_tertiaryContainer = Color(0xFF4B402C)
 val md_theme_dark_onTertiaryContainer = Color(0xFFF0E2BE)
 val md_theme_dark_error = Color(0xFFFFB4AB)
+// Standalone priority text on Serena's dark surfaces.
+val SerenaPriorityHigh = Color(0xFFF28F87)
 val md_theme_dark_errorContainer = Color(0xFF93000A)
 val md_theme_dark_onError = Color(0xFF690005)
 val md_theme_dark_onErrorContainer = Color(0xFFFFDAD6)

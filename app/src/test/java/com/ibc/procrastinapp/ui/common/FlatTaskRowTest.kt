@@ -134,12 +134,12 @@ class FlatTaskRowTest {
         compose.onNodeWithText("2026", substring = true).assertExists()
         compose.runOnIdle { task.value = task.value.copy(notify = "") }
         val context = RuntimeEnvironment.getApplication()
-        val priorityLabel = context.getString(R.string.task_priority_urgent).uppercase(context.resources.configuration.locales[0])
+        val priorityLabel = context.getString(R.string.task_priority_urgent)
         compose.onNodeWithText(priorityLabel).assertExists()
     }
 
     @Test
-    fun flatRowShowsOnlyTheReminderDateAndUsesAPriorityBadge() {
+    fun flatRowShowsOnlyTheReminderDateAndUsesAPriorityLabel() {
         val today = LocalDate.of(2026, 10, 19)
         compose.setContent {
             ProcAppMVVMTheme(darkTheme = true, dynamicColor = false) {
@@ -156,7 +156,7 @@ class FlatTaskRowTest {
         compose.onNodeWithText("16:15").assertExists()
         compose.onNodeWithText("16:30", substring = true).assertDoesNotExist()
         val context = RuntimeEnvironment.getApplication()
-        val label = context.getString(R.string.task_priority_high).uppercase(context.resources.configuration.locales[0])
+        val label = context.getString(R.string.task_priority_high_label)
         compose.onNodeWithText(label).assertExists()
         compose.onNodeWithContentDescription(context.getString(R.string.notification_cd)).assertExists()
     }

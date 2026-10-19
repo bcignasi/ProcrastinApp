@@ -45,7 +45,7 @@ Una tarea seleccionada conserva su fondo destacado y borde en ambas presentacion
 
 ## Filas de la maqueta original de Serena
 
-Contrato actualizado: casilla a la izquierda, título de 16 sp en seminegrita, una única fecha/hora correspondiente al aviso con campana, y prioridad alta o urgente como etiqueta roja en la esquina superior derecha. El título admite varias líneas. Los identificadores internos desaparecen de la cabecera plana y los separadores existentes permanecen. Este incremento representa tareas reales, sin añadir proyectos ni barras de progreso.
+Contrato actualizado: casilla a la izquierda, título en seminegrita, una única fecha/hora correspondiente al aviso con campana, y prioridad alta o urgente como texto en la esquina superior derecha, sin icono ni fondo. «Prioridad alta» usa coral `SerenaPriorityHigh` (#F28F87) en oscuro y el color `error` del tema en claro; «Urgente» usa `error`. La tipografía es `labelMedium` (12 sp). El título admite varias líneas. Los identificadores internos desaparecen de la cabecera plana y los separadores existentes permanecen. Este incremento representa tareas reales, sin añadir proyectos ni barras de progreso.
 
 `TaskItemContent` utiliza `FlatTaskHeader` solo en `FLAT`. El modo `CARDS` conserva `ShowUrgentRow`, `ShowTitleRow` y `ShowDatesRow`; no se alteran sus componentes. Las notas, periodicidad, acciones y recursión de subtareas siguen compartidas. La cabecera plana conserva una flecha independiente para desplegar; no necesita la segunda flecha inferior de tarjetas.
 
