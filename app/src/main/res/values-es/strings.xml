@@ -21,8 +21,11 @@
     <string name="task_type_NoDate">Tareas sin fecha</string>
     <string name="task_type_Completed">Tareas completadas</string>
 
-    <string name="assistant_type_Messages">Asistente (Mensajes)</string>
-    <string name="assistant_type_Tasks">Asistente (Tareas)</string>
+    <string name="assistant_title">Asistente</string>
+    <string name="assistant_type_Messages">Conversación</string>
+    <string name="assistant_type_Tasks">Propuesta</string>
+    <string name="assistant_more_options">Más opciones</string>
+    <string name="assistant_restart_conversation">Reiniciar conversación</string>
 
     <!-- Assistant / Common UI strings -->
     <string name="assistant_input_placeholder">¿Qué tarea necesitas planificar?</string>

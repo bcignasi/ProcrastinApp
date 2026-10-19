@@ -30,8 +30,11 @@
     <string name="task_type_NoDate">Tasks without a Date</string>
     <string name="task_type_Completed">Completed Tasks</string>
 
-    <string name="assistant_type_Messages">Assistant (Messages)</string>
-    <string name="assistant_type_Tasks">Assistant (Tasks)</string>
+    <string name="assistant_title">Assistant</string>
+    <string name="assistant_type_Messages">Conversation</string>
+    <string name="assistant_type_Tasks">Proposal</string>
+    <string name="assistant_more_options">More options</string>
+    <string name="assistant_restart_conversation">Restart conversation</string>
 
     <!-- Assistant / Common UI strings -->
     <string name="assistant_input_placeholder">What task do you need to plan?</string>

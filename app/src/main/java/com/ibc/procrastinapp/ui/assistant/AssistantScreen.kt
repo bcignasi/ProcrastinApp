@@ -16,6 +16,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -32,6 +33,7 @@ import com.ibc.procrastinapp.ui.assistant.elements.tasksview.AssistantTasksView
 import com.ibc.procrastinapp.utils.Logger
 import kotlinx.coroutines.delay
 import org.koin.androidx.compose.koinViewModel
+import java.time.LocalDate
 
 private const val logTag = "IBC11-AssistantScreen"
 
@@ -60,7 +62,13 @@ fun AssistantScreen(
     val isSaving by assistantViewModel.isSaving.collectAsStateWithLifecycle()
 
     // Estados locales de la pantalla
-    var currentScreenMode by rememberSaveable { mutableStateOf(AssistantScreenType.TASKS) }
+    var currentScreenMode by rememberSaveable { mutableStateOf(AssistantScreenType.MESSAGES) }
+    val today by produceState(initialValue = LocalDate.now()) {
+        while (true) {
+            value = LocalDate.now()
+            delay(60_000)
+        }
+    }
 
     BackHandler { navController.openMainDestination(AGENDA_ROUTE) }
 
@@ -105,6 +113,8 @@ fun AssistantScreen(
                 onCurrentScreenModeChange = { newMode ->
                     currentScreenMode = newMode
                 },
+                onOpenSettings = { navController.navigate("settings") },
+                date = today,
             )
         }) { paddingValues ->
         Box(
