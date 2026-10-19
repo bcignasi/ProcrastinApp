@@ -21,6 +21,7 @@ import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.ui.common.TaskItemContent
 import com.ibc.procrastinapp.ui.common.TaskPresentation
 import com.ibc.procrastinapp.ui.common.setContainerColor
+import java.time.LocalDate
 
 @Composable
 fun TaskItemSelectable(
@@ -33,6 +34,7 @@ fun TaskItemSelectable(
     onComplete: (Task) -> Unit = {},
     onDelete: (Task) -> Unit = {},
     presentation: TaskPresentation = TaskPresentation.CARDS,
+    referenceDate: LocalDate = LocalDate.now(),
 ) {
     val isFlat = presentation == TaskPresentation.FLAT
     Card(
@@ -61,6 +63,7 @@ fun TaskItemSelectable(
         TaskItemContent(
             task = task,
             presentation = presentation,
+            referenceDate = referenceDate,
             actionsEnabled = showInlineActions,
             onComplete = onComplete,
             onDelete = onDelete

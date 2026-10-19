@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.dp
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.ui.common.TaskPresentation
 import com.ibc.procrastinapp.R
+import java.time.LocalDate
 
 /**
  * Lista de tareas con LazyColumn
@@ -39,7 +40,8 @@ fun TaskList(
     modifier: Modifier = Modifier,
     presentation: TaskPresentation = TaskPresentation.CARDS,
     overdueTasks: List<Task> = emptyList(),
-    showTodaySections: Boolean = false
+    showTodaySections: Boolean = false,
+    referenceDate: LocalDate = LocalDate.now()
 ) {
     val sections: List<Pair<Int?, List<Task>>> = if (showTodaySections) {
         listOf(R.string.agenda_overdue to overdueTasks, R.string.task_type_Today to tasks)
@@ -78,6 +80,7 @@ fun TaskList(
                 TaskItemSelectable(
                     task = task,
                     presentation = presentation,
+                    referenceDate = referenceDate,
                     isSelected = task.id in selectedTaskIds,
                     onLongClick = { onTaskLongClick(task.id) },
                     onClick = { onTaskClick(task.id) },

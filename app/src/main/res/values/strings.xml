@@ -135,5 +135,9 @@
     <string name="task_priority_normal">Normal</string>
     <string name="task_priority_high">High</string>
     <string name="task_priority_urgent">Urgent</string>
+    <string name="task_priority_high_inline">High priority</string>
+    <string name="task_priority_urgent_inline">Urgent priority</string>
+    <string name="task_mark_complete_cd">Complete %1$s</string>
+    <string name="task_mark_pending_cd">Mark %1$s as pending</string>
 
 </resources>

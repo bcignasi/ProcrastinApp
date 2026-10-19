@@ -126,6 +126,10 @@
     <string name="task_priority_normal">Normal</string>
     <string name="task_priority_high">Alta</string>
     <string name="task_priority_urgent">Urgente</string>
+    <string name="task_priority_high_inline">Prioridad alta</string>
+    <string name="task_priority_urgent_inline">Prioridad urgente</string>
+    <string name="task_mark_complete_cd">Completar %1$s</string>
+    <string name="task_mark_pending_cd">Marcar %1$s como pendiente</string>
 
     <!-- Ajustes -->
     <string name="settings_title">Ajustes</string>

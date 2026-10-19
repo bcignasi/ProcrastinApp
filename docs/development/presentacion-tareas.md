@@ -41,7 +41,21 @@ Cada componente calcula `val isFlat = presentation == TaskPresentation.FLAT`. Es
 
 Una tarea seleccionada conserva su fondo destacado y borde en ambas presentaciones. La presentación describe el aspecto; la selección sigue indicando sobre qué tareas se aplican acciones.
 
-`rememberSaveable(task.id)` sigue guardando el estado de expandir/contraer en el mismo componente, y la lista conserva las claves por identificador de tarea. Los títulos, fechas, prioridades, notas y botones siguen utilizando el contenido existente. Su jerarquía visual se pulirá en otro incremento.
+`rememberSaveable(task.id)` sigue guardando el estado de expandir/contraer en el mismo componente, y la lista conserva las claves por identificador de tarea. Los títulos, fechas, prioridades, notas y botones conservaron inicialmente el contenido existente. La cabecera plana se pule en el incremento descrito a continuación.
+
+## Filas de la maqueta original de Serena
+
+Contrato del incremento: casilla a la izquierda, título de 16 sp en seminegrita, reloj y fecha/hora en texto secundario, y prioridad alta o urgente como texto sin etiqueta rellena. El título admite varias líneas. Los avisos conservan su campana y su fecha; los identificadores internos desaparecen de la cabecera plana. Los separadores existentes permanecen. Este incremento representa tareas reales, sin añadir proyectos ni barras de progreso.
+
+`TaskItemContent` utiliza `FlatTaskHeader` solo en `FLAT`. El modo `CARDS` conserva `ShowUrgentRow`, `ShowTitleRow` y `ShowDatesRow`; no se alteran sus componentes. Las notas, periodicidad, acciones y recursión de subtareas siguen compartidas. La cabecera plana conserva una flecha independiente para desplegar; no necesita la segunda flecha inferior de tarjetas.
+
+`Checkbox(checked = task.completed, onCheckedChange = { onComplete(task) })` reutiliza el callback que ya llegaba desde `TaskListScreen` al ViewModel. La casilla no guarda estado propio: Room actualiza la tarea y la pantalla recibe los datos. La selección múltiple por pulsación larga continúa siendo distinta de completar. Completar un padre no completa sus subtareas.
+
+`FlatTaskDateText` muestra solo `HH:mm` cuando la fecha es hoy y contiene una hora explícita. Para otros días conserva fecha y hora, con fecha localizada. Una fecha sin hora no inventa las 00:00, y un dato inválido se conserva visible en lugar de sustituirse por la fecha actual. `uiState.date` se pasa como `referenceDate` hasta las tareas y subtareas para renovar también estas etiquetas al cambiar el día.
+
+Se reutiliza la dependencia de pruebas Compose en `testImplementation` para ejecutar interacciones con Robolectric en el ordenador, sin dispositivo. Las pruebas comprueban completar/desmarcar sin abrir edición ni seleccionar, completar una subtarea sin completar al padre, conservar tarjetas sin casillas y refrescar metadatos al cambiar el día. Otras pruebas verifican hoy, otras fechas, medianoche, fechas sin hora y datos inválidos.
+
+Validación del incremento del 19 de octubre: las pruebas de interacción fallaron inicialmente en los dos recorridos que requerían casillas; las de formato fallaron en cuatro casos antes de implementar el formateador. Después pasan las cuatro de interacción y las cinco de formato, junto con la suite completa de 116 pruebas, sin fallos ni omitidas. `assembleDebug`, `lintDebug` (0 errores, 22 advertencias y 1 sugerencia) y `compileDebugAndroidTestKotlin` correctos. Ignasi comprueba el aspecto en el móvil; no se instala ni se ejecuta la app en el dispositivo durante esta validación.
 
 ## Comprobación en el móvil
 

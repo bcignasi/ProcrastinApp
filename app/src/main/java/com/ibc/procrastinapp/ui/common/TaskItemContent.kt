@@ -39,6 +39,7 @@ import androidx.compose.ui.unit.dp
 import com.ibc.procrastinapp.data.model.Task
 import androidx.compose.ui.res.stringResource
 import com.ibc.procrastinapp.R
+import java.time.LocalDate
 
 @Composable
 fun TaskItemContent(
@@ -48,7 +49,8 @@ fun TaskItemContent(
     actionsEnabled: Boolean,
     onComplete: (Task) -> Unit = {},
     onDelete: (Task) -> Unit = {},
-    presentation: TaskPresentation = TaskPresentation.CARDS
+    presentation: TaskPresentation = TaskPresentation.CARDS,
+    referenceDate: LocalDate = LocalDate.now()
 ) {
     val isFlat = presentation == TaskPresentation.FLAT
     val paddingStart = (if (isFlat) 0.dp else 8.dp) + (depth * 16).dp
@@ -75,20 +77,25 @@ fun TaskItemContent(
     ) {
         Column(modifier = Modifier.padding(if (isFlat) 0.dp else 4.dp)) {
 
-            ShowUrgentRow(
-                task = task,
-                isExpanded = isExpanded,
-                onExpandClick = { isExpanded = !isExpanded })
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            ShowTitleRow(
-                task = task,
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            ShowDatesRow(task)
+            if (isFlat) {
+                FlatTaskHeader(
+                    task = task,
+                    referenceDate = referenceDate,
+                    isExpanded = isExpanded,
+                    onExpandClick = { isExpanded = !isExpanded },
+                    onComplete = onComplete
+                )
+            } else {
+                ShowUrgentRow(
+                    task = task,
+                    isExpanded = isExpanded,
+                    onExpandClick = { isExpanded = !isExpanded }
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                ShowTitleRow(task = task)
+                Spacer(modifier = Modifier.height(8.dp))
+                ShowDatesRow(task)
+            }
 
 
             // Notes
@@ -142,7 +149,7 @@ fun TaskItemContent(
 
                 Spacer(modifier = Modifier.height(2.dp))
 
-                Row(
+                if (!isFlat) Row(
                     modifier = Modifier.fillMaxWidth(), // Asegúrate de que la Row padre ocupe el ancho
                     verticalAlignment = Alignment.CenterVertically // Para alinear el icono y el divisor verticalmente
                 ) {
@@ -176,6 +183,7 @@ fun TaskItemContent(
                     TaskItemContent(
                         task = subtask,
                         presentation = presentation,
+                        referenceDate = referenceDate,
                         depth = depth + 1,
                         actionsEnabled = actionsEnabled,
                         onComplete = onComplete,

@@ -70,6 +70,7 @@ fun TaskListContent(
             overdueTasks = uiState.overdueTasks,
             showTodaySections = uiState.filter == TaskListQueryType.TODAY,
             presentation = TaskPresentation.FLAT,
+            referenceDate = uiState.date,
             selectedTaskIds = uiState.selectedTaskIds,
             onTaskClick = onTaskClick,
             onTaskLongClick = onTaskLongClick,

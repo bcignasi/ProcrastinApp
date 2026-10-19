@@ -54,7 +54,9 @@ Dependencia: 1. Alcance: medio.
 
 - [x] Conservar las Card y añadir TaskPresentation.FLAT/CARDS: Agenda activa FLAT, el Asistente conserva CARDS, las subtareas heredan la presentación. Sin selector nuevo en Ajustes. Compilación y 94 pruebas existentes correctas; lint con 0 errores y 29 advertencias anteriores. [Guía del código](../docs/development/presentacion-tareas.md).
 - [ ] Ignasi revisa las filas planas, selección y subtareas en el móvil; el contenido y la jerarquía de títulos/fechas se pulen después.
-- [ ] Jerarquía Serena para título, fecha/hora y prioridad; identificadores internos fuera de la vista principal.
+- [x] Filas planas de la maqueta original: FlatTaskHeader con casilla conectada a completar, título en seminegrita, reloj y fecha/hora secundaria, prioridad alta/urgente sin etiqueta rellena e identificadores internos ocultos. Tarjetas conservadas; fecha de referencia propagada para actualizar al cambiar el día.
+- [x] Validación técnica de filas y casillas: assembleDebug, 116 pruebas locales aprobadas (cuatro de interacción Compose/Robolectric y cinco de fechas nuevas), lintDebug con 0 errores y 22 advertencias, y compileDebugAndroidTestKotlin.
+- [ ] Ignasi revisa las casillas, texto, fechas, avisos y subtareas de las filas Serena en el móvil, en claro y oscuro.
 - [ ] Subtareas, notas y acciones de completar, editar y borrar siguen accesibles con datos reales, sin nuevos proyectos ni progreso ficticio.
 
 Verificación: tareas largas, subtareas y texto ampliado en el móvil; :app:assembleDebug.
