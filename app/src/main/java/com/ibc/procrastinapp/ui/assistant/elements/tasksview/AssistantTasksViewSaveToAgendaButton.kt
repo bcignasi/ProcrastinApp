@@ -10,10 +10,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -27,23 +27,19 @@ import com.ibc.procrastinapp.R
  * Botón para guardar tareas en la agenda
  *
  * @param onClick Acción al pulsar el botón
- * @param isClicked Si el botón está en estado pulsado
+ * @param isSaving Si la propuesta se está guardando
  */
 @Composable
 fun AssistantTasksViewSaveToAgendaButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    isClicked: Boolean = false,
+    isSaving: Boolean = false,
 ) {
     Button(
-        onClick = {
-            if (!isClicked) {
-                onClick()
-            }
-        },
+        onClick = onClick,
         modifier = modifier,
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isClicked)
+            containerColor = if (isSaving)
                 MaterialTheme.colorScheme.primary
             else
                 MaterialTheme.colorScheme.tertiary
@@ -51,20 +47,21 @@ fun AssistantTasksViewSaveToAgendaButton(
                 //MaterialTheme.colorScheme.secondary
         ),
         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
-        enabled = !isClicked // Deshabilitar el botón cuando está en estado "clicked"
+        enabled = !isSaving
     ) {
-        Icon(
-            imageVector = if (isClicked)
-                Icons.Default.Check
-            else
-                Icons.Default.Save,
-            contentDescription = androidx.compose.ui.res.stringResource(id = R.string.assistant_save_to_agenda_cd),
-            modifier = Modifier.size(20.dp)
-        )
+        if (isSaving) {
+            CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
+        } else {
+            Icon(
+                imageVector = Icons.Default.Save,
+                contentDescription = androidx.compose.ui.res.stringResource(id = R.string.assistant_save_to_agenda_cd),
+                modifier = Modifier.size(20.dp)
+            )
+        }
         Spacer(modifier = Modifier.width(8.dp))
         Text(
-            text = if (isClicked)
-                androidx.compose.ui.res.stringResource(id = R.string.assistant_done_label)
+            text = if (isSaving)
+                androidx.compose.ui.res.stringResource(id = R.string.assistant_saving_label)
             else
                 androidx.compose.ui.res.stringResource(id = R.string.assistant_save_to_agenda_label),
             style = MaterialTheme.typography.labelLarge
@@ -79,7 +76,7 @@ fun AssistantTasksViewSaveToAgendaButton(
 fun NoClickNoEditPreview() {
     AssistantTasksViewSaveToAgendaButton(
         onClick = {},
-        isClicked = false,
+        isSaving = false,
     )
 }
 
@@ -88,7 +85,7 @@ fun NoClickNoEditPreview() {
 fun ClickNoeditPreview() {
     AssistantTasksViewSaveToAgendaButton(
         onClick = {},
-        isClicked = true,
+        isSaving = true,
     )
 }
 
@@ -97,7 +94,7 @@ fun ClickNoeditPreview() {
 fun NoClickEditPreview() {
     AssistantTasksViewSaveToAgendaButton(
         onClick = {},
-        isClicked = false,
+        isSaving = false,
     )
 }
 
@@ -106,6 +103,6 @@ fun NoClickEditPreview() {
 fun ClickEditPreview() {
     AssistantTasksViewSaveToAgendaButton(
         onClick = {},
-        isClicked = true,
+        isSaving = true,
     )
 }

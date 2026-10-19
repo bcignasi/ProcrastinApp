@@ -69,7 +69,7 @@ class AssistantViewModelTest {
         every { assistantRepository.error } returns errorFlow as StateFlow<Throwable?>
         every { assistantRepository.lastResponse } returns lastResponseFlow as StateFlow<AssistantResponse?>
 
-        viewModel = AssistantViewModel(assistantRepository, taskRepository)
+        viewModel = AssistantViewModel(assistantRepository, taskRepository, testScope)
         testScope.advanceUntilIdle()
     }
 

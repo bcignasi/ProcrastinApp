@@ -47,7 +47,7 @@ fun AssistantTasksView(
     uiState: AssistantState,
     lastResponse: AssistantResponse?,
     isEditMode: Boolean,
-    agendaButtonClicked: Boolean,
+    isSaving: Boolean,
     showSaveButton: Boolean,
     onClearViewModelInfo: () -> Unit,
     onAgendaButtonClick: () -> Unit,
@@ -183,6 +183,7 @@ fun AssistantTasksView(
                 if (isEditMode) {
                     TextButton(
                         onClick = onCancelEdit,
+                        enabled = !isSaving,
                         colors = ButtonDefaults.textButtonColors(
                             containerColor = MaterialTheme.colorScheme.errorContainer,
                             contentColor = MaterialTheme.colorScheme.error
@@ -197,7 +198,7 @@ fun AssistantTasksView(
                 if (showSaveButton) {
                     AssistantTasksViewSaveToAgendaButton(
                         onClick = onAgendaButtonClick,
-                        isClicked = agendaButtonClicked,
+                        isSaving = isSaving,
                     )
                 }
             }

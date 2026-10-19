@@ -87,6 +87,40 @@ class AssistantRepositoryTest {
     }
 
     @Test
+    fun oldSaveCleanupDoesNotEraseANewGoalProposal() = runTest {
+        val previousSession = repository.sessionVersion
+        repository.initSession()
+        val proposal = publishProposal()
+
+        repository.clearTasksIfSession(previousSession)
+
+        assertEquals(proposal, repository.tasks.value)
+        repository.clearTasksIfSession(repository.sessionVersion)
+        assertTrue(repository.tasks.value.isEmpty())
+    }
+
+    @Test
+    fun oldSaveCleanupDoesNotEraseANewEditProposal() = runTest {
+        val previousSession = repository.sessionVersion
+        repository.addUserAndAssistantMessage("Editar otra tarea", "{}")
+        val proposal = publishProposal()
+
+        repository.clearTasksIfSession(previousSession)
+
+        assertEquals(proposal, repository.tasks.value)
+    }
+
+    private fun publishProposal(): List<Task> {
+        val json = "new-proposal"
+        val proposal = listOf(Task(title = "Nueva propuesta"))
+        every { parser.parse(json) } returns AssistantResponse(text = "", json = json)
+        every { taskExtractor.extractTasks(json) } returns proposal
+        messagesFlow.value = listOf(Message.assistantMessage(json))
+        testDispatcher.scheduler.advanceUntilIdle()
+        return proposal
+    }
+
+    @Test
     fun `cuando llega un mensaje del asistente con JSON valido extrae tareas`() = runTest {
         val json = """{"comentario":"OK","propuesta":{"tasks":[]}}"""
         val assistantMsg = Message.assistantMessage(json)

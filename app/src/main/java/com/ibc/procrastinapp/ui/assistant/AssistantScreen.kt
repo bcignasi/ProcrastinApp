@@ -57,9 +57,9 @@ fun AssistantScreen(
     // Recolección del estado unificado de la UI y el derived state lastResponse
     val uiState by assistantViewModel.uiState.collectAsStateWithLifecycle()
     val lastResponse by assistantViewModel.lastResponse.collectAsStateWithLifecycle()
+    val isSaving by assistantViewModel.isSaving.collectAsStateWithLifecycle()
 
     // Estados locales de la pantalla
-    var agendaButtonClicked by rememberSaveable { mutableStateOf(false) }
     var currentScreenMode by rememberSaveable { mutableStateOf(AssistantScreenType.TASKS) }
 
     BackHandler { navController.openMainDestination(AGENDA_ROUTE) }
@@ -77,14 +77,8 @@ fun AssistantScreen(
     val showSaveButton = uiState.tasks.isNotEmpty() && !uiState.isLoading
     //val tasksIdsString = uiState.tasks.map { it.id }.joinToString(", ")
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(assistantViewModel) {
         assistantViewModel.commitFinished.collect {
-            Logger.d("IBC13", "commitFinished.collect: agendaButtonClicked = false")
-            agendaButtonClicked = false
-            // showSaveButton debería actualizarse si hay tareas y han cambiado
-            // pero es una variable val, así que hay que confiar que se actualice
-            // mediante el cambio de uiState.tasks
-            //showSaveButton = false
             delay(2000)  // O un toast o snackbar informando
 
             //NO NAVEGO - TENGO QUE VER LO QUE EXPLICA ASSISTANT
@@ -105,6 +99,7 @@ fun AssistantScreen(
     Scaffold(
         topBar = {
             AssistantTopBar(
+                isSaving = isSaving,
                 onDeleteAll = { assistantViewModel.startNewSession() },
                 currentScreenMode = currentScreenMode,
                 onCurrentScreenModeChange = { newMode ->
@@ -145,14 +140,10 @@ fun AssistantScreen(
                                 uiState = uiState,
                                 lastResponse = lastResponse,
                                 isEditMode = isEditMode,
-                                agendaButtonClicked = agendaButtonClicked,
+                                isSaving = isSaving,
                                 showSaveButton = showSaveButton,
                                 onClearViewModelInfo = { assistantViewModel.clearEvent() },
-                                onAgendaButtonClick = {
-                                    agendaButtonClicked = true
-                                    assistantViewModel.commitTasksFromAssistant()
-                                    // El cambio de true a false en agendaButtonClicked es vía evento ViewModel
-                                },
+                                onAgendaButtonClick = { assistantViewModel.commitTasksFromAssistant() },
                                 onCancelEdit = { assistantViewModel.cancelEdit() },
                                 //tasksIdsString = tasksIdsString,
                                 quoteViewModel = quoteViewModel,
@@ -168,7 +159,7 @@ fun AssistantScreen(
                     onSendMessage = { message ->
                         assistantViewModel.sendMessage(message)
                     },
-                    isLoading = uiState.isLoading,
+                    isLoading = uiState.isLoading || isSaving,
                     // Aquí incluimos TODOS los modificadores que queremos aplicar
                     modifier = Modifier
                         .fillMaxWidth()

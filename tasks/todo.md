@@ -43,6 +43,10 @@ Dependencia: 1. Alcance: medio.
 
 ## Punto de control: base y navegación
 
+- [x] Correcciones de auditoría: volver realmente a Agenda desde «+»/edición, guardado con ámbito de aplicación, botón conectado a isSaving y cabecera con insets superiores y laterales.
+- [x] Validación técnica de los arreglos: assembleDebug, 107 pruebas unitarias sin fallos, lintDebug con 0 errores y las 29 advertencias anteriores, y compileDebugAndroidTestKotlin. Pruebas nuevas de navegación, cambio de pantalla durante guardado, finalización sin pantalla y separación de sesiones; revisión independiente sin regresiones nuevas verificables.
+- [ ] Ignasi revisa los arreglos en el móvil: volver desde «+»/edición, guardar al cambiar de pantalla, estado del botón y cabecera en horizontal.
+
 - [ ] Revisar en el móvil y explicar los cambios antes de rediseñar las filas.
 - [ ] Commit por incremento, manteniendo la app funcional.
 

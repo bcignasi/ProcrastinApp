@@ -24,6 +24,7 @@ import com.ibc.procrastinapp.R
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AssistantTopBar(
+    isSaving: Boolean,
     onDeleteAll: () -> Unit,
     currentScreenMode: AssistantScreenType,
     onCurrentScreenModeChange: (AssistantScreenType) -> Unit,
@@ -46,7 +47,7 @@ fun AssistantTopBar(
         // La navegación entre pantallas está en la barra inferior.
         actions = {
             // Botón para borrar todos los mensajes
-            IconButton(onClick = onDeleteAll) {
+            IconButton(onClick = onDeleteAll, enabled = !isSaving) {
                 Icon(
                     imageVector = Icons.Default.Delete,
                     contentDescription = androidx.compose.ui.res.stringResource(id = R.string.assistant_delete_all_cd),

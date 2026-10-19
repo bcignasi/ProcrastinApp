@@ -133,7 +133,7 @@ val viewModelModule = module {
     viewModel { ThemeSettingsViewModel(get()) }
 
     // ViewModel del asistente con IA (chats + tareas)
-    viewModel { AssistantViewModel(get<AssistantRepository>(), get<TaskRepository>()) }
+    viewModel { AssistantViewModel(get<AssistantRepository>(), get<TaskRepository>(), get<CoroutineScope>()) }
 
     // ViewModel para la pantalla de lista de tareas
     viewModel { TaskListViewModel(get<TaskRepository>()) }

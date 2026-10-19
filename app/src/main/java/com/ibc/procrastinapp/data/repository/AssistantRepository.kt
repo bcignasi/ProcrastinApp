@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.util.concurrent.atomic.AtomicLong
 
 /**
  * Capa intermedia entre ChatAIService y el ViewModel.
@@ -37,6 +38,8 @@ class AssistantRepository(
     private val parser: AssistantResponseParser = AssistantResponseParserImpl(),
     private val taskExtractor: TaskJsonExtractor = TaskJsonExtractor()
 ) {
+    private val session = AtomicLong()
+    val sessionVersion: Long get() = session.get()
 
     val messages: StateFlow<List<Message>> = chatAIService.messages
     val isLoading: StateFlow<Boolean> = chatAIService.isLoading
@@ -84,15 +87,23 @@ class AssistantRepository(
         _lastResponse.value = null
     }
 
+    // Un guardado anterior no debe borrar la propuesta de otro objetivo o edición.
+    fun clearTasksIfSession(version: Long) {
+        if (sessionVersion == version) clearTasks()
+    }
+
     suspend fun sendMessage(userInput: String) = chatAIService.sendMessage(userInput)
 
     fun initSession() {
+        session.incrementAndGet()
         chatAIService.initSession()
         _lastResponse.value = null
         _tasks.value = emptyList()
         _parserError.value = null
     }
 
-    fun addUserAndAssistantMessage(userMsg: String, taskJson: String) =
+    fun addUserAndAssistantMessage(userMsg: String, taskJson: String) {
+        session.incrementAndGet()
         chatAIService.addUserAndAssistantMessage(userMsg, taskJson)
+    }
 }

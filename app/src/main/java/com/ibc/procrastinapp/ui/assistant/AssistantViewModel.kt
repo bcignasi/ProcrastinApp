@@ -15,23 +15,31 @@ import com.ibc.procrastinapp.data.service.AssistantResponse
 import com.ibc.procrastinapp.ui.assistant.AssistantState.AssistantEvent
 import com.ibc.procrastinapp.ui.assistant.AssistantState.LoadTaskError
 import com.ibc.procrastinapp.utils.Logger
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 class AssistantViewModel(
     private val assistantRepository: AssistantRepository,
-    private val taskRepository: TaskRepository
+    private val taskRepository: TaskRepository,
+    private val saveScope: CoroutineScope
 ) : ViewModel() {
 
     // Evento tipado que la UI traduce a string localizada
     private val _event = MutableStateFlow<AssistantEvent?>(null)
+
+    private val _isSaving = MutableStateFlow(false)
+    val isSaving = _isSaving.asStateFlow()
 
     // Señaliza el final de la tarea asíncrona de guardado de tareas
     private val _commitFinished = MutableSharedFlow<Unit>()
@@ -76,6 +84,7 @@ class AssistantViewModel(
     }
 
     fun startNewSession() {
+        if (_isSaving.value) return
         viewModelScope.launch {
             assistantRepository.initSession()
             originalTaskIds.clear()
@@ -84,45 +93,52 @@ class AssistantViewModel(
     }
 
     fun sendMessage(message: String) {
-        if (message.isBlank()) return
+        if (message.isBlank() || _isSaving.value) return
         viewModelScope.launch { assistantRepository.sendMessage(message) }
     }
 
     fun commitTasksFromAssistant() {
         val tasks = assistantRepository.tasks.value
-        if (tasks.isEmpty()) return
+        if (tasks.isEmpty() || !_isSaving.compareAndSet(false, true)) return
 
         // Capturar originalTaskIds ANTES del launch para evitar race conditions
         val taskIdsToDelete = originalTaskIds.toList()
+        val sessionVersion = assistantRepository.sessionVersion
 
-        viewModelScope.launch {
-            val isEditMode = taskIdsToDelete.isNotEmpty()
-            if (isEditMode) {
-                try {
-                    taskRepository.deleteTasks(taskIdsToDelete)
-                } catch (_: Exception) {}
-            }
-
-            var saved = 0
-            var failed = 0
-
-            tasks.forEach { task ->
-                try {
-                    taskRepository.saveTask(task)
-                    saved++
-                } catch (_: Exception) {
-                    failed++
+        // La operación vive en la aplicación, aunque se descarte esta entrada de navegación.
+        saveScope.launch(Dispatchers.Main.immediate) {
+            val result = try {
+                if (taskIdsToDelete.isNotEmpty()) {
+                    try {
+                        taskRepository.deleteTasks(taskIdsToDelete)
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (_: Exception) {}
                 }
-            }
 
-            _event.value = AssistantEvent.CommitDone(saved = saved, updated = 0, failed = failed)
-            Logger.d("IBC13-AssistantViewModel", "commitTasksFromAssistant(): saved=$saved, failed=$failed")
+                var saved = 0
+                var failed = 0
+                tasks.forEach { task ->
+                    try {
+                        taskRepository.saveTask(task)
+                        saved++
+                    } catch (cancelled: CancellationException) {
+                        throw cancelled
+                    } catch (_: Exception) {
+                        failed++
+                    }
+                }
+                originalTaskIds.clear()
+                assistantRepository.clearTasksIfSession(sessionVersion)
+                AssistantEvent.CommitDone(saved = saved, updated = 0, failed = failed).also {
+                    _event.value = it
+                }
+            } finally {
+                _isSaving.value = false
+            }
             _commitFinished.emit(Unit)
-            Logger.d("IBC13-AssistantViewModel", "commitFinished.emit: guardado finalizado")
             delay(3000)
-            _event.value = null
-            originalTaskIds.clear()
-            assistantRepository.clearTasks()
+            if (_event.value === result) _event.value = null
         }
     }
 
@@ -158,6 +174,7 @@ class AssistantViewModel(
     }
 
     fun cancelEdit() {
+        if (_isSaving.value) return
         assistantRepository.clearTasks()
         originalTaskIds.clear()
     }
