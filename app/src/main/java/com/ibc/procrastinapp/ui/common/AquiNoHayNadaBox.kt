@@ -5,6 +5,7 @@
  */
 package com.ibc.procrastinapp.ui.common
 
+import androidx.annotation.StringRes
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -30,7 +31,8 @@ import com.ibc.procrastinapp.ui.assistant.QuoteViewModel.QuoteError
 @Composable
 fun AquiNoHayNadaBox(
     modifier: Modifier = Modifier,
-    quoteViewModel: QuoteViewModel? = null
+    quoteViewModel: QuoteViewModel? = null,
+    @StringRes messageResId: Int = R.string.assistant_intro_text
 ) {
     val primaryColor = MaterialTheme.colorScheme.primary
     val textColor = MaterialTheme.colorScheme.onBackground
@@ -45,18 +47,13 @@ fun AquiNoHayNadaBox(
             verticalArrangement = Arrangement.Top, // 👉 alineado arriba
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // 👉 Mostrar intro solo si QuoteViewModel existe y lo permite
-            val showIntro = quoteViewModel?.shouldShowIntroText() ?: true
-            if (showIntro) {
-
-                Text(
-                    text = stringResource(id = R.string.assistant_intro_text),
-                    style = MaterialTheme.typography.titleSmall,
-                    color = textColor,
-                    textAlign = TextAlign.Justify,
-                    modifier = Modifier.padding(horizontal = 24.dp)
-                )
-            }
+            Text(
+                text = stringResource(id = messageResId),
+                style = MaterialTheme.typography.bodyLarge,
+                color = textColor,
+                textAlign = TextAlign.Center,
+                modifier = Modifier.padding(horizontal = 24.dp)
+            )
 
             // 👉 espacio flexible para empujar la cita hacia el centro
             Spacer(modifier = Modifier.weight(1f))

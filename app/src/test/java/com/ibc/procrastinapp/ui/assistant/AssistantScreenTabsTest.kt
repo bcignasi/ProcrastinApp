@@ -29,6 +29,7 @@ import androidx.navigation.compose.rememberNavController
 import com.ibc.procrastinapp.R
 import com.ibc.procrastinapp.data.ai.Message
 import com.ibc.procrastinapp.data.model.Task
+import com.ibc.procrastinapp.data.service.quotes.QuoteAIService
 import com.ibc.procrastinapp.ui.settings.SettingsScreen
 import com.ibc.procrastinapp.ui.theme.ProcAppMVVMTheme
 import io.mockk.every
@@ -77,7 +78,8 @@ class AssistantScreenTabsTest {
     private fun showScreen(
         darkTheme: Boolean = true,
         availableHeight: State<Int>? = null,
-        fontScale: Float = 1f
+        fontScale: Float = 1f,
+        quoteModel: QuoteViewModel = quotes
     ) {
         compose.setContent {
             pixelsPerDp = LocalDensity.current.density
@@ -89,7 +91,7 @@ class AssistantScreenTabsTest {
                         val nav = rememberNavController()
                         NavHost(navController = nav, startDestination = "assistant") {
                             composable("assistant") {
-                                AssistantScreen(navController = nav, assistantViewModel = model, quoteViewModel = quotes)
+                                AssistantScreen(navController = nav, assistantViewModel = model, quoteViewModel = quoteModel)
                             }
                             composable("settings") {
                                 SettingsScreen(darkTheme, false, false, {}, { nav.popBackStack() })
@@ -100,6 +102,50 @@ class AssistantScreenTabsTest {
             }
         }
     }
+
+    private fun checkEmptyGuidanceAfterTabChanges(darkTheme: Boolean) {
+        val state = MutableStateFlow(AssistantState())
+        every { model.uiState } returns state
+        // Keep the real quote state across tab changes, with no network calls.
+        val quoteModel = QuoteViewModel(mockk<QuoteAIService>(relaxed = true))
+        showScreen(darkTheme = darkTheme, quoteModel = quoteModel)
+        val context = RuntimeEnvironment.getApplication()
+        val intro = context.getString(R.string.assistant_intro_text)
+        val proposalIntro = context.getString(R.string.assistant_proposal_empty_text)
+        val conversation = context.getString(R.string.assistant_type_Messages)
+        val proposal = context.getString(R.string.assistant_type_Tasks)
+        compose.onNodeWithText(intro).assertIsDisplayed()
+
+        repeat(4) {
+            compose.onNodeWithText(proposal).performClick()
+            compose.onNodeWithText(proposalIntro).assertIsDisplayed()
+            compose.onNodeWithText(conversation).performClick()
+            compose.onNodeWithText(intro).assertIsDisplayed()
+        }
+        compose.onNode(hasSetTextAction()).performTextInput("Mi objetivo")
+        compose.onNodeWithText(intro).assertIsDisplayed()
+
+        compose.runOnIdle {
+            state.value = AssistantState(
+                messages = listOf(Message.userMessage("Quiero preparar una entrevista")),
+                tasks = listOf(Task(id = 1, title = "Ensayar preguntas"))
+            )
+        }
+        compose.onNodeWithText(intro).assertDoesNotExist()
+        compose.onNodeWithText("Quiero preparar una entrevista").assertIsDisplayed()
+        compose.onNodeWithText(proposal).performClick()
+        compose.onNodeWithText(proposalIntro).assertDoesNotExist()
+        compose.onNodeWithText("Ensayar preguntas", substring = true).assertIsDisplayed()
+    }
+
+    @Test
+    fun emptyGuidanceSurvivesRepeatedTabChangesAndTypingInEnglish() =
+        checkEmptyGuidanceAfterTabChanges(darkTheme = true)
+
+    @Test
+    @Config(qualifiers = "es-w320dp-h900dp")
+    fun emptyGuidanceSurvivesRepeatedTabChangesAndTypingInSpanish() =
+        checkEmptyGuidanceAfterTabChanges(darkTheme = false)
 
     @Test
     fun conversationIsTheDefaultAndSwitchingTabsKeepsTheDraftAndContents() {

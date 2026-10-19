@@ -28,10 +28,11 @@
     <string name="assistant_restart_conversation">Reiniciar conversación</string>
 
     <!-- Assistant / Common UI strings -->
-    <string name="assistant_input_placeholder">¿Qué tarea necesitas planificar?</string>
+    <string name="assistant_input_placeholder">Escribe tu mensaje…</string>
     <string name="assistant_send_content_description">Enviar mensaje</string>
     <string name="assistant_cancel">Cancelar</string>
-    <string name="assistant_intro_text">No hay nada aquí.\nEscribe tus objetivos o tareas pendientes para que el asistente pueda proponer una secuencia de tareas adecuada. Luego podrás seguir dialogando con el asistente para ajustar la propuesta a tus necesidades.\nCuando estés satisfecho con la propuesta, envíala a la lista de tareas.</string>
+    <string name="assistant_intro_text">Cuéntale al asistente qué quieres conseguir y deja que te guíe paso a paso.</string>
+    <string name="assistant_proposal_empty_text">Aquí verás los pasos para alcanzar tu objetivo. Empieza contándoselo al asistente en Conversación.</string>
 
     <!-- Task list / dialogs / toolbars -->
     <string name="tasklist_back_press_to_exit">Pulsa atrás otra vez para salir</string>

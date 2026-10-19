@@ -17,13 +17,6 @@ class QuoteViewModel(
     private val quoteAIService: QuoteAIService
 ) : ViewModel() {
 
-    private var showCount = 0
-
-    fun shouldShowIntroText(): Boolean {
-        showCount++
-        return showCount <= 3
-    }
-
     // Estado observable de la frase actual
     private val _currentQuote = MutableStateFlow<String?>(null)
     val currentQuote: StateFlow<String?> = _currentQuote.asStateFlow()

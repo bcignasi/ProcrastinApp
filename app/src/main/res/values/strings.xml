@@ -37,10 +37,11 @@
     <string name="assistant_restart_conversation">Restart conversation</string>
 
     <!-- Assistant / Common UI strings -->
-    <string name="assistant_input_placeholder">What task do you need to plan?</string>
+    <string name="assistant_input_placeholder">Write your message…</string>
     <string name="assistant_send_content_description">Send message</string>
     <string name="assistant_cancel">Cancel</string>
-    <string name="assistant_intro_text">There\'s nothing here.\nWrite your goals or pending tasks so the assistant can propose an appropriate sequence of tasks. You can then continue dialoguing with the assistant to adjust the proposal to your needs.\nWhen you\'re satisfied with the proposal, send it to the task list.</string>
+    <string name="assistant_intro_text">Tell the assistant what you want to achieve and let it guide you step by step.</string>
+    <string name="assistant_proposal_empty_text">Your steps towards your goal will appear here. Start by telling the assistant about it in Conversation.</string>
 
     <!-- Task list / dialogs / toolbars -->
     <string name="tasklist_back_press_to_exit">Press back again to exit</string>

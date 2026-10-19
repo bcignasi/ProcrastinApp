@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.ibc.procrastinapp.R
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.ui.assistant.QuoteViewModel
 import com.ibc.procrastinapp.ui.common.AquiNoHayNadaBox
@@ -25,7 +26,7 @@ fun AssistantTasksViewList(
     quoteViewModel: QuoteViewModel
 ) {
     if (tasks.isEmpty()) {
-        AquiNoHayNadaBox(modifier, quoteViewModel)
+        AquiNoHayNadaBox(modifier, quoteViewModel, R.string.assistant_proposal_empty_text)
 
     } else {
         LazyColumn(
