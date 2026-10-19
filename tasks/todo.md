@@ -81,6 +81,7 @@ Dependencia: 3. Alcance: medio por incremento visual o funcional.
 - [x] Cabecera Serena del Asistente con marca, título, fecha, Ajustes y menú de reinicio; pestañas Conversación / Propuesta con Conversación inicial y selección conservada al volver de Ajustes. [Guía del código](../docs/development/cabecera-asistente.md).
 - [x] Cabecera compacta según altura disponible y tamaño de fuente; conserva las pestañas y lleva Ajustes al menú para reservar espacio de escritura con teclado o ventana pequeña.
 - [x] Ayudas breves en español e inglés para Conversación y Propuesta vacías; visibles mientras no haya contenido, sin contador al cambiar de pestaña.
+- [x] Incorporar a la suite permanente las pruebas de listas vacías independientes y del borrador multilínea durante carga; 128 pruebas aprobadas y lint sin errores.
 - [x] Campo de escritura Serena con esquinas de 16 dp, envío de contorno integrado y área táctil de 48 dp; conserva borrador y comportamiento de envío.
 - [ ] Pulir las burbujas de mensajes con el diseño de Serena.
 - [ ] Enviar, cancelar y gestionar carga/error conserva su comportamiento; el teclado deja accesible la escritura.
