@@ -54,6 +54,19 @@ El usuario inicial es Ignasi. La siguiente versión debe hacer fiable y agradabl
 - Incorporar una gamificación ligera que haga visible y satisfactorio el avance.
 - Conservar una sección de **Miscelánea** para tareas puntuales, como comprar el pan, que no necesitan pertenecer a un proyecto.
 - Dar al producto una presentación visual clara y cuidada. El diseño y la experiencia son una parte central de esta evolución.
+- Ofrecer una opción **Ver diagrama** para visualizar el plan propuesto como mapa mental o diagrama de pasos, fuera de los mensajes del chat.
+
+### Visualización del plan mediante un diagrama — idea registrada el 19 de octubre de 2026
+
+Ignasi quiere poder consultar una propuesta de forma más visual después de que el asistente la haya generado. Esta opción también tiene sentido para un único objetivo; no depende de implementar antes la organización global de proyectos de vida.
+
+- Partir de la propuesta existente y representar el objetivo, sus pasos y sus subtareas como un mapa mental o un diagrama.
+- Ofrecer una acción explícita, por ejemplo **Ver diagrama**, que abra una vista dedicada. El diagrama no debe aparecer incrustado dentro de un mensaje de la conversación.
+- Explorar también la posibilidad de solicitar esa visualización al asistente; el acceso concreto queda pendiente de diseño.
+- Ejemplo ilustrativo: **Carnet de conducir → Teoría / Práctica → tareas de cada bloque**.
+- Mantener la correspondencia con el mismo plan que se está revisando, en lugar de generar una planificación distinta al visualizarlo.
+
+Estado: idea futura, sin implementación en el rediseño actual de Serena. El tipo de diagrama, la ubicación de la acción y la tecnología se decidirán cuando se retome esta funcionalidad.
 
 ## Dirección actual: pulir el flujo de un objetivo
 

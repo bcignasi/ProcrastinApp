@@ -102,6 +102,7 @@ Dependencia: 5. Alcance: medio por pantalla o componente.
 
 ## Evolución posterior conservada
 
+- [ ] Opción **Ver diagrama** para abrir una representación visual del plan (mapa mental o diagrama de pasos) fuera de los mensajes del chat. [Idea y alcance](../docs/ideas/proyectos-de-vida.md#visualización-del-plan-mediante-un-diagrama--idea-registrada-el-19-de-octubre-de-2026).
 - [ ] Completar el acabado claro de Serena.
 - [ ] Preparar fondo, ornamentos y fuentes élficos separados de textos y controles.
 - [ ] Extender las preferencias y Ajustes para seleccionar Serena / Refugio élfico conservando la elección existente.
