@@ -62,23 +62,27 @@ class AssistantRepository(
             chatAIService.messages.collectLatest { messages ->
                 val lastAssistantMessage = messages.lastOrNull { it.isAssistant }
                 if (lastAssistantMessage != null) {
-                    try {
-                        val response = parser.parse(lastAssistantMessage.content)
-                        _lastResponse.value = response
-                        _tasks.value = if (response.hasJson)
-                            taskExtractor.extractTasks(response.json)
-                        else emptyList()
-                        _parserError.value = null
-                    } catch (e: AssistantResponseParserError) {
-                        _lastResponse.value = null
-                        _tasks.value = emptyList()
-                        _parserError.value = e
-                    }
+                    updateProposal(lastAssistantMessage.content)
                 } else {
                     _lastResponse.value = null
                     _tasks.value = emptyList()
                 }
             }
+        }
+    }
+
+    private fun updateProposal(content: String) {
+        try {
+            val response = parser.parse(content)
+            _lastResponse.value = response
+            _tasks.value = if (response.hasJson)
+                taskExtractor.extractTasks(response.json)
+            else emptyList()
+            _parserError.value = null
+        } catch (e: AssistantResponseParserError) {
+            _lastResponse.value = null
+            _tasks.value = emptyList()
+            _parserError.value = e
         }
     }
 
@@ -105,5 +109,8 @@ class AssistantRepository(
     fun addUserAndAssistantMessage(userMsg: String, taskJson: String) {
         session.incrementAndGet()
         chatAIService.addUserAndAssistantMessage(userMsg, taskJson)
+        // StateFlow no emite si el historial queda igual tras compactar las copias.
+        // Una apertura explícita debe restaurar Propuesta, incluso después de cancelar.
+        updateProposal(taskJson)
     }
 }

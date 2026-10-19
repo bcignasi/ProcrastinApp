@@ -70,11 +70,21 @@ class AssistantEditingConversationTest {
         )
     }
 
-    private fun checkEditingConversation(conversationTab: String, proposalTab: String, guidance: String) {
+    @Test
+    fun reopeningTheTenStepGoalEightTimesShowsOnlyOneEditingPair() {
+        checkEditingConversation(
+            conversationTab = "Conversación",
+            proposalTab = "Propuesta",
+            guidance = "Tu plan está disponible en Propuesta. Puedes pedirme cambios aquí.",
+            openings = 8
+        )
+    }
+
+    private fun checkEditingConversation(conversationTab: String, proposalTab: String, guidance: String, openings: Int = 1) {
         val goal = Task(
             id = 42,
             title = "Sacar el carnet de conducir",
-            subtasks = listOf(Task(title = "Elegir autoescuela"), Task(title = "Practicar tests"))
+            subtasks = List(10) { Task(title = "Paso ${it + 1} del carnet") }
         )
         // El límite de lectura de Agenda se simula; sesión, serialización, parser y UI son reales.
         val tasks = mockk<TaskRepository>(relaxed = true)
@@ -91,6 +101,9 @@ class AssistantEditingConversationTest {
         val model = ViewModelProvider(store, viewModelFactory {
             initializer { AssistantViewModel(repository, tasks, applicationScope) }
         })[AssistantViewModel::class.java]
+        compose.runOnIdle {
+            repeat(openings - 1) { model.loadTasksForEditing(listOf(goal.id)) }
+        }
         val quotes = QuoteViewModel(mockk<QuoteAIService>(relaxed = true))
         compose.setContent {
             ProcAppMVVMTheme(darkTheme = true, dynamicColor = false) {
@@ -102,6 +115,7 @@ class AssistantEditingConversationTest {
         }
         compose.waitUntil(10_000) { repository.tasks.value.isNotEmpty() }
         val raw = repository.messages.value.last { it.isAssistant }.content
+        assertEquals(2, repository.messages.value.size)
         assertTrue(raw.contains("\"propuesta\""))
         assertTrue(raw.contains("\"subtasks\""))
         assertEquals(goal.subtasks.map { it.title }, repository.tasks.value.single().subtasks.map { it.title })

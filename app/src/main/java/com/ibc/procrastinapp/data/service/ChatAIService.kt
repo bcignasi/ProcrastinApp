@@ -248,6 +248,17 @@ Por favor, recuerda devolver siempre la lista JSON con TODAS las tareas actualiz
         val userMessage = Message.userMessage(userMsg)
         val assistantMessage = Message.assistantMessage(taskJson)
 
+        // Reabrir el mismo contexto no es una nueva intervención del usuario.
+        // Compactamos también las copias consecutivas acumuladas antes de este arreglo.
+        // Las respuestas reales y los contextos distintos se conservan.
+        while (conversationMessages.size >= 2 &&
+            conversationMessages[conversationMessages.lastIndex - 1] == userMessage &&
+            conversationMessages.last() == assistantMessage
+        ) {
+            conversationMessages.removeAt(conversationMessages.lastIndex)
+            conversationMessages.removeAt(conversationMessages.lastIndex)
+        }
+
         Logger.d(logTag, "-> conversationMessages.add()")
         conversationMessages.add(userMessage)
         conversationMessages.add(assistantMessage)

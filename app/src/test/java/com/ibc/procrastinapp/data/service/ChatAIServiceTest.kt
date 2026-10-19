@@ -261,6 +261,66 @@ class ChatAIServiceTest {
         coVerify { mockMessageStorage.saveMessages(any()) }
     }
 
+    @Test
+    fun reopeningTheSameTaskEightTimesKeepsOneEditingPair() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+        val json = """{"propuesta":{"tasks":[{"id":42,"title":"Conducir","subtasks":[]}]}}"""
+
+        repeat(8) {
+            chatAIService.addUserAndAssistantMessage("Tarea para editar", json)
+            testDispatcher.scheduler.advanceUntilIdle()
+        }
+
+        assertEquals(
+            listOf(Message.userMessage("Tarea para editar"), Message.assistantMessage(json)),
+            chatAIService.messages.value
+        )
+        coVerify(exactly = 0) { mockAIService.sendMessage(any()) }
+    }
+
+    @Test
+    fun reopeningCompactsEightStoredCopiesAndPersistsThemWithoutRemovingRealConversation() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+        val json = """{"propuesta":{"tasks":[{"id":42,"title":"Conducir","subtasks":[]}]}}"""
+        val pair = listOf(Message.userMessage("Tarea para editar"), Message.assistantMessage(json))
+        val realConversation = listOf(Message.userMessage("Solo puedo por las tardes"), Message.assistantMessage("Lo tendré en cuenta."))
+        val stored = realConversation + List(8) { pair }.flatten()
+        var lastSaved = emptyList<Message>()
+        coEvery { mockMessageStorage.loadMessages() } returns stored
+        coEvery { mockMessageStorage.saveMessages(any()) } coAnswers {
+            lastSaved = firstArg<List<Message>>().toList()
+        }
+        val restored = ChatAIService(mockMessageStorage, mockAIService, testScope)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        restored.addUserAndAssistantMessage("Tarea para editar", json)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(realConversation + pair, restored.messages.value)
+        assertEquals(realConversation + pair, lastSaved.filter { !it.isSystem })
+        coVerify(exactly = 0) { mockAIService.sendMessage(any()) }
+    }
+
+    @Test
+    fun differentTaskSnapshotsAndRealExchangesAreNotDiscardedAsDuplicates() = runTest {
+        testDispatcher.scheduler.advanceUntilIdle()
+        val first = """{"propuesta":{"tasks":[{"id":42,"title":"Conducir"}]}}"""
+        val changed = """{"propuesta":{"tasks":[{"id":42,"title":"Conducir actualizado"}]}}"""
+        chatAIService.addUserAndAssistantMessage("Tarea para editar", first)
+        chatAIService.addUserAndAssistantMessage("Tarea para editar", changed)
+        coEvery { mockAIService.sendMessage(any()) } returns ChatResponse(listOf(Choice(Message.assistantMessage("Podemos ajustarlo."))))
+        chatAIService.sendMessage("Solo puedo por las tardes")
+        chatAIService.addUserAndAssistantMessage("Tarea para editar", changed)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(8, chatAIService.messages.value.size)
+        assertEquals(first, chatAIService.messages.value[1].content)
+        assertEquals(changed, chatAIService.messages.value[3].content)
+        assertTrue(chatAIService.messages.value[4].content.startsWith("Solo puedo por las tardes"))
+        assertEquals("Podemos ajustarlo.", chatAIService.messages.value[5].content)
+        assertEquals(changed, chatAIService.messages.value.last().content)
+    }
+
     // Verifica que los mensajes del sistema se excluyen del flujo mostrado en la UI
     @Test
     fun filterUiMessages_excludesSystemMessages() {

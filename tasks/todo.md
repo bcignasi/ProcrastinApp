@@ -87,6 +87,9 @@ Dependencia: 3. Alcance: medio por incremento visual o funcional.
 - [ ] Ignasi revisa las burbujas en el móvil, con mensajes cortos y largos y tamaño de letra ampliado.
 - [x] Al abrir una tarea, Conversación muestra texto legible y conserva el JSON interno para Propuesta y el contexto de IA; comentario cuando existe e indicación localizada cuando solo hay JSON. Dos pruebas de reapertura español/inglés y ocho del formateador.
 - [ ] Ignasi revisa abrir una tarea desde Agenda, leer el mensaje y volver a Propuesta en el móvil.
+- [x] Evitar parejas consecutivas idénticas al reabrir una tarea y compactar las ya guardadas; conservar mensajes reales y JSON. Restaurar Propuesta al reabrir tras cancelar aunque el historial no emita. Cinco pruebas permanentes, incluida una tarea de diez pasos abierta ocho veces.
+- [ ] Ignasi revisa que al reabrir la tarea no crezcan las copias idénticas y que sus diez pasos sigan en Propuesta.
+- [ ] Ajustar el texto de apoyo cuando `propuesta.tasks` está vacío o contiene tareas rechazadas por el extractor; hallazgo de auditoría separado de las aperturas repetidas.
 - [ ] Enviar, cancelar y gestionar carga/error conserva su comportamiento; el teclado deja accesible la escritura.
 
 Verificación: conversación y estados representativos sin llamadas innecesarias a IA; :app:assembleDebug.

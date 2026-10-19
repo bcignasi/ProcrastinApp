@@ -38,6 +38,20 @@ Los mensajes normales y del usuario conservan el recorte existente de instruccio
 
 Validación del arreglo: 138 pruebas aprobadas, sin fallos, errores ni omitidas; `assembleDebug`, `compileDebugAndroidTestKotlin` y `lintDebug` correctos. Lint conserva 41 advertencias y un aviso informativo, sin errores. La comprobación visual en el móvil queda a cargo de Ignasi.
 
+## Aperturas repetidas de una tarea — 20 de octubre de 2026
+
+La navegación explícita a una tarea crea una entrada nueva del Asistente, pero `ChatAIService` y su historial son compartidos. Antes, cada apertura añadía otra pareja «Tarea para editar» + JSON. El formateador hacía que cada copia se viera como «Tu plan está disponible en Propuesta…». El problema estaba en la inserción repetida del contexto, no en que la IA hubiera contestado ocho veces.
+
+`ChatAIService.addUserAndAssistantMessage` compacta las parejas consecutivas del final que coincidan exactamente con el contexto solicitado y deja una sola pareja. Esto evita nuevas copias y limpia las acumuladas cuando se vuelve a abrir esa misma tarea. La lista compactada se publica y se guarda; el JSON no se transforma. Los mensajes reales, los contextos distintos y las versiones diferentes de una tarea se conservan. No se usa `distinct` sobre todo el chat ni se reinicia la conversación.
+
+Cuando el resultado del historial es idéntico al anterior, `StateFlow` no vuelve a emitirlo. Por eso `AssistantRepository.addUserAndAssistantMessage` también recalcula explícitamente Propuesta con el JSON recibido. Se extrae `updateProposal` para compartir el mismo parser, extractor y tratamiento de errores entre esa apertura y el observador de mensajes. Así, cancelar y reabrir una tarea restaura sus pasos sin necesitar otro mensaje duplicado.
+
+Cinco pruebas permanentes cubren ocho aperturas con una sola pareja, ocho copias cargadas del almacenamiento y su guardado compacto conservando conversación real, conservación de versiones distintas y mensajes reales intercalados, restauración de Propuesta tras cancelar sin nueva emisión del historial y la pantalla de un objetivo de diez pasos abierto ocho veces. Cuatro reprodujeron el fallo antes del arreglo. No se hacen consultas externas de IA. Registros: `.artifacts/assistant-edit-duplicates-red.log`, `.artifacts/assistant-edit-duplicates-green.log` y `.artifacts/assistant-edit-duplicates-validation.log`.
+
+Validación: 143 pruebas aprobadas, sin fallos, errores ni omitidas; `assembleDebug`, `compileDebugAndroidTestKotlin` y `lintDebug` correctos. Lint mantiene las 41 advertencias y un aviso informativo anteriores, sin errores.
+
+La revisión de Ignasi consiste en pulsar Run en Android Studio, volver a abrir la tarea desde Agenda y comprobar una sola pareja si las copias acumuladas son consecutivas e idénticas, la conservación de sus diez pasos y varias reaperturas sin nuevas copias. Esta corrección no cambia el caso pendiente de la auditoría sobre el texto de apoyo cuando una respuesta tiene una propuesta vacía o inválida.
+
 ## Campo de escritura
 
 `MessageInputField` utiliza un único `OutlinedTextField` con `MaterialTheme.shapes.large` (16 dp), fondo `surface` y borde `outlineVariant` cuando no tiene foco. El envío es un `IconButton` de 48 dp dentro de `trailingIcon`, con el icono de contorno `AutoMirrored.Outlined.Send`. El campo sigue creciendo hasta cinco líneas y tiene una altura mínima de 56 dp.

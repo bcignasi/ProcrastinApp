@@ -121,6 +121,21 @@ class AssistantRepositoryTest {
     }
 
     @Test
+    fun reopeningAnUnchangedEditingPairRestoresTheProposalAfterCancelWithoutANewMessageEmission() = runTest {
+        val proposal = publishProposal()
+        val json = messagesFlow.value.last().content
+        repository.clearTasks()
+        assertTrue(repository.tasks.value.isEmpty())
+
+        // Un historial sin cambios no vuelve a emitir en StateFlow al reabrir la misma tarea.
+        repository.addUserAndAssistantMessage("Tarea para editar", json)
+        testDispatcher.scheduler.advanceUntilIdle()
+
+        assertEquals(proposal, repository.tasks.value)
+        assertNotNull(repository.lastResponse.value)
+    }
+
+    @Test
     fun `cuando llega un mensaje del asistente con JSON valido extrae tareas`() = runTest {
         val json = """{"comentario":"OK","propuesta":{"tasks":[]}}"""
         val assistantMsg = Message.assistantMessage(json)
