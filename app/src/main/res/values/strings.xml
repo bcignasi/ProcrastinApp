@@ -19,8 +19,7 @@
     <string name="agenda_date_today">Today, %1$s</string>
     <string name="agenda_pending">Pending</string>
     <string name="agenda_done">Done</string>
-    <string name="agenda_overdue">Overdue</string>
-    <string name="agenda_empty_today">You have no tasks for today.</string>
+    <string name="agenda_empty_today">You have no tasks with a reminder today.</string>
     <string name="agenda_empty_pending">You have no pending tasks.</string>
     <string name="agenda_empty_done">No completed tasks yet.</string>
     <string name="task_type_Past">Past Tasks</string>
@@ -135,8 +134,6 @@
     <string name="task_priority_normal">Normal</string>
     <string name="task_priority_high">High</string>
     <string name="task_priority_urgent">Urgent</string>
-    <string name="task_priority_high_inline">High priority</string>
-    <string name="task_priority_urgent_inline">Urgent priority</string>
     <string name="task_mark_complete_cd">Complete %1$s</string>
     <string name="task_mark_pending_cd">Mark %1$s as pending</string>
 

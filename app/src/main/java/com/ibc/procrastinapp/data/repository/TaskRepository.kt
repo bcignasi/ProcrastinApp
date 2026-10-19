@@ -55,12 +55,12 @@ class TaskRepository(
         return processTaskQuery(taskDao.getPastTasks(date.toString()), includeHierarchy)
     }
 
-    /** Pendientes con fecha límite de hoy; mañana queda fuera del intervalo. */
+    /** Pendientes con aviso de hoy; mañana queda fuera del intervalo. */
     private fun getTodayTasksFlow(date: LocalDate): Flow<List<Task>> =
         processTaskQuery(
-            taskDao.getNowTasks(
-                now = date.toString(),
-                pastTomorrow = date.plusDays(1).toString()
+            taskDao.getTodayReminderTasks(
+                fromDate = date.toString(),
+                untilDate = date.plusDays(1).toString()
             ),
             includeHierarchy = true
         )

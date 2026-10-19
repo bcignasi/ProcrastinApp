@@ -22,7 +22,7 @@ Esta secuencia tiene prioridad sobre el orden de temas personalizados descrito m
 1. **Base Serena:** aplicar paleta, tipografía y formas al modo oscuro existente, manteniendo el selector claro/oscuro. No cambiar consultas ni navegación en este paso.
 2. **Navegación inferior:** introducir Agenda / Asistente; conservar filtros, conversación, acceso a edición y comportamiento del botón atrás y teclado.
 3. **Agenda:** rediseñar filas con datos reales, título principal y fecha/hora/prioridad secundarios. Mantener subtareas, notas y acciones accesibles.
-4. **Filtros:** adaptar Pendientes / Todas / Hechas conservando los filtros por fecha, prioridad y notificaciones. La consulta actual `ALL` significa pendientes; «Todas» incluyendo completadas necesita una definición y verificación propias. Separar cualquier cambio de consulta del cambio puramente visual.
+4. **Filtros:** Hoy / Pendientes / Hechas. Hoy usa exclusivamente avisos del día y una única lista sin atrasadas; Pendientes usa `ALL`, que incluye todas las pendientes, incluso atrasadas, futuras y sin aviso. Los filtros internos anteriores siguen disponibles en código. Las filas de Agenda muestran solo el aviso y recuperan etiquetas compactas de prioridad alta/urgente.
 5. **Conversación:** pulir mensajes, entrada de texto y estados de carga/error utilizando las acciones existentes.
 6. **Propuesta:** presentar pasos, subtareas y fechas con claridad; conservar los ajustes mediante conversación y Guardar en agenda; comprobar el recorrido completo.
 

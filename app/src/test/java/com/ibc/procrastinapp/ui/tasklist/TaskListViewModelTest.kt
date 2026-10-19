@@ -4,6 +4,7 @@ import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.data.repository.TaskRepository
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -55,18 +56,18 @@ class TaskListViewModelTest {
     fun tearDown() = Dispatchers.resetMain()
 
     @Test
-    fun startsWithTodayAndKeepsOverdueInASeparateSection() = runTest(dispatcher) {
+    fun startsWithTodayWithoutQueryingOrAddingOverdueTasks() = runTest(dispatcher) {
         backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
         runCurrent()
 
         assertEquals(todayTasks.value, viewModel.uiState.value.tasks)
-        assertEquals(overdueTasks.value, viewModel.uiState.value.overdueTasks)
         assertEquals(TaskListQueryType.TODAY, viewModel.uiState.value.filter)
+        verify(exactly = 0) { repository.getTasks(TaskListQueryType.PAST, any()) }
 
         todayTasks.value = emptyList()
         runCurrent()
         assertTrue(viewModel.uiState.value.tasks.isEmpty())
-        assertEquals(overdueTasks.value, viewModel.uiState.value.overdueTasks)
+        verify(exactly = 0) { repository.getTasks(TaskListQueryType.PAST, any()) }
     }
 
     @Test
@@ -80,7 +81,6 @@ class TaskListViewModelTest {
         viewModel.setTaskFilter(TaskListQueryType.ALL)
         runCurrent()
         assertEquals(pendingTasks.value, viewModel.uiState.value.tasks)
-        assertTrue(viewModel.uiState.value.overdueTasks.isEmpty())
         assertTrue(viewModel.uiState.value.selectedTaskIds.isEmpty())
 
         viewModel.setTaskFilter(TaskListQueryType.COMPLETED)

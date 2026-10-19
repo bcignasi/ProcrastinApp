@@ -8,13 +8,13 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -40,14 +40,11 @@ internal fun FlatTaskHeader(
     onComplete: (Task) -> Unit
 ) {
     val locale = LocalConfiguration.current.locales[0]
-    val deadline = flatTaskDateText(task.deadline, referenceDate, locale)
     val notify = flatTaskDateText(task.notify, referenceDate, locale)
-    val priority = when (TaskPriority.fromLevel(task.priority)) {
-        TaskPriority.High -> stringResource(R.string.task_priority_high_inline)
-        TaskPriority.Urgent -> stringResource(R.string.task_priority_urgent_inline)
+    val priority = when (val value = TaskPriority.fromLevel(task.priority)) {
+        TaskPriority.High, TaskPriority.Urgent -> value
         else -> null
     }
-    val metadata = listOfNotNull(deadline, priority).joinToString(" · ")
     val checkboxLabel = stringResource(
         if (task.completed) R.string.task_mark_pending_cd else R.string.task_mark_complete_cd,
         task.title
@@ -70,16 +67,6 @@ internal fun FlatTaskHeader(
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
             )
-            if (metadata.isNotEmpty()) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    if (deadline != null) {
-                        Icon(Icons.Outlined.Schedule, contentDescription = null, modifier = Modifier.size(18.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    Text(metadata, style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
             if (notify != null) {
                 Row(
                     modifier = Modifier.semantics(mergeDescendants = true) {},
@@ -93,14 +80,34 @@ internal fun FlatTaskHeader(
                 }
             }
         }
-        if (task.subtasks.isNotEmpty()) {
-            IconButton(onClick = onExpandClick) {
-                Icon(
-                    imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                    contentDescription = stringResource(
-                        if (isExpanded) R.string.tasklist_collapse_subtasks_cd else R.string.tasklist_expand_subtasks_cd
-                    )
-                )
+        if (priority != null || task.subtasks.isNotEmpty()) {
+            Column(
+                modifier = Modifier.padding(start = 8.dp, top = 12.dp),
+                horizontalAlignment = Alignment.End
+            ) {
+                if (priority != null) {
+                    Surface(
+                        shape = MaterialTheme.shapes.extraSmall,
+                        color = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    ) {
+                        Text(
+                            text = stringResource(priority.labelResId).uppercase(locale),
+                            style = MaterialTheme.typography.labelSmall,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
+                }
+                if (task.subtasks.isNotEmpty()) {
+                    IconButton(onClick = onExpandClick) {
+                        Icon(
+                            imageVector = if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            contentDescription = stringResource(
+                                if (isExpanded) R.string.tasklist_collapse_subtasks_cd else R.string.tasklist_expand_subtasks_cd
+                            )
+                        )
+                    }
+                }
             }
         }
     }

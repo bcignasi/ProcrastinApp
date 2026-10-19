@@ -54,7 +54,7 @@ Dependencia: 1. Alcance: medio.
 
 - [x] Conservar las Card y añadir TaskPresentation.FLAT/CARDS: Agenda activa FLAT, el Asistente conserva CARDS, las subtareas heredan la presentación. Sin selector nuevo en Ajustes. Compilación y 94 pruebas existentes correctas; lint con 0 errores y 29 advertencias anteriores. [Guía del código](../docs/development/presentacion-tareas.md).
 - [ ] Ignasi revisa las filas planas, selección y subtareas en el móvil; el contenido y la jerarquía de títulos/fechas se pulen después.
-- [x] Filas planas de la maqueta original: FlatTaskHeader con casilla conectada a completar, título en seminegrita, reloj y fecha/hora secundaria, prioridad alta/urgente sin etiqueta rellena e identificadores internos ocultos. Tarjetas conservadas; fecha de referencia propagada para actualizar al cambiar el día.
+- [x] Filas planas de la maqueta original: FlatTaskHeader con casilla conectada a completar, título en seminegrita, una única fecha de aviso con campana, etiqueta roja de prioridad alta/urgente e identificadores internos ocultos. Tarjetas conservadas; fecha de referencia propagada para actualizar al cambiar el día.
 - [x] Validación técnica de filas y casillas: assembleDebug, 116 pruebas locales aprobadas (cuatro de interacción Compose/Robolectric y cinco de fechas nuevas), lintDebug con 0 errores y 22 advertencias, y compileDebugAndroidTestKotlin.
 - [ ] Ignasi revisa las casillas, texto, fechas, avisos y subtareas de las filas Serena en el móvil, en claro y oscuro.
 - [ ] Subtareas, notas y acciones de completar, editar y borrar siguen accesibles con datos reales, sin nuevos proyectos ni progreso ficticio.
@@ -66,10 +66,10 @@ Dependencia: 2. Alcance: medio por grupo de componentes.
 ## 4. Cabecera Serena y filtros Hoy / Pendientes / Hechas
 
 - [x] Cabecera con marca, engranaje, Tu agenda y fecha; tres pestañas visibles Hoy / Pendientes / Hechas.
-- [x] Hoy como vista inicial: pendientes con fecha límite de hoy; atrasadas en sección separada usando PAST. Pendientes usa ALL y Hechas usa COMPLETED.
+- [x] Hoy como vista inicial: pendientes con aviso de hoy y una única lista sin atrasadas. Pendientes usa ALL (incluye atrasadas y tareas sin aviso) y Hechas usa COMPLETED. Filtros internos anteriores conservados.
 - [x] Los demás filtros permanecen en el código sin mostrarse en Agenda. Se conserva el rememberSaveable del filtro al volver de Ajustes o Asistente; cambiar de pestaña limpia la selección de tareas.
 - [x] Actualizar fecha y consultas al cambiar el día; no cambiar la estructura ni el filtrado existente de subtareas.
-- [x] Cinco pruebas con Room en memoria para fechas, completado y jerarquía; tres del ViewModel para secciones, cambio de pestaña y cambio de día. Suite local: 102 pruebas aprobadas, cero fallos. Prueba de cabecera estrecha actualizada y compilada, sin ejecutarla en el móvil.
+- [x] Seis pruebas con Room en memoria para avisos, fechas distintas de límite/aviso, completado y jerarquía; tres del ViewModel para Hoy sin PAST, cambio de pestaña y cambio de día. Suite local actual: 118 pruebas aprobadas, cero fallos ni omitidas. App y pruebas instrumentadas compiladas; lint con 0 errores y 22 advertencias. Revisión visual en el móvil a cargo de Ignasi.
 - [ ] Ignasi revisa cabecera, pestañas y listas en el móvil.
 
 Verificación: datos con tareas pendientes y completadas; pruebas de consultas si cambian y comprobación en el móvil.

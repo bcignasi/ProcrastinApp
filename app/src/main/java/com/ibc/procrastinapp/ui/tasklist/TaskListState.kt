@@ -19,7 +19,6 @@ import java.time.LocalDate
  */
 data class TaskListUiState(
     val tasks: List<Task> = emptyList(),
-    val overdueTasks: List<Task> = emptyList(),
     val filter: TaskListQueryType = TaskListQueryType.TODAY,
     val date: LocalDate = LocalDate.now(),
 //    val isLoading: Boolean = false,

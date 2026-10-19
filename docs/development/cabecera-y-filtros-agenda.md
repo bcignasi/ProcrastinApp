@@ -4,8 +4,8 @@ Decisión del 19 de octubre de 2026: mostrar Hoy / Pendientes / Hechas, con Hoy 
 
 ## De la pestaña a la consulta
 
-- Hoy utiliza el nuevo `TaskListQueryType.TODAY`: pendientes cuya fecha límite está entre hoy, incluido, y mañana, excluido. Reutiliza `TaskDao.getNowTasks()` con límites distintos a los de NOW.
-- Atrasadas se muestra como sección de Hoy utilizando PAST, con la misma fecha de referencia.
+- Hoy utiliza `TaskListQueryType.TODAY`: pendientes cuyo aviso (`notify`) está entre hoy, incluido, y mañana, excluido. `TaskDao.getTodayReminderTasks()` selecciona por la misma fecha que muestra la fila.
+- Hoy contiene una única lista, sin secciones Hoy/Atrasadas. Las tareas atrasadas, futuras y sin aviso continúan disponibles en Pendientes.
 - Pendientes utiliza ALL: todas las tareas principales pendientes, incluidas las que no tienen fecha.
 - Hechas utiliza COMPLETED.
 - NOW conserva su intervalo original de hoy y mañana. Los filtros de prioridad, aviso y sin fecha no se eliminan.
@@ -14,7 +14,7 @@ Decisión del 19 de octubre de 2026: mostrar Hoy / Pendientes / Hechas, con Hoy 
 
 ## Jerarquía existente
 
-Las consultas seleccionan tareas principales (`parentTaskId IS NULL`) y el repositorio carga sus subtareas completas. Una subtarea con fecha de hoy cuyo padre no corresponde a Hoy no aparece como tarea independiente. Este incremento conserva ese comportamiento; no implementa una agenda transversal de subtareas.
+Las consultas seleccionan tareas principales (`parentTaskId IS NULL`) y el repositorio carga sus subtareas completas. Una subtarea con aviso de hoy cuyo padre no corresponde a Hoy no aparece como tarea independiente. Se conserva ese comportamiento; no se implementa una agenda transversal de subtareas.
 
 ## Comprobaciones
 
@@ -22,7 +22,7 @@ Las pruebas locales utilizan Room en memoria bajo Robolectric. La revisión visu
 
 ## Estado y pantalla
 
-`TaskListViewModel` combina la pestaña elegida y la fecha local. En Hoy observa dos consultas (TODAY y PAST) y conserva sus resultados en `tasks` y `overdueTasks`; en las demás pestañas solo observa la lista correspondiente. `TaskListUiState` transporta también el filtro y la fecha para que la cabecera y las secciones representen la misma consulta.
+`TaskListViewModel` combina la pestaña elegida y la fecha local. Observa una única consulta por pestaña y conserva el resultado en `tasks`; ya no consulta PAST adicionalmente ni transporta `overdueTasks`. `TaskListUiState` transporta también el filtro y la fecha para que cabecera y filas representen la misma consulta.
 
 La fecha se revisa cada minuto mientras hay suscripción a la pantalla. Si no cambia, `distinctUntilChanged()` evita repetir las consultas. Al volver tras una pausa prolongada, la suscripción vuelve a leer la fecha. Se puede proporcionar una fecha controlada al ViewModel para probar medianoche sin esperar tiempo real.
 
@@ -30,12 +30,18 @@ Al cambiar de filtro se limpia la selección, evitando completar o eliminar tare
 
 La cabecera utiliza la marca, Tu agenda, fecha localizada y engranaje. Las tres pestañas usan semántica de selección y colores/formas compartidos del tema. Las tareas conservan sus acciones, presentación FLAT/CARDS y expansión de subtareas.
 
-Las claves de las filas combinan sección e identificador de tarea, evitando colisiones durante las emisiones independientes de ambas consultas.
+Las claves de las filas utilizan el identificador estable de tarea. `TaskList` ya no necesita construir secciones.
 
 ## Validación técnica
 
-- Cinco pruebas con Room real en memoria: límites del día, fecha sin hora, exclusión de completadas/sin fecha/solo aviso, subtareas, completar y paso de diciembre a enero. NOW y ALL conservan su comportamiento.
-- Tres pruebas del ViewModel: inicio en Hoy, sección de atrasadas aun sin tareas para hoy, cambio de pestaña sin selección oculta y actualización tras medianoche sin escrituras en la base de datos.
-- Las pruebas se ejecutaron primero con el comportamiento ausente: tres fallos del repositorio y tres del ViewModel. Tras implementar, la suite completa pasó: 102 pruebas, cero fallos y cero errores.
-- App y pruebas instrumentadas compiladas; estas últimas no se ejecutaron en el móvil. Lint sin errores y con las 29 advertencias anteriores.
+- Seis pruebas con Room real en memoria: límites del día para avisos, fecha sin hora, exclusión de completadas/sin aviso, subtareas, completar, paso de diciembre a enero y fechas de límite/aviso distintas. NOW y ALL conservan su comportamiento.
+- Tres pruebas del ViewModel: inicio en Hoy sin consultar PAST, cambio de pestaña sin selección oculta y actualización tras medianoche sin escrituras en la base de datos.
+- Las pruebas de este cambio fallaron primero con el comportamiento anterior: cinco del repositorio, una del ViewModel y dos de las filas.
+- Resultado final: `assembleDebug`, 118 pruebas locales sin fallos ni omitidas, `lintDebug` con 0 errores y 22 advertencias y `compileDebugAndroidTestKotlin` correctos. No se ejecuta la app en el móvil durante estas comprobaciones.
 - Para ver los cambios en el teléfono, ejecutar Run en Android Studio. La revisión visual permanece pendiente de Ignasi.
+
+## Fecha visible y prioridad
+
+En las filas FLAT de Agenda se muestra solo la fecha/hora del aviso con su campana. Si no existe aviso, no se sustituye por la fecha límite: la tarea sigue accesible en Pendientes. El campo `deadline` permanece guardado y los filtros internos que lo utilizaban se conservan.
+
+Las prioridades alta y urgente vuelven a representarse como etiquetas compactas en la esquina superior derecha, usando `errorContainer` y `onErrorContainer` para fondo y texto. Se reutilizan las etiquetas localizadas Alta/Urgente; desaparece el texto de prioridad junto a la fecha. Las tarjetas del Asistente mantienen su representación anterior.

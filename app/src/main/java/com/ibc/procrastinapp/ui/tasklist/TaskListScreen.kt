@@ -127,7 +127,7 @@ fun TaskListScreen(
                 // NO NECESITAMOS ESTE ESTADO SI CARGAMOS DESDE ROOM
 //                uiState.isLoading -> LoadingIndicator(Modifier.align(Alignment.Center))
 
-                uiState.tasks.isEmpty() && uiState.overdueTasks.isEmpty() ->
+                uiState.tasks.isEmpty() ->
                     EmptyListMessage(
                         modifier = Modifier.align(Alignment.Center),
                         messageResId = when (uiState.filter) {

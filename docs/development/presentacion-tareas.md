@@ -45,13 +45,13 @@ Una tarea seleccionada conserva su fondo destacado y borde en ambas presentacion
 
 ## Filas de la maqueta original de Serena
 
-Contrato del incremento: casilla a la izquierda, título de 16 sp en seminegrita, reloj y fecha/hora en texto secundario, y prioridad alta o urgente como texto sin etiqueta rellena. El título admite varias líneas. Los avisos conservan su campana y su fecha; los identificadores internos desaparecen de la cabecera plana. Los separadores existentes permanecen. Este incremento representa tareas reales, sin añadir proyectos ni barras de progreso.
+Contrato actualizado: casilla a la izquierda, título de 16 sp en seminegrita, una única fecha/hora correspondiente al aviso con campana, y prioridad alta o urgente como etiqueta roja en la esquina superior derecha. El título admite varias líneas. Los identificadores internos desaparecen de la cabecera plana y los separadores existentes permanecen. Este incremento representa tareas reales, sin añadir proyectos ni barras de progreso.
 
 `TaskItemContent` utiliza `FlatTaskHeader` solo en `FLAT`. El modo `CARDS` conserva `ShowUrgentRow`, `ShowTitleRow` y `ShowDatesRow`; no se alteran sus componentes. Las notas, periodicidad, acciones y recursión de subtareas siguen compartidas. La cabecera plana conserva una flecha independiente para desplegar; no necesita la segunda flecha inferior de tarjetas.
 
 `Checkbox(checked = task.completed, onCheckedChange = { onComplete(task) })` reutiliza el callback que ya llegaba desde `TaskListScreen` al ViewModel. La casilla no guarda estado propio: Room actualiza la tarea y la pantalla recibe los datos. La selección múltiple por pulsación larga continúa siendo distinta de completar. Completar un padre no completa sus subtareas.
 
-`FlatTaskDateText` muestra solo `HH:mm` cuando la fecha es hoy y contiene una hora explícita. Para otros días conserva fecha y hora, con fecha localizada. Una fecha sin hora no inventa las 00:00, y un dato inválido se conserva visible en lugar de sustituirse por la fecha actual. `uiState.date` se pasa como `referenceDate` hasta las tareas y subtareas para renovar también estas etiquetas al cambiar el día.
+`FlatTaskDateText` muestra solo `HH:mm` cuando la fecha del aviso es hoy y contiene una hora explícita. Para otros días conserva fecha y hora, con fecha localizada. Una fecha sin hora no inventa las 00:00, y un dato inválido se conserva visible en lugar de sustituirse por la fecha actual. `uiState.date` se pasa como `referenceDate` hasta las tareas y subtareas para renovar también estas etiquetas al cambiar el día. `FlatTaskHeader` ya no muestra la fecha límite ni mezcla prioridad y fecha en una línea; si falta aviso, no hay fecha en la fila.
 
 Se reutiliza la dependencia de pruebas Compose en `testImplementation` para ejecutar interacciones con Robolectric en el ordenador, sin dispositivo. Las pruebas comprueban completar/desmarcar sin abrir edición ni seleccionar, completar una subtarea sin completar al padre, conservar tarjetas sin casillas y refrescar metadatos al cambiar el día. Otras pruebas verifican hoy, otras fechas, medianoche, fechas sin hora y datos inválidos.
 

@@ -8,11 +8,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsOff
 import androidx.compose.ui.test.assertIsOn
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.isToggleable
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTouchInput
 import androidx.compose.ui.unit.dp
 import com.ibc.procrastinapp.R
 import com.ibc.procrastinapp.data.model.Task
@@ -58,8 +60,8 @@ class FlatTaskRowTest {
             }
         }
 
-        compose.onNode(isToggleable()).assertIsOff().performClick().assertIsOn()
-        compose.onNode(isToggleable()).performClick().assertIsOff()
+        compose.onNode(isToggleable()).assertIsOff().performTouchInput { click() }.assertIsOn()
+        compose.onNode(isToggleable()).performTouchInput { click() }.assertIsOff()
         compose.runOnIdle {
             assertEquals(listOf(42L, 42L), completedIds)
             assertEquals(0, opened)
@@ -111,7 +113,7 @@ class FlatTaskRowTest {
     fun metadataKeepsUrgencyWithoutDatesAndRefreshesWhenTheDayChanges() {
         val today = LocalDate.of(2026, 10, 19)
         val referenceDate = mutableStateOf(today)
-        val task = mutableStateOf(Task(id = 42, title = "Presentar solicitud", deadline = "$today 16:30", priority = 3))
+        val task = mutableStateOf(Task(id = 42, title = "Presentar solicitud", notify = "$today 16:30", priority = 3))
         compose.setContent {
             ProcAppMVVMTheme(darkTheme = true, dynamicColor = false) {
                 TaskList(
@@ -130,8 +132,32 @@ class FlatTaskRowTest {
         compose.onNodeWithText("16:30", substring = true).assertExists()
         compose.runOnIdle { referenceDate.value = today.plusDays(1) }
         compose.onNodeWithText("2026", substring = true).assertExists()
-        compose.runOnIdle { task.value = task.value.copy(deadline = "") }
-        val priorityLabel = RuntimeEnvironment.getApplication().getString(R.string.task_priority_urgent_inline)
+        compose.runOnIdle { task.value = task.value.copy(notify = "") }
+        val context = RuntimeEnvironment.getApplication()
+        val priorityLabel = context.getString(R.string.task_priority_urgent).uppercase(context.resources.configuration.locales[0])
         compose.onNodeWithText(priorityLabel).assertExists()
+    }
+
+    @Test
+    fun flatRowShowsOnlyTheReminderDateAndUsesAPriorityBadge() {
+        val today = LocalDate.of(2026, 10, 19)
+        compose.setContent {
+            ProcAppMVVMTheme(darkTheme = true, dynamicColor = false) {
+                Box(Modifier.width(320.dp)) {
+                    TaskItemContent(
+                        task = Task(id = 42, title = "Practicar teoría", deadline = "$today 16:30", notify = "$today 16:15", priority = 2),
+                        actionsEnabled = false,
+                        presentation = TaskPresentation.FLAT,
+                        referenceDate = today
+                    )
+                }
+            }
+        }
+        compose.onNodeWithText("16:15").assertExists()
+        compose.onNodeWithText("16:30", substring = true).assertDoesNotExist()
+        val context = RuntimeEnvironment.getApplication()
+        val label = context.getString(R.string.task_priority_high).uppercase(context.resources.configuration.locales[0])
+        compose.onNodeWithText(label).assertExists()
+        compose.onNodeWithContentDescription(context.getString(R.string.notification_cd)).assertExists()
     }
 }

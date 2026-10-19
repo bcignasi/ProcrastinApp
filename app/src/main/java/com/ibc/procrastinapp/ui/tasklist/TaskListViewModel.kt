@@ -69,22 +69,13 @@ class TaskListViewModel(
 
     /**
      * Renueva las consultas cuando cambia el filtro o la fecha.
-     * Hoy mantiene las atrasadas separadas de las tareas del día.
+     * Hoy consulta solo los avisos del día. Las demás pendientes se ven en ALL.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     private val tasks = combine(_currentFilter, dates) { filter, date -> filter to date }
         .flatMapLatest { (filter, date) ->
-            if (filter == TaskListQueryType.TODAY) {
-                combine(
-                    taskRepository.getTasks(TaskListQueryType.TODAY, date),
-                    taskRepository.getTasks(TaskListQueryType.PAST, date)
-                ) { today, overdue ->
-                    TaskListUiState(tasks = today, overdueTasks = overdue, filter = filter, date = date)
-                }
-            } else {
-                taskRepository.getTasks(filter, date).map { tasks ->
-                    TaskListUiState(tasks = tasks, filter = filter, date = date)
-                }
+            taskRepository.getTasks(filter, date).map { tasks ->
+                TaskListUiState(tasks = tasks, filter = filter, date = date)
             }
         }
 
