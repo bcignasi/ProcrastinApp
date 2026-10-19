@@ -23,6 +23,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -33,7 +34,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ibc.procrastinapp.R
 import com.ibc.procrastinapp.data.ai.Message
-import com.ibc.procrastinapp.ui.common.clipAutomaticText
 
 /**
  * Componente que representa un mensaje individual en la conversación
@@ -44,11 +44,10 @@ fun AssistantMessagesViewMessageItem(message: Message) {
     val isUser = message.isUser
     val author = stringResource(if (isUser) R.string.avatar_user else R.string.avatar_assistant)
 
-    // Se trata de eliminar textos que se introduce de modo
-    // repetitivo en cada mensaje, como "IMPORTANTE...
-    // para condicionar la respuesta de ChatGPT o como
-    // parte de su respuesta que es innecesario visualizar
-    val messageClipped = clipAutomaticText(message.content)
+    val proposalFallback = stringResource(R.string.assistant_proposal_ready)
+    val displayText = remember(message, proposalFallback) {
+        conversationMessageText(message, proposalFallback)
+    }
 
     Row(
         modifier = Modifier.fillMaxWidth(),
@@ -86,7 +85,7 @@ fun AssistantMessagesViewMessageItem(message: Message) {
                 color = if (isUser) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
             ) {
                 Text(
-                    text = messageClipped,
+                    text = displayText,
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     style = MaterialTheme.typography.bodyLarge,
                     color = if (isUser) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant

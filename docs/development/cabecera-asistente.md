@@ -16,13 +16,27 @@ La visibilidad depende únicamente del contenido de cada vista. `QuoteViewModel`
 
 ## Burbujas de conversación
 
-`AssistantMessagesViewMessageItem` conserva `message.isUser` y `clipAutomaticText` para elegir el autor y preparar el mismo contenido de antes. Los mensajes del usuario se alinean a la derecha, sin avatar, en una columna que limita la burbuja al 85 % del ancho disponible; los textos cortos se ajustan a su contenido. Los mensajes del asistente se alinean a la izquierda, con un icono `Outlined.SmartToy` de 20 dp dentro de un círculo de 32 dp y una separación de 8 dp.
+`AssistantMessagesViewMessageItem` conserva `message.isUser` para elegir el autor y prepara el contenido visible mediante `conversationMessageText`. Los mensajes del usuario se alinean a la derecha, sin avatar, en una columna que limita la burbuja al 85 % del ancho disponible; los textos cortos se ajustan a su contenido. Los mensajes del asistente se alinean a la izquierda, con un icono `Outlined.SmartToy` de 20 dp dentro de un círculo de 32 dp y una separación de 8 dp.
 
 Las burbujas utilizan `MaterialTheme.shapes.large` (16 dp), sin elevación tonal, y `typography.bodyLarge` (DM Sans). Usuario usa `primaryContainer` / `onPrimaryContainer`; asistente usa `surfaceVariant` / `onSurfaceVariant`. El texto tiene 16 dp de margen horizontal y 12 dp vertical, permite varias líneas y crece con el tamaño de fuente del sistema. La semántica agrupa cada mensaje con su autor localizado; el robot es decorativo para no duplicar el anuncio.
 
 La lista aplica una única separación de 12 dp entre mensajes. `TypingIndicator` comienza a 40 dp del borde (32 de avatar + 8 de separación) y utiliza la misma forma y superficie plana que los mensajes del asistente. Se conserva la animación de los tres puntos.
 
 La validación del incremento ejecuta las 128 pruebas existentes, `assembleDebug`, `compileDebugAndroidTestKotlin` y `lintDebug`: sin fallos ni omitidas, sin errores de lint y con las 41 advertencias anteriores. El registro está en `.artifacts/serena-message-bubbles-validation.log`. Ignasi revisa en el móvil los mensajes cortos y largos, el ancho de las burbujas y el tamaño de letra ampliado.
+
+## Texto legible al abrir una tarea — 20 de octubre de 2026
+
+Al abrir una tarea de Agenda, `AssistantViewModel.loadTasksForEditing` reconstruye un mensaje JSON con `propuesta.tasks`. Ese mensaje contiene la tarea y sus subtareas; no contiene el comentario de la respuesta original de IA. Este flujo y el JSON interno se conservan.
+
+`conversationMessageText` solo prepara lo que dibuja la burbuja. Reutiliza `AssistantResponseParserImpl` y comprueba que el objeto contiene `propuesta.tasks` como array antes de ocultar el JSON. Muestra el texto anterior, el `comentario` si existe y el texto posterior, retirando las marcas de bloque de código que rodean la propuesta. Sin texto legible muestra el recurso `assistant_proposal_ready`: «Tu plan está disponible en Propuesta. Puedes pedirme cambios aquí», con traducción inglesa. Es una indicación fija de la app, no una nueva respuesta de IA ni una recuperación del comentario original.
+
+Los mensajes normales y del usuario conservan el recorte existente de instrucciones automáticas. Un JSON ajeno al formato de propuestas o que el parser no pueda reconocer conserva la presentación anterior. No se modifica `clipAutomaticText` compartido, el repositorio, el guardado, el contexto enviado a IA ni la estructura de tareas. La burbuja calcula el texto con `remember(message, proposalFallback)`; cambiar el mensaje o el idioma vuelve a calcularlo.
+
+`AssistantEditingConversationTest` abre la pantalla real con sesión, serialización y parser reales, simulando únicamente la lectura de la tarea y los servicios externos. En español e inglés exige texto legible sin JSON visible, subtareas conservadas en Propuesta, el mismo JSON interno tras cambiar de pestaña y ninguna consulta a IA. Las dos pruebas fallaron antes del arreglo porque se mostraba el JSON.
+
+`ConversationMessageTextTest` cubre ocho casos: propuesta solo JSON sin mutar el mensaje, comentario, texto a ambos lados con bloque de código, bloque sin texto, mensaje normal, mensaje de usuario, JSON ajeno o de forma incorrecta y JSON malformado. Los registros locales son `.artifacts/assistant-readable-red.log`, `.artifacts/assistant-readable-green.log` y `.artifacts/assistant-readable-validation.log`.
+
+Validación del arreglo: 138 pruebas aprobadas, sin fallos, errores ni omitidas; `assembleDebug`, `compileDebugAndroidTestKotlin` y `lintDebug` correctos. Lint conserva 41 advertencias y un aviso informativo, sin errores. La comprobación visual en el móvil queda a cargo de Ignasi.
 
 ## Campo de escritura
 

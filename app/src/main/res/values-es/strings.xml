@@ -140,5 +140,6 @@
     <string name="settings_dark_theme">Tema oscuro</string>
     <string name="settings_dark_theme_summary">Desactívalo para usar el tema claro.</string>
     <string name="settings_save_failed">No se ha podido guardar el tema. Inténtalo de nuevo.</string>
+    <string name="assistant_proposal_ready">Tu plan está disponible en Propuesta. Puedes pedirme cambios aquí.</string>
 </resources>
 

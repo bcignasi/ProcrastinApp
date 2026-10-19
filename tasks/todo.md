@@ -85,6 +85,8 @@ Dependencia: 3. Alcance: medio por incremento visual o funcional.
 - [x] Campo de escritura Serena con esquinas de 16 dp, envío de contorno integrado y área táctil de 48 dp; conserva borrador y comportamiento de envío.
 - [x] Burbujas Serena: usuario sin avatar y ancho máximo del 85 %, robot de contorno para el asistente, formas de 16 dp, superficies planas, DM Sans y separación uniforme de 12 dp; indicador de escritura alineado.
 - [ ] Ignasi revisa las burbujas en el móvil, con mensajes cortos y largos y tamaño de letra ampliado.
+- [x] Al abrir una tarea, Conversación muestra texto legible y conserva el JSON interno para Propuesta y el contexto de IA; comentario cuando existe e indicación localizada cuando solo hay JSON. Dos pruebas de reapertura español/inglés y ocho del formateador.
+- [ ] Ignasi revisa abrir una tarea desde Agenda, leer el mensaje y volver a Propuesta en el móvil.
 - [ ] Enviar, cancelar y gestionar carga/error conserva su comportamiento; el teclado deja accesible la escritura.
 
 Verificación: conversación y estados representativos sin llamadas innecesarias a IA; :app:assembleDebug.

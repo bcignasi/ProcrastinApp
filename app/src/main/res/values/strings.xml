@@ -141,4 +141,5 @@
     <string name="task_mark_complete_cd">Complete %1$s</string>
     <string name="task_mark_pending_cd">Mark %1$s as pending</string>
 
+    <string name="assistant_proposal_ready">Your plan is available in Proposal. You can ask me for changes here.</string>
 </resources>
