@@ -13,10 +13,13 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.ui.common.TaskItemContent
+import com.ibc.procrastinapp.ui.common.TaskPresentation
 import com.ibc.procrastinapp.ui.common.setContainerColor
 
 @Composable
@@ -29,7 +32,9 @@ fun TaskItemSelectable(
     showInlineActions: Boolean = false,
     onComplete: (Task) -> Unit = {},
     onDelete: (Task) -> Unit = {},
+    presentation: TaskPresentation = TaskPresentation.CARDS,
 ) {
+    val isFlat = presentation == TaskPresentation.FLAT
     Card(
         modifier = modifier.fillMaxWidth()
             // Detectar clic largo para iniciar selección
@@ -37,11 +42,15 @@ fun TaskItemSelectable(
                 onClick = onClick,
                 onLongClick = onLongClick
             ),
+        shape = if (isFlat) RectangleShape else MaterialTheme.shapes.medium,
+        elevation = if (isFlat) CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    else CardDefaults.cardElevation(),
         colors = CardDefaults.cardColors(
-            containerColor = if (isSelected)
-                MaterialTheme.colorScheme.primaryContainer
-            else
-                setContainerColor(task),
+            containerColor = when {
+                isSelected -> MaterialTheme.colorScheme.primaryContainer
+                isFlat -> Color.Transparent
+                else -> setContainerColor(task)
+            },
                 //TaskPriority.fromLevel(task.priority).containerColor(MaterialTheme.colorScheme)
         ),
         border = if (isSelected)
@@ -51,6 +60,7 @@ fun TaskItemSelectable(
 //        TaskItemContent(task = task)
         TaskItemContent(
             task = task,
+            presentation = presentation,
             actionsEnabled = showInlineActions,
             onComplete = onComplete,
             onDelete = onDelete

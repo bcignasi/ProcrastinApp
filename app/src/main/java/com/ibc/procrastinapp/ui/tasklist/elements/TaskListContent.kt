@@ -13,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import com.ibc.procrastinapp.R
 import com.ibc.procrastinapp.data.model.Task
+import com.ibc.procrastinapp.ui.common.TaskPresentation
 import com.ibc.procrastinapp.ui.tasklist.TaskListResult
 import com.ibc.procrastinapp.ui.tasklist.TaskListUiState
 
@@ -65,6 +66,7 @@ fun TaskListContent(
         // Lista de tareas
         TaskList(
             tasks = uiState.tasks,
+            presentation = TaskPresentation.FLAT,
             selectedTaskIds = uiState.selectedTaskIds,
             onTaskClick = onTaskClick,
             onTaskLongClick = onTaskLongClick,

@@ -34,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import com.ibc.procrastinapp.data.model.Task
 import androidx.compose.ui.res.stringResource
@@ -46,9 +47,11 @@ fun TaskItemContent(
     depth: Int = 0,
     actionsEnabled: Boolean,
     onComplete: (Task) -> Unit = {},
-    onDelete: (Task) -> Unit = {}
+    onDelete: (Task) -> Unit = {},
+    presentation: TaskPresentation = TaskPresentation.CARDS
 ) {
-    val paddingStart = 8.dp + (depth * 16).dp
+    val isFlat = presentation == TaskPresentation.FLAT
+    val paddingStart = (if (isFlat) 0.dp else 8.dp) + (depth * 16).dp
 
     // 👇 rememberSaveable para mantener expand/collapse incluso tras recomposición
     var isExpanded by rememberSaveable(task.id) { mutableStateOf(false) }
@@ -56,14 +59,21 @@ fun TaskItemContent(
     Card(
         modifier = modifier
             .fillMaxWidth()
-            .padding(start = paddingStart, top = 8.dp, bottom = 4.dp, end = 8.dp),
-        shape = MaterialTheme.shapes.medium,
+            .padding(
+                start = paddingStart,
+                top = 8.dp,
+                bottom = if (isFlat) 8.dp else 4.dp,
+                end = if (isFlat) 0.dp else 8.dp
+            ),
+        shape = if (isFlat) RectangleShape else MaterialTheme.shapes.medium,
+        elevation = if (isFlat) CardDefaults.cardElevation(defaultElevation = 0.dp)
+                    else CardDefaults.cardElevation(),
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
 //        colors = CardDefaults.cardColors(
 //            containerColor = TaskPriority.fromLevel(task.priority).color(MaterialTheme.colorScheme)
 //        )
     ) {
-        Column(modifier = Modifier.padding(4.dp)) {
+        Column(modifier = Modifier.padding(if (isFlat) 0.dp else 4.dp)) {
 
             ShowUrgentRow(
                 task = task,
@@ -165,6 +175,7 @@ fun TaskItemContent(
                 task.subtasks.forEach { subtask ->
                     TaskItemContent(
                         task = subtask,
+                        presentation = presentation,
                         depth = depth + 1,
                         actionsEnabled = actionsEnabled,
                         onComplete = onComplete,

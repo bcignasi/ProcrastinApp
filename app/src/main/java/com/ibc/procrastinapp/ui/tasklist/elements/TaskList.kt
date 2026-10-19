@@ -10,11 +10,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ibc.procrastinapp.data.model.Task
+import com.ibc.procrastinapp.ui.common.TaskPresentation
 
 /**
  * Lista de tareas con LazyColumn
@@ -28,21 +31,23 @@ fun TaskList(
     showInlineActionsForId: Long?,
     onInlineComplete: (Task) -> Unit,
     onInlineDelete: (Task) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    presentation: TaskPresentation = TaskPresentation.CARDS
 ) {
     LazyColumn(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(if (presentation == TaskPresentation.FLAT) 0.dp else 8.dp)
     ) {
-        items(tasks, key = { it.id }) { task ->
+        itemsIndexed(tasks, key = { _, task -> task.id }) { index, task ->
 
             // Determina si mostrar acciones en línea para esta tarea
             val showActions = showInlineActionsForId != null && showInlineActionsForId == task.id
 
             TaskItemSelectable(
                 task = task,
+                presentation = presentation,
                 isSelected = task.id in selectedTaskIds,
                 onLongClick = { onTaskLongClick(task.id) },
                 onClick = { onTaskClick(task.id) },
@@ -51,6 +56,9 @@ fun TaskList(
                 onDelete = { t -> onInlineDelete(t) },
                 modifier = Modifier.fillMaxWidth()
             )
+            if (presentation == TaskPresentation.FLAT && index < tasks.lastIndex) {
+                HorizontalDivider(thickness = 1.dp, color = MaterialTheme.colorScheme.outlineVariant)
+            }
         }
     }
 }

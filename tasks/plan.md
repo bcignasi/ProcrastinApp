@@ -30,6 +30,8 @@ Cada incremento termina con comprobación concreta, explicación del código a I
 
 Desde el 18 de octubre, Ignasi realiza las comprobaciones visuales en el móvil. El agente se encarga de las verificaciones del código y no hace capturas ni interactúa con la app para revisar su aspecto salvo petición expresa.
 
+Decisión del 19 de octubre para la agenda: conservar las Card y mantener dos presentaciones activas en el mismo código, `TaskPresentation.FLAT` y `CARDS`. Agenda utiliza FLAT; los componentes compartidos y el Asistente conservan CARDS por defecto. Cambian fondo, forma, elevación, espaciado y separadores, sin modificar Task ni la relación de subtareas. El selector de presentación en Ajustes queda para otro incremento, independiente del tema claro/oscuro. [Explicación del código](../docs/development/presentacion-tareas.md).
+
 Las agrupaciones de objetivo aprovecharán la relación tarea/subtareas existente. Las barras de la maqueta son ilustrativas: no requieren construir proyectos de vida ni introducir hitos o porcentajes ficticios. El acabado claro y la selección de estilo élfico quedan como evolución posterior.
 
 Referencia elegida: [Serena Agenda primero](../docs/design/references/serena-agenda-primero.png). Tareas y criterios actualizados en [todo.md](todo.md).

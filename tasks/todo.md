@@ -48,6 +48,8 @@ Dependencia: 1. Alcance: medio.
 
 ## 3. Rediseñar las tareas de la agenda
 
+- [x] Conservar las Card y añadir TaskPresentation.FLAT/CARDS: Agenda activa FLAT, el Asistente conserva CARDS, las subtareas heredan la presentación. Sin selector nuevo en Ajustes. Compilación y 94 pruebas existentes correctas; lint con 0 errores y 29 advertencias anteriores. [Guía del código](../docs/development/presentacion-tareas.md).
+- [ ] Ignasi revisa las filas planas, selección y subtareas en el móvil; el contenido y la jerarquía de títulos/fechas se pulen después.
 - [ ] Jerarquía Serena para título, fecha/hora y prioridad; identificadores internos fuera de la vista principal.
 - [ ] Subtareas, notas y acciones de completar, editar y borrar siguen accesibles con datos reales, sin nuevos proyectos ni progreso ficticio.
 
