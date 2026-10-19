@@ -156,7 +156,7 @@ class FlatTaskRowTest {
         compose.onNodeWithText("16:15").assertExists()
         compose.onNodeWithText("16:30", substring = true).assertDoesNotExist()
         val context = RuntimeEnvironment.getApplication()
-        val label = context.getString(R.string.task_priority_high_label)
+        val label = context.getString(R.string.task_priority_high)
         compose.onNodeWithText(label).assertExists()
         compose.onNodeWithContentDescription(context.getString(R.string.notification_cd)).assertExists()
     }

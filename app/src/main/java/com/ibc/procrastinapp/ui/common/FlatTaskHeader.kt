@@ -88,10 +88,7 @@ internal fun FlatTaskHeader(
             ) {
                 if (priority != null) {
                     Text(
-                        text = stringResource(
-                            if (priority == TaskPriority.High) R.string.task_priority_high_label
-                            else priority.labelResId
-                        ),
+                        text = stringResource(priority.labelResId),
                         style = MaterialTheme.typography.labelMedium,
                         color = if (priority == TaskPriority.High && LocalAppDarkTheme.current) {
                             SerenaPriorityHigh
