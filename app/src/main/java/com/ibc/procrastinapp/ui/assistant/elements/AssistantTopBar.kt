@@ -64,7 +64,8 @@ fun AssistantTopBar(
     currentScreenMode: AssistantScreenType,
     onCurrentScreenModeChange: (AssistantScreenType) -> Unit,
     onOpenSettings: () -> Unit,
-    date: LocalDate
+    date: LocalDate,
+    compact: Boolean
 ) {
     val colors = MaterialTheme.colorScheme
     val locale = LocalConfiguration.current.locales[0]
@@ -80,24 +81,37 @@ fun AssistantTopBar(
                 .padding(horizontal = 16.dp)
         ) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Outlined.CheckCircle, contentDescription = null,
-                    tint = colors.primary, modifier = Modifier.size(20.dp)
-                )
-                Text(
-                    stringResource(R.string.app_name),
-                    modifier = Modifier.weight(1f).padding(start = 8.dp),
-                    style = MaterialTheme.typography.labelLarge, color = colors.primary,
-                    maxLines = 1, overflow = TextOverflow.Ellipsis
-                )
-                IconButton(onClick = onOpenSettings) {
-                    Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings_open))
+                if (compact) {
+                    AssistantModeTabs(currentScreenMode, onCurrentScreenModeChange, Modifier.weight(1f))
+                } else {
+                    Icon(
+                        Icons.Outlined.CheckCircle, contentDescription = null,
+                        tint = colors.primary, modifier = Modifier.size(20.dp)
+                    )
+                    Text(
+                        stringResource(R.string.app_name),
+                        modifier = Modifier.weight(1f).padding(start = 8.dp),
+                        style = MaterialTheme.typography.labelLarge, color = colors.primary,
+                        maxLines = 1, overflow = TextOverflow.Ellipsis
+                    )
+                    IconButton(onClick = onOpenSettings) {
+                        Icon(Icons.Default.Settings, contentDescription = stringResource(R.string.settings_open))
+                    }
                 }
                 Box {
                     IconButton(onClick = { menuExpanded = true }) {
                         Icon(Icons.Default.MoreVert, contentDescription = stringResource(R.string.assistant_more_options))
                     }
                     DropdownMenu(expanded = menuExpanded, onDismissRequest = { menuExpanded = false }) {
+                        if (compact) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.settings_title)) },
+                                onClick = {
+                                    menuExpanded = false
+                                    onOpenSettings()
+                                }
+                            )
+                        }
                         DropdownMenuItem(
                             text = { Text(stringResource(R.string.assistant_restart_conversation)) },
                             enabled = !isSaving,
@@ -109,18 +123,20 @@ fun AssistantTopBar(
                     }
                 }
             }
-            Text(
-                text = stringResource(R.string.assistant_title),
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.semantics { heading() }
-            )
-            Text(
-                text = stringResource(R.string.agenda_date_today, formattedDate),
-                style = MaterialTheme.typography.bodyLarge, color = colors.onSurfaceVariant,
-                modifier = Modifier.padding(top = 4.dp, bottom = 20.dp)
-            )
-            AssistantModeTabs(currentScreenMode, onCurrentScreenModeChange)
+            if (!compact) {
+                Text(
+                    text = stringResource(R.string.assistant_title),
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.semantics { heading() }
+                )
+                Text(
+                    text = stringResource(R.string.agenda_date_today, formattedDate),
+                    style = MaterialTheme.typography.bodyLarge, color = colors.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 4.dp, bottom = 20.dp)
+                )
+                AssistantModeTabs(currentScreenMode, onCurrentScreenModeChange)
+            }
         }
     }
 }
@@ -128,11 +144,12 @@ fun AssistantTopBar(
 @Composable
 private fun AssistantModeTabs(
     currentMode: AssistantScreenType,
-    onModeChange: (AssistantScreenType) -> Unit
+    onModeChange: (AssistantScreenType) -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
     Surface(
-        modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+        modifier = modifier.fillMaxWidth().padding(bottom = 8.dp),
         shape = MaterialTheme.shapes.medium, color = colors.surfaceVariant
     ) {
         Row(Modifier.fillMaxWidth().selectableGroup()) {

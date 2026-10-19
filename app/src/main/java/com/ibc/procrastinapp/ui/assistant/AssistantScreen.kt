@@ -6,6 +6,7 @@
 package com.ibc.procrastinapp.ui.assistant
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -20,6 +21,7 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
@@ -106,16 +108,21 @@ fun AssistantScreen(
 
     Scaffold(
         topBar = {
-            AssistantTopBar(
-                isSaving = isSaving,
-                onDeleteAll = { assistantViewModel.startNewSession() },
-                currentScreenMode = currentScreenMode,
-                onCurrentScreenModeChange = { newMode ->
-                    currentScreenMode = newMode
-                },
-                onOpenSettings = { navController.navigate("settings") },
-                date = today,
-            )
+            BoxWithConstraints {
+                // Reserve room for writing and content, including when IME reduces the viewport.
+                val compactHeader = maxHeight < 400.dp * LocalDensity.current.fontScale.coerceAtLeast(1f)
+                AssistantTopBar(
+                    isSaving = isSaving,
+                    onDeleteAll = { assistantViewModel.startNewSession() },
+                    currentScreenMode = currentScreenMode,
+                    onCurrentScreenModeChange = { newMode ->
+                        currentScreenMode = newMode
+                    },
+                    onOpenSettings = { navController.navigate("settings") },
+                    date = today,
+                    compact = compactHeader,
+                )
+            }
         }) { paddingValues ->
         Box(
             modifier = modifier

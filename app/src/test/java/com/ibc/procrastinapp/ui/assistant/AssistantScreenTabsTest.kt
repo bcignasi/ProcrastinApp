@@ -2,18 +2,26 @@ package com.ibc.procrastinapp.ui.assistant
 
 import android.app.Application
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.test.assertIsDisplayed
 import androidx.compose.ui.test.assertIsNotEnabled
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.assertTextContains
+import androidx.compose.ui.test.click
 import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.performTouchInput
+import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -31,6 +39,7 @@ import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import org.junit.After
 import org.junit.Before
+import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -39,7 +48,7 @@ import org.robolectric.RuntimeEnvironment
 import org.robolectric.annotation.Config
 
 @RunWith(RobolectricTestRunner::class)
-@Config(sdk = [30], application = Application::class, qualifiers = "en")
+@Config(sdk = [30], application = Application::class, qualifiers = "en-w320dp-h900dp")
 class AssistantScreenTabsTest {
     @get:Rule
     val compose = createComposeRule()
@@ -47,6 +56,7 @@ class AssistantScreenTabsTest {
     private val model = mockk<AssistantViewModel>(relaxed = true)
     private val quotes = mockk<QuoteViewModel>(relaxed = true)
     private val saving = MutableStateFlow(false)
+    private var pixelsPerDp = 1f
 
     @Before
     fun setUp() {
@@ -64,17 +74,26 @@ class AssistantScreenTabsTest {
     @After
     fun tearDown() = unmockkAll()
 
-    private fun showScreen(darkTheme: Boolean = true) {
+    private fun showScreen(
+        darkTheme: Boolean = true,
+        availableHeight: State<Int>? = null,
+        fontScale: Float = 1f
+    ) {
         compose.setContent {
-            ProcAppMVVMTheme(darkTheme = darkTheme, dynamicColor = false) {
-                Box(Modifier.width(320.dp)) {
-                    val nav = rememberNavController()
-                    NavHost(navController = nav, startDestination = "assistant") {
-                        composable("assistant") {
-                            AssistantScreen(navController = nav, assistantViewModel = model, quoteViewModel = quotes)
-                        }
-                        composable("settings") {
-                            SettingsScreen(darkTheme, false, false, {}, { nav.popBackStack() })
+            pixelsPerDp = LocalDensity.current.density
+            CompositionLocalProvider(LocalDensity provides Density(pixelsPerDp, fontScale)) {
+                ProcAppMVVMTheme(darkTheme = darkTheme, dynamicColor = false) {
+                    Box(Modifier.width(320.dp).then(
+                        availableHeight?.let { Modifier.height(it.value.dp) } ?: Modifier
+                    )) {
+                        val nav = rememberNavController()
+                        NavHost(navController = nav, startDestination = "assistant") {
+                            composable("assistant") {
+                                AssistantScreen(navController = nav, assistantViewModel = model, quoteViewModel = quotes)
+                            }
+                            composable("settings") {
+                                SettingsScreen(darkTheme, false, false, {}, { nav.popBackStack() })
+                            }
                         }
                     }
                 }
@@ -123,5 +142,50 @@ class AssistantScreenTabsTest {
         compose.onNodeWithContentDescription("More options").performClick()
         compose.onNodeWithText("Restart conversation").assertIsNotEnabled()
         verify(exactly = 1) { model.startNewSession() }
+    }
+
+    private fun assertInputHasEnoughVisibleHeight() {
+        val heightDp = compose.onNode(hasSetTextAction()).fetchSemanticsNode().boundsInRoot.height / pixelsPerDp
+        assertTrue("El campo de escritura tiene solo $heightDp dp visibles", heightDp >= 48f)
+    }
+
+    private fun checkWritingAndSending(availableHeight: Int) {
+        showScreen(availableHeight = mutableStateOf(availableHeight))
+        compose.onNode(hasSetTextAction()).performTextInput("Objetivo de prueba")
+        assertInputHasEnoughVisibleHeight()
+        val context = RuntimeEnvironment.getApplication()
+        compose.onNodeWithContentDescription(context.getString(R.string.assistant_send_content_description))
+            .assertIsDisplayed().performTouchInput { click() }
+        verify(exactly = 1) { model.sendMessage("Objetivo de prueba") }
+    }
+
+    @Test
+    fun writingAndSendingRemainUsableWith240DpAvailable() = checkWritingAndSending(240)
+
+    @Test
+    fun writingAndSendingRemainUsableWith180DpAvailable() = checkWritingAndSending(180)
+
+    @Test
+    fun compactHeaderKeepsTheSelectedTabDraftAndSettingsWithLargeText() {
+        val height = mutableStateOf(640)
+        showScreen(availableHeight = height, fontScale = 1.5f)
+        val context = RuntimeEnvironment.getApplication()
+        compose.onNodeWithContentDescription(context.getString(R.string.settings_open)).assertIsDisplayed()
+        compose.onNodeWithText("Proposal").performClick()
+        compose.onNode(hasSetTextAction()).performTextInput("Borrador al cambiar de tamaño")
+
+        compose.runOnIdle { height.value = 240 }
+        compose.onNodeWithText("Proposal").assertIsSelected()
+        compose.onNode(hasSetTextAction()).assertTextContains("Borrador al cambiar de tamaño")
+        assertInputHasEnoughVisibleHeight()
+        compose.onNodeWithContentDescription("More options").performClick()
+        compose.onNodeWithText(context.getString(R.string.settings_title)).performClick()
+        compose.onNodeWithContentDescription(context.getString(R.string.settings_back)).performClick()
+        compose.onNodeWithText("Proposal").assertIsSelected()
+        compose.onNode(hasSetTextAction()).assertTextContains("Borrador al cambiar de tamaño")
+
+        compose.runOnIdle { height.value = 640 }
+        compose.onNodeWithContentDescription(context.getString(R.string.settings_open)).assertIsDisplayed()
+        verify(exactly = 0) { model.startNewSession() }
     }
 }

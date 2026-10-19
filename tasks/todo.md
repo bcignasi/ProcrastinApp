@@ -79,6 +79,7 @@ Dependencia: 3. Alcance: medio por incremento visual o funcional.
 ## 5. Pulir la conversación
 
 - [x] Cabecera Serena del Asistente con marca, título, fecha, Ajustes y menú de reinicio; pestañas Conversación / Propuesta con Conversación inicial y selección conservada al volver de Ajustes. [Guía del código](../docs/development/cabecera-asistente.md).
+- [x] Cabecera compacta según altura disponible y tamaño de fuente; conserva las pestañas y lleva Ajustes al menú para reservar espacio de escritura con teclado o ventana pequeña.
 - [ ] Pulir los mensajes y el campo de escritura con el diseño de Serena.
 - [ ] Enviar, cancelar y gestionar carga/error conserva su comportamiento; el teclado deja accesible la escritura.
 
