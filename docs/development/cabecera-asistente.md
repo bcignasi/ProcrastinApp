@@ -14,6 +14,16 @@ Conversación muestra `assistant_intro_text` mientras no hay mensajes y Propuest
 
 La visibilidad depende únicamente del contenido de cada vista. `QuoteViewModel` gestiona las citas; no cuenta las veces que se compone la ayuda ni decide cuándo ocultarla. Cambiar de pestaña o escribir un borrador no hace desaparecer la explicación.
 
+## Burbujas de conversación
+
+`AssistantMessagesViewMessageItem` conserva `message.isUser` y `clipAutomaticText` para elegir el autor y preparar el mismo contenido de antes. Los mensajes del usuario se alinean a la derecha, sin avatar, en una columna que limita la burbuja al 85 % del ancho disponible; los textos cortos se ajustan a su contenido. Los mensajes del asistente se alinean a la izquierda, con un icono `Outlined.SmartToy` de 20 dp dentro de un círculo de 32 dp y una separación de 8 dp.
+
+Las burbujas utilizan `MaterialTheme.shapes.large` (16 dp), sin elevación tonal, y `typography.bodyLarge` (DM Sans). Usuario usa `primaryContainer` / `onPrimaryContainer`; asistente usa `surfaceVariant` / `onSurfaceVariant`. El texto tiene 16 dp de margen horizontal y 12 dp vertical, permite varias líneas y crece con el tamaño de fuente del sistema. La semántica agrupa cada mensaje con su autor localizado; el robot es decorativo para no duplicar el anuncio.
+
+La lista aplica una única separación de 12 dp entre mensajes. `TypingIndicator` comienza a 40 dp del borde (32 de avatar + 8 de separación) y utiliza la misma forma y superficie plana que los mensajes del asistente. Se conserva la animación de los tres puntos.
+
+La validación del incremento ejecuta las 128 pruebas existentes, `assembleDebug`, `compileDebugAndroidTestKotlin` y `lintDebug`: sin fallos ni omitidas, sin errores de lint y con las 41 advertencias anteriores. El registro está en `.artifacts/serena-message-bubbles-validation.log`. Ignasi revisa en el móvil los mensajes cortos y largos, el ancho de las burbujas y el tamaño de letra ampliado.
+
 ## Campo de escritura
 
 `MessageInputField` utiliza un único `OutlinedTextField` con `MaterialTheme.shapes.large` (16 dp), fondo `surface` y borde `outlineVariant` cuando no tiene foco. El envío es un `IconButton` de 48 dp dentro de `trailingIcon`, con el icono de contorno `AutoMirrored.Outlined.Send`. El campo sigue creciendo hasta cinco líneas y tiene una altura mínima de 56 dp.
@@ -53,7 +63,7 @@ Dos pruebas adicionales forman parte de la suite permanente y se ejecutan con `:
 - `AssistantEmptyStateTest.independentListsAndReturningToEmptyKeepTheCorrectGuidance`: llena solo los mensajes y después solo las tareas. Cada pestaña muestra su ayuda únicamente si su propia lista está vacía. Al volver a vaciar ambas listas, las ayudas reaparecen y permanecen tras cuatro cambios de ida y vuelta. Se simulan cambios de estado; no se prueba aquí la acción de reiniciar del ViewModel.
 - `MessageInputFieldTest.busyInputBlocksTouchAndKeepsTheMultilineDraftUntilSending`: con fuente al 150 % y ancho de 320 dp, el envío empieza deshabilitado, se escribe un borrador de dos líneas y se activa la carga. Pulsar físicamente en el lugar del envío no llama al callback ni borra el borrador. Al terminar la carga, una pulsación entrega exactamente el texto original una vez, vacía el texto editable y vuelve a deshabilitar el envío. Usa el campo real con un callback local, sin servicio de IA.
 
-Las pruebas usan un contenedor de 320 dp y una ventana virtual suficientemente alta para permitir los tamaños solicitados. Las tres pruebas de altura reprodujeron el fallo antes de la corrección; la auditoría había medido solo 9 dp visibles para escribir con 240 dp disponibles. Ignasi realiza la revisión visual en el móvil mediante Run en Android Studio. Quedan pendientes el acabado de las burbujas de mensajes y la presentación de propuestas.
+Las pruebas usan un contenedor de 320 dp y una ventana virtual suficientemente alta para permitir los tamaños solicitados. Las tres pruebas de altura reprodujeron el fallo antes de la corrección; la auditoría había medido solo 9 dp visibles para escribir con 240 dp disponibles. Ignasi realiza la revisión visual en el móvil mediante Run en Android Studio. Queda pendiente la presentación de propuestas.
 
 Las tres pruebas de altura fallaron antes de la corrección y pasan con la cabecera adaptable. Las dos pruebas de ayuda vacía también reprodujeron la desaparición del texto antes de retirar el contador. Con las dos pruebas incorporadas desde la auditoría, se aprueban diez pruebas de interfaz del Asistente y la suite completa suma 128 pruebas, sin fallos, errores ni omitidas. `testDebugUnitTest` y `lintDebug` terminan correctamente con la suite permanente; lint conserva 41 advertencias y un aviso informativo, sin errores. La compilación de la app y de las pruebas instrumentadas se validó al implementar los cambios del Asistente.
 

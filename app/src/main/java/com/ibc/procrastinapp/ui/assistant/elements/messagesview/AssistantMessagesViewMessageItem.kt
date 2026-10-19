@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.SmartToy
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -25,9 +27,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.ibc.procrastinapp.R
 import com.ibc.procrastinapp.data.ai.Message
 import com.ibc.procrastinapp.ui.common.clipAutomaticText
@@ -39,6 +42,7 @@ import com.ibc.procrastinapp.ui.common.clipAutomaticText
 @Composable
 fun AssistantMessagesViewMessageItem(message: Message) {
     val isUser = message.isUser
+    val author = stringResource(if (isUser) R.string.avatar_user else R.string.avatar_assistant)
 
     // Se trata de eliminar textos que se introduce de modo
     // repetitivo en cada mensaje, como "IMPORTANTE...
@@ -47,68 +51,49 @@ fun AssistantMessagesViewMessageItem(message: Message) {
     val messageClipped = clipAutomaticText(message.content)
 
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = if (isUser) Arrangement.End else Arrangement.Start
     ) {
         if (!isUser) {
             // Avatar para el asistente
             Box(
                 modifier = Modifier
-                    .size(36.dp)
+                    .size(32.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primaryContainer),
+                    .background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
-                Text(
-                    text = stringResource(R.string.avatar_assistant),
-                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                Icon(
+                    imageVector = Icons.Outlined.SmartToy,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp)
                 )
             }
             Spacer(modifier = Modifier.width(8.dp))
         }
 
         Column(
-            modifier = Modifier.weight(1f, false),
+            modifier = if (isUser) Modifier.fillMaxWidth(0.85f) else Modifier.weight(1f, fill = false),
             horizontalAlignment = if (isUser) Alignment.End else Alignment.Start
         ) {
             // Burbuja de mensaje
             Surface(
-                shape = RoundedCornerShape(
-                    topStart = if (isUser) 12.dp else 0.dp,
-                    topEnd = if (isUser) 0.dp else 12.dp,
-                    bottomStart = 12.dp,
-                    bottomEnd = 12.dp
-                ),
-                color = if (isUser) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant,
-                tonalElevation = 2.dp
+                modifier = Modifier.semantics(mergeDescendants = true) {
+                    contentDescription = author
+                },
+                shape = MaterialTheme.shapes.large,
+                color = if (isUser) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceVariant
             ) {
                 Text(
                     text = messageClipped,
-                    modifier = Modifier.padding(12.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+                    style = MaterialTheme.typography.bodyLarge,
                     color = if (isUser) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
 
-        if (isUser) {
-            Spacer(modifier = Modifier.width(8.dp))
-            // Avatar para el usuario
-            Box(
-                modifier = Modifier
-                    .size(36.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.tertiary),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = stringResource(R.string.avatar_user),
-                    color = MaterialTheme.colorScheme.onTertiary,
-                    fontSize = 10.sp
-                )
-            }
-        }
     }
 }
 

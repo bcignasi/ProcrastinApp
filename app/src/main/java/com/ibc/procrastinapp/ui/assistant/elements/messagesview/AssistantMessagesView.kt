@@ -148,7 +148,7 @@ fun AssistantMessagesView(
                         //.weight(1f)
                         .fillMaxWidth(),
                     state = lazyListState,
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(uiState.messages) { message ->
                         AssistantMessagesViewMessageItem(message)
