@@ -1,10 +1,138 @@
-# ProcrastinApp: pulir un objetivo y evolucionar hacia proyectos de vida
+# ProcrastinApp: metas acotadas y planificación conversada
 
-Fecha: 12 de octubre de 2026.
+Creado: 12 de octubre de 2026. Última revisión de dirección: 21 de octubre de 2026.
 
-Estado: prioridades aclaradas por Ignasi. Primero se pulirá el flujo existente para un objetivo concreto; la organización global de proyectos de vida queda documentada como evolución futura. Las propuestas de esa evolución todavía no son un contrato técnico de implementación.
+Estado: dirección de producto confirmada por Ignasi; experimento de prompt propuesto y pendiente de implementación. Esta revisión sustituye las prioridades anteriores de centrarse solo en el rediseño visual y mantener una aplicación genérica de tareas. No fija todavía el esquema de datos ni la nueva navegación.
 
-## Prioridad confirmada
+## Dirección confirmada — 21 de octubre de 2026
+
+El núcleo será ayudar a concretar una meta significativa, acordar un plan realista con el asistente y avanzar mediante acciones cotidianas. El usuario inicial es Ignasi; la utilidad personal y una demostración completa para el porfolio son los criterios de valor. La calidad del plan y su seguimiento tienen prioridad sobre continuar el rediseño visual.
+
+| Nivel conceptual | Función | Ejemplo |
+|---|---|---|
+| Objetivo general, opcional | Agrupar metas relacionadas y conservar el propósito mayor. | Obtener el carné de conducir. |
+| Meta, unidad principal | Conseguir un resultado acotado mediante varias acciones. | Aprobar el examen teórico. |
+| Acción | Saber qué hacer en una sesión o momento concreto. | Consultar una autoescuela; decidir cómo preparar la teoría; estudiar un tema y revisar un test. |
+
+- Se busca un alcance manejable, habitualmente de tamaño intermedio, sin imponer una duración ni un número fijo de tareas. Importan un resultado reconocible, varias acciones y la posibilidad de concretar cómo empezar.
+- Una meta puede trabajarse de forma independiente. Aprobar la teoría debe poder tener plan, conversación y progreso propios aunque la práctica siga sin definir y aunque no se haya creado el objetivo general.
+- Se conserva la opción futura de agrupar teoría y práctica bajo el carné. La jerarquía técnica, la presentación de esa agrupación y su progreso agregado siguen abiertos.
+- La vista Metas recogerá las metas activas y Hoy sus acciones programadas. Los nombres y la distribución exacta de pantallas todavía se diseñarán.
+- La barra debe explicar qué mide, por ejemplo acciones completadas del plan. Completar sesiones de estudio no equivale a aprobar el examen; el éxito de la meta se contrasta con su condición final. El cálculo y su presentación todavía deben especificarse.
+- Las tareas sueltas genéricas, como recordatorios sin meta, dejan de ser el núcleo. Miscelánea se conserva como idea anterior, pendiente de decidir, sin condicionar esta primera versión.
+
+### Cómo debe ayudar el asistente
+
+1. Aprovechar lo que el usuario ya ha explicado. Si la meta es clara, reconocer su condición de éxito y permitir corregirla, sin volver a pedir la misma información por sistema.
+2. Si el objetivo es amplio, proponer sus partes y acordar cuál trabajar primero. El usuario puede convertir solo una de ellas en una meta activa.
+3. Avanzar con propuestas concretas que el usuario pueda aceptar, corregir o ralentizar. Preguntar cuando falten datos que cambien de forma relevante el plan.
+4. Recomendar una fecha objetivo, aclarando si es orientativa o fija, y una condición final de éxito lo más concreta y comprobable posible. La fecha es opcional: ayudar a proponerla sin bloquear a quien todavía no la sabe.
+5. Acordar punto de partida, disponibilidad, ritmo y restricciones. Para Ignasi, el ritmo relajado debe traducirse en carga asumible y margen, no solo en un tono amable.
+6. Concretar por fases. Mantener reconocibles los acuerdos, las estimaciones provisionales y las decisiones pendientes; cambiar una fase no debe hacer olvidar lo acordado en otra.
+7. Detallar primero las próximas acciones y mantener revisables las partes lejanas. Si una parte no está clara, poder dejarla para después y cerrar una meta más pequeña que ya permita empezar.
+8. Explicar las estimaciones. Una propuesta de plazo no es una media estadística. Para afirmar qué es habitual, usar referencias verificadas y distinguir preparación, esperas externas y variación personal; si faltan datos fiables, reconocerlo y acordar una previsión provisional.
+9. Mostrar un resumen corregible antes de preparar el borrador del plan. Revisar el borrador y guardarlo son pasos distintos; la app conserva la confirmación de guardado del usuario.
+
+### Primer caso: aprobar el teórico
+
+Resultado deseado: aprobar el examen teórico del permiso que corresponda al usuario. País, tipo de permiso y situación inicial deben aclararse cuando afecten al contenido; no se presuponen por el idioma.
+
+- Primera propuesta de arranque: esta semana informarse en una autoescuela y decidir si preparar la teoría por cuenta propia o con la autoescuela. El usuario puede modificarla o indicar que ya lo ha hecho.
+- Después, acordar recursos, dedicación y un horizonte de preparación. «Un mes» es una posibilidad para discutir, no una media comprobada ni una duración impuesta.
+- Crear acciones concretas de estudio según lo acordado, con un punto de revisión. La fecha real del examen puede depender de información que todavía no se conoce.
+- La práctica queda pendiente y no debe introducirse como un conjunto de tareas dentro de esta meta salvo que el usuario amplíe explícitamente el alcance.
+
+La aspiración es completar un recorrido pequeño y funcional en aproximadamente una semana de trabajo con disponibilidad completa de Ignasi. Es un objetivo de alcance, no una fecha de publicación comprometida. Primero se evaluará la planificación con sus metas reales; después se especificarán los cambios de datos y presentación necesarios.
+
+## Experimento de prompt propuesto: `metas-conversadas-v1`
+
+Estado: borrador para revisar antes de implementar. El prompt de producción, la base de datos, la interfaz y el modelo de IA no se cambian con esta documentación. La prueba evaluará conversación y planificación de una meta; no implementa todavía Metas, conversaciones separadas ni agrupaciones.
+
+### Bloque de comportamiento que sustituiría las instrucciones genéricas
+
+```text
+Ayuda al usuario a convertir una meta significativa y acotada en un plan
+realista que pueda empezar y revisar contigo. Usa el idioma del usuario.
+
+ALCANCE
+- Trabaja la meta activa. Si el objetivo es amplio, propón sus partes y
+  acuerda con el usuario cuál concretar primero.
+- Una parte puede ser una meta independiente. Conserva el contexto mayor,
+  pero deja fuera del plan las partes que todavía no se hayan acordado.
+
+CONVERSACIÓN
+- Aprovecha la información ya conocida y avanza con una propuesta breve
+  que el usuario pueda aceptar o modificar.
+- Aclara solo los datos que cambien el plan. Como pauta inicial, haz una
+  o dos preguntas relevantes por turno, sin repetir las ya contestadas.
+- Confirma el resultado que significa éxito. Recomienda una fecha objetivo
+  y aclara si es flexible o fija; no obligues a elegirla para poder empezar.
+- Acordad punto de partida, disponibilidad, restricciones y ritmo.
+- Si faltan decisiones o recursos, propón una acción para averiguarlos.
+- Antes del borrador de tareas, resume el alcance, los acuerdos y lo que
+  sigue provisional. Espera la conformidad del usuario y acepta correcciones.
+
+CALIDAD DEL PLAN
+- Acuerda una fase cada vez cuando eso facilite la planificación.
+- Detalla primero lo próximo; deja el resto como previsión revisable.
+- Cada acción debe describir algo ejecutable y cómo reconocer su final.
+- Ajusta la carga y el margen al ritmo acordado. Si la fecha y la dedicación
+  no encajan, explica la tensión y ofrece alternativas sin prometer resultados.
+- Distingue esfuerzo de preparación y esperas externas.
+- Una estimación tuya es una propuesta. Solo presenta medias o cifras como
+  verificadas si dispones de fuentes comprobadas en el contexto; no inventes
+  estadísticas, citas, requisitos ni enlaces.
+- Registra en notes los acuerdos y la condición de éxito que ayuden a
+  entender la meta; no copies en notes la lista de subtasks.
+- No marques completed por deducción: requiere confirmación del usuario.
+- Usa deadline para fechas límite y notify solo para recordatorios acordados;
+  no inventes horas ni notificaciones para rellenar campos.
+```
+
+Este bloque sería general para distintas metas. El carné se usaría como caso de evaluación, sin convertir todo el prompt en una plantilla exclusiva de autoescuelas. La pauta de una o dos preguntas es una propuesta inicial que se ajustará según las pruebas.
+
+### Formato interno para la primera prueba
+
+Se propone conservar `comentario` y `propuesta.tasks`, el formato que ya interpreta la app. Durante la conversación inicial el texto útil irá en `comentario`, con la lista vacía mientras no haya borrador. La burbuja actual muestra ese comentario y oculta el JSON reconocido.
+
+```json
+{
+  "comentario": "Podemos centrarnos primero en aprobar el teórico. Te propongo empezar esta semana informándote en una autoescuela y decidir cómo prepararlo. ¿Ya has hecho alguna gestión y qué dedicación semanal te resultaría cómoda?",
+  "propuesta": { "tasks": [] }
+}
+```
+
+Después de acordar alcance y condiciones, se produciría un borrador con una tarea raíz «Aprobar el examen teórico» y sus acciones en `subtasks`, conservando los campos actuales de `Task`. Esta es una representación transitoria para probar el enfoque, no el nuevo modelo de metas. Las tareas nuevas llevarán `id=0`; al editar se pedirá conservar los identificadores originales, aunque esa regla de prompt no sustituye la conservación de identidad en el código.
+
+Si ya hay un borrador y se está conversando sobre un ajuste, la respuesta debe mantener ese borrador sin cambios hasta proponer su revisión, en lugar de enviar una lista vacía y hacerlo desaparecer. El envío de un nuevo borrador sigue siendo una propuesta; la IA no guarda datos por sí misma. Se requiere un único objeto JSON válido, sin comentarios de código ni texto externo; el contenido conversacional va en `comentario`.
+
+### Cambios de código que se revisarían antes de implementar
+
+- `ChatAIService.buildTaskPrompt()`: sustituir el rol genérico, la acumulación indiscriminada de tareas y la duplicación en notas por el flujo anterior, manteniendo el contrato JSON e IDs. Añadir un ejemplo corto de entrevista y otro de borrador.
+- `ChatAIService.sendMessage()`: retirar el recordatorio añadido a cada entrada del usuario que exige devolver todas las tareas actualizadas. Las reglas de salida deben vivir en el prompt, sin convertir cada intervención en una orden de generar un plan.
+- Inicialización y `loadMessages()`: el historial persistido incluye el prompt anterior. Verificar el prompt realmente enviado y preparar una prueba aislada, preservando el historial y las tareas originales. Reiniciar la app no garantiza usar las instrucciones nuevas. La forma concreta de aislar la prueba está pendiente de implementación.
+- Pruebas del servicio y de presentación: comprobar el formato enviado, la restauración de mensajes y que un comentario con `tasks: []` se muestra legible y sin una propuesta ficticia. Las pruebas con respuestas simuladas no demuestran la calidad de la IA real.
+
+Límites observados: existe un único historial global y no hay búsqueda web conectada al asistente; el prompt no añade esa capacidad. Hoy selecciona actualmente por fecha de aviso, de modo que programar una acción y configurar un recordatorio aún no son conceptos separados en los datos. Esa separación se especificará al diseñar el nuevo seguimiento, sin forzar notificaciones desde el prompt. También debe verificarse la conservación de identidad al editar: el normalizador actual de `Task` restablece los IDs a cero, aunque el prompt pida preservarlos. El ensayo inicial usará una meta nueva y no sustituirá el plan guardado del carné.
+
+### Cómo evaluar el experimento
+
+- Partir de «Quiero aprobar el teórico y prefiero ir con calma». Debe proponer un arranque, reconocer el alcance y acordar la dedicación sin generar de inmediato un plan completo.
+- Responder con disponibilidad y pedir un plazo orientativo. Debe negociar una propuesta y distinguirla de una media verificada. El ejemplo de un mes no debe convertirse en una regla fija.
+- Indicar que todavía no se conoce la fecha final. Debe permitir avanzar con las primeras acciones y una revisión, dejando explícita esa incertidumbre.
+- Aceptar el resumen y pedir el borrador. Debe contener solo la teoría, acciones ejecutables y acuerdos sin repetir las subtareas en las notas.
+- Pedir después un ritmo más lento. Debe conservar el contexto, proponer los ajustes pertinentes y mantener accesible el borrador mientras se discuten.
+- Comparar con el comportamiento anterior y comprobar durante el uso si las primeras acciones resultan útiles y asumibles. Probar otras dos metas antes de considerar generalizado el resultado.
+
+Guardar para cada prueba el contexto, el prompt y modelo efectivos, la respuesta original, lo interpretado por la app y la valoración de Ignasi. Los registros personales se conservan localmente y fuera de Git; este documento solo registra las decisiones y criterios.
+
+Referencia metodológica: [guía oficial de prompting](https://developers.openai.com/api/docs/guides/prompt-engineering) y [evaluación de respuestas](https://developers.openai.com/api/docs/guides/evaluation-best-practices). Son apoyo para instrucciones, ejemplos y comparación de resultados; no aportan medias de preparación del carné ni garantizan que el plan sea útil.
+
+## Antecedentes y exploraciones — 12 a 19 de octubre de 2026
+
+Las secciones siguientes conservan decisiones y propuestas anteriores como contexto. Sus prioridades y valoraciones de implementación corresponden a esas fechas y quedan subordinadas a la dirección del 21 de octubre descrita arriba. En particular, Miscelánea, la organización global de toda la vida, los porcentajes por hitos y la navegación anterior no son compromisos nuevos de este experimento.
+
+### Prioridad anterior: pulir un objetivo
 
 Hay dos niveles distintos de la misma idea:
 
