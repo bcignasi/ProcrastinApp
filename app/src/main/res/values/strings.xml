@@ -91,6 +91,9 @@
 
     <!-- AIService errors -->
     <string name="error_ai_empty_response">No response received from AI</string>
+    <string name="error_ai_incomplete_response">The response was incomplete. Your proposal has not changed. Please try again.</string>
+    <string name="error_ai_refused_response">The assistant could not answer this request. Your proposal has not changed. Try rephrasing your message.</string>
+    <string name="error_ai_invalid_structured_response">The response had an invalid format. Your proposal has not changed. Please try again.</string>
     <string name="error_ai_http">HTTP Error %1$d: %2$s</string>
     <string name="error_ai_communication">Communication error: %1$s</string>
 

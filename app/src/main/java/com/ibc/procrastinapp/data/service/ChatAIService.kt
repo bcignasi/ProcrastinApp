@@ -8,10 +8,12 @@ package com.ibc.procrastinapp.data.service
 
 import com.ibc.procrastinapp.data.ai.AIService
 import com.ibc.procrastinapp.data.ai.AIServiceError
+import com.ibc.procrastinapp.data.ai.AssistantResponseFormat
 import com.ibc.procrastinapp.data.ai.ChatRequest
 import com.ibc.procrastinapp.data.ai.Message
 //import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.utils.Logger
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -176,7 +178,12 @@ Por favor, recuerda devolver siempre la lista JSON con TODAS las tareas actualiz
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
             )
             Logger.d(logTag, "-> conversationMessages.add(Message.systemMessage(...))")
-            conversationMessages.add(Message.systemMessage("La fecha y hora actual es $currentDateTime"))
+            conversationMessages.add(Message.systemMessage(
+                "La fecha y hora actual es $currentDateTime. " +
+                    "El formato vigente es el JSON Schema de response_format: incluye todos sus campos, " +
+                    "usa cadenas vacías para textos sin definir y listas vacías cuando no haya tareas " +
+                    "o subtareas; no uses null ni texto fuera del JSON."
+            ))
 
             // Creamos y añadimos el mensaje del usuario
             Logger.d(logTag, "-> conversationMessages.add(Message.userMessage(…)")
@@ -187,7 +194,10 @@ Por favor, recuerda devolver siempre la lista JSON con TODAS las tareas actualiz
             Logger.w(logTag, "-> esto (_messagesFlow) debería actualizar la UI")
 
             // Creamos la solicitud con todos los mensajes (incluido el prompt del sistema)
-            val request = ChatRequest(messages = conversationMessages)
+            val request = ChatRequest(
+                messages = conversationMessages,
+                responseFormat = AssistantResponseFormat.responseFormat
+            )
 
             // Enviamos la solicitud
             Logger.d(logTag, "-> aiService.sendMessage(request)")
@@ -195,7 +205,9 @@ Por favor, recuerda devolver siempre la lista JSON con TODAS las tareas actualiz
 
             // Extraemos y añadimos la respuesta
             val assistantMessage = response.choices.firstOrNull()?.message
-                ?: throw Exception("No se recibió respuesta de la IA")
+                ?: throw AIServiceError.EmptyResponse
+
+            AssistantResponseFormat.validate(assistantMessage.content)
 
             Logger.d(logTag, "<- respuesta = $assistantMessage")
             conversationMessages.add(assistantMessage)
@@ -210,6 +222,8 @@ Por favor, recuerda devolver siempre la lista JSON con TODAS las tareas actualiz
             Logger.d(logTag, "saveMessages()")
             saveMessages()
 
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: AIServiceError) {
 
             // Pasamos el error tal cual

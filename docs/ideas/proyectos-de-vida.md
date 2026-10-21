@@ -130,7 +130,7 @@ Referencia metodológica: [guía oficial de prompting](https://developers.openai
 
 ## Contrato JSON y comparación de modelos — propuesta del 21 de octubre de 2026
 
-Estado: recomendaciones registradas a petición de Ignasi, sin implementación ni elección definitiva de modelo. El siguiente paso y el orden de los cambios se decidirán después.
+Estado actualizado el 21 de octubre: implementado el contrato de Structured Outputs del Asistente, manteniendo `gpt-4o-mini`. El nuevo prompt de entrevista y la comparación de modelos siguen pendientes. [Código, compatibilidad y pruebas](../development/structured-outputs.md).
 
 ### Separar comportamiento, estructura y coherencia
 
@@ -140,7 +140,7 @@ Estado: recomendaciones registradas a petición de Ignasi, sin implementación n
 | Structured Outputs con JSON Schema y `strict: true` | Exigir los campos, tipos, valores admitidos y estructura de la respuesta. |
 | Validación de la app | Comprobar fechas, identidad de tareas, coherencia del plan y conservación de datos y borradores. |
 
-La petición actual no envía `response_format`; solicita JSON mediante instrucciones y después intenta extraerlo y validar los títulos. Se propone añadir un esquema formal en la petición de la API, conservando inicialmente `comentario`, `propuesta.tasks` y los campos de las tareas y subtareas. El modo JSON simple asegura JSON válido; Structured Outputs añade el cumplimiento de un esquema admitido.
+La petición del Asistente ya envía `response_format` con JSON Schema y `strict: true`, conservando `comentario`, `propuesta.tasks` y los campos de las tareas y subtareas. Todos los campos son obligatorios y las subtareas reutilizan la definición de tarea. Las respuestas nuevas se validan antes de publicarlas o guardarlas; las frases motivacionales siguen usando texto libre y el historial antiguo conserva su lector tolerante. El modo JSON simple asegura JSON válido; Structured Outputs añade el cumplimiento de un esquema admitido.
 
 El esquema debe expresar, entre otras reglas, texto para `comentario`, listas para tareas y subtareas, booleanos para `completed`, prioridades permitidas y rechazo de propiedades inesperadas. Las respuestas incompletas y las denegaciones requieren tratamiento específico antes de interpretar el contenido como una propuesta. Si una respuesta falla, debe mantenerse el último borrador válido; una respuesta inválida no debe confundirse con una lista vacía legítima durante la entrevista.
 
@@ -164,9 +164,9 @@ La [guía oficial de modelos](https://developers.openai.com/api/docs/guides/late
 
 OpenAI ha anunciado la retirada de GPT-4o mini (`gpt-4o-mini-2024-07-18`) de la API para el 14 de enero de 2027, con `gpt-6-luna` como reemplazo recomendado. Fuente: [aviso oficial de retirada](https://developers.openai.com/api/docs/deprecations).
 
-### Comparación propuesta y orden pendiente
+### Orden acordado y comparación pendiente
 
-La secuencia sugerida fue asegurar primero el contrato JSON, después comparar el nuevo prompt con Sol y Luna y finalmente elegir según calidad, tiempo de respuesta y coste medidos. Ignasi prefiere decidir el primer paso después de registrar estas ideas: esta secuencia sigue siendo una propuesta.
+Ignasi ha autorizado implementar primero Structured Outputs. Después se recomienda probar el nuevo prompt de planificación conversada con la meta de aprobar el teórico y, con el mismo contrato y casos, comparar los modelos. La elección final sigue pendiente y debe basarse en calidad, tiempo de respuesta y coste medidos.
 
 Para comparar modelos, usar el mismo prompt, esquema, casos y respuestas de usuario, registrando también la configuración efectiva de razonamiento cuando corresponda. Observar si preguntan lo necesario, mantienen acuerdos, respetan el ritmo relajado, proponen acciones ejecutables y justifican los plazos sin inventar medias. Registrar respuestas, errores, tiempo y consumo de tokens; el historial reenviado también influye en el coste. Cambiar el modelo no añade por sí solo búsqueda web ni fuentes verificadas.
 

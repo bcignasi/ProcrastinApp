@@ -7,6 +7,7 @@
 package com.ibc.procrastinapp.data.ai
 
 import com.ibc.procrastinapp.utils.Logger
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -72,7 +73,7 @@ class AIService private constructor(apiKey: String, baseUrl: String) {
     // he tenido que dejarla pública
     interface AIApiClient {
         @POST("v1/chat/completions")
-        suspend fun sendMessage(@Body chatRequest: ChatRequest): Response<ChatResponse>
+        suspend fun sendMessage(@Body chatRequest: ChatRequest): Response<ChatCompletionApiResponse>
     }
 
     /**
@@ -89,15 +90,28 @@ class AIService private constructor(apiKey: String, baseUrl: String) {
             val response = apiClient.sendMessage(request)
 
             if (response.isSuccessful) {
-                //return@withContext response.body() ?: throw Exception("Respuesta vacía de la IA")
-                return@withContext response.body() ?: throw AIServiceError.EmptyResponse
+                val choices = response.body()?.choices
+                if (choices.isNullOrEmpty()) throw AIServiceError.EmptyResponse
+                return@withContext ChatResponse(choices.map { choice ->
+                    val message = choice?.message ?: throw AIServiceError.EmptyResponse
+                    if (message.refusal != null || choice.finishReason == "content_filter") {
+                        throw AIServiceError.RefusedResponse
+                    }
+                    if (choice.finishReason != "stop") throw AIServiceError.IncompleteResponse
+                    if (message.role != Message.ROLE_ASSISTANT) throw AIServiceError.InvalidStructuredResponse
+                    val content = message.content?.takeIf { it.isNotBlank() }
+                        ?: throw AIServiceError.EmptyResponse
+                    Choice(Message.assistantMessage(content))
+                })
             } else {
-                //throw Exception("Error HTTP ${response.code()}: ${response.errorBody()?.string()}")
                 throw AIServiceError.Http(response.code(), response.errorBody()?.string())
             }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: AIServiceError) {
+            throw e
         } catch (e: Exception) {
             Logger.e(logTag, "Error al enviar mensaje a la IA: ${e.message}")
-            //throw Exception("Error de comunicación con la IA: ${e.message}", e)
             throw AIServiceError.Communication(e.message, e)
         }
     }

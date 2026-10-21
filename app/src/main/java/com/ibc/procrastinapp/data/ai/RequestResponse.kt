@@ -5,6 +5,9 @@
  */
 package com.ibc.procrastinapp.data.ai
 
+import com.google.gson.JsonObject
+import com.google.gson.annotations.SerializedName
+
 /**
  * Módulo que define las estructuras de datos para la comunicación con servicios de chat IA.
  *
@@ -18,10 +21,39 @@ package com.ibc.procrastinapp.data.ai
  *
  * @property model Identificador del modelo a utilizar.
  * @property messages Lista de mensajes de la conversación.
+ * @property responseFormat Contrato opcional; las peticiones de frases siguen usando texto libre.
  */
 data class ChatRequest(
     val model: String = "gpt-4o-mini",
-    val messages: List<Message>
+    val messages: List<Message>,
+    @SerializedName("response_format")
+    val responseFormat: StructuredResponseFormat? = null
+)
+
+data class StructuredResponseFormat(
+    val type: String = "json_schema",
+    @SerializedName("json_schema") val jsonSchema: ResponseJsonSchema
+)
+
+data class ResponseJsonSchema(
+    val name: String,
+    val strict: Boolean = true,
+    val schema: JsonObject
+)
+
+// Datos de transporte: la API puede devolver contenido nulo o una denegación.
+// Se comprueban antes de construir los Message no nulos que persiste la app.
+data class ChatCompletionApiResponse(val choices: List<ChatCompletionApiChoice?>?)
+
+data class ChatCompletionApiChoice(
+    val message: ChatCompletionApiMessage?,
+    @SerializedName("finish_reason") val finishReason: String?
+)
+
+data class ChatCompletionApiMessage(
+    val role: String?,
+    val content: String?,
+    val refusal: String?
 )
 
 /**

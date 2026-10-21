@@ -73,6 +73,15 @@ fun AssistantTasksView(
                 is AIServiceError.EmptyResponse ->
                     stringResource(R.string.error_ai_empty_response)
 
+                is AIServiceError.IncompleteResponse ->
+                    stringResource(R.string.error_ai_incomplete_response)
+
+                is AIServiceError.RefusedResponse ->
+                    stringResource(R.string.error_ai_refused_response)
+
+                is AIServiceError.InvalidStructuredResponse ->
+                    stringResource(R.string.error_ai_invalid_structured_response)
+
                 is AIServiceError.Http ->
                     stringResource(R.string.error_ai_http, error.code, error.body ?: "")
 

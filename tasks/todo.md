@@ -108,6 +108,14 @@ Verificación: pruebas pertinentes del flujo, :app:testDebugUnitTest, :app:assem
 Archivos previstos: AssistantTasksView.kt, AssistantTasksViewListItem.kt, AssistantTasksViewSaveToAgendaButton.kt, CommentsCard.kt; separar cualquier corrección funcional que aparezca.
 Dependencia: 5. Alcance: medio por pantalla o componente.
 
+## 7. Contrato JSON del Asistente
+
+- [x] Structured Outputs con JSON Schema estricto, tareas y subtareas recursivas, campos obligatorios y rechazo de propiedades adicionales. Se conserva `gpt-4o-mini` y las frases motivacionales siguen usando texto libre.
+- [x] Comprobar finalización, denegaciones y contenido antes de crear mensajes internos; validar el JSON antes de añadirlo al historial. Ante errores, conservar la última propuesta válida y mostrar un aviso en español o inglés en ambas pestañas.
+- [x] Mantener compatibilidad del historial anterior y los contextos de edición, sin migrar datos ni aplicar todavía el nuevo prompt de entrevista.
+- [x] 23 pruebas nuevas; suite completa de 171 aprobadas, cero fallos y omitidas. App y pruebas de interfaz compiladas; lint con 0 errores, 41 advertencias y 1 sugerencia anteriores. [Guía del código y límites](../docs/development/structured-outputs.md).
+- [ ] Ignasi prueba una respuesta real desde el móvil; las pruebas automatizadas usan un cliente externo simulado, sin llamadas a OpenAI.
+
 ## Evolución posterior conservada
 
 - [ ] Opción **Ver diagrama** para abrir una representación visual del plan (mapa mental o diagrama de pasos) fuera de los mensajes del chat. [Idea y alcance](../docs/ideas/proyectos-de-vida.md#visualización-del-plan-mediante-un-diagrama--idea-registrada-el-19-de-octubre-de-2026).

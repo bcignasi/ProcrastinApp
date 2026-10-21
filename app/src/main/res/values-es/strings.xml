@@ -82,6 +82,9 @@
 
     <!-- Errores de AIService -->
     <string name="error_ai_empty_response">No se recibió respuesta de la IA</string>
+    <string name="error_ai_incomplete_response">La respuesta quedó incompleta. No se ha cambiado tu propuesta. Inténtalo de nuevo.</string>
+    <string name="error_ai_refused_response">El asistente no pudo responder a esta petición. No se ha cambiado tu propuesta. Prueba a reformular tu mensaje.</string>
+    <string name="error_ai_invalid_structured_response">La respuesta tenía un formato incorrecto. No se ha cambiado tu propuesta. Inténtalo de nuevo.</string>
     <string name="error_ai_http">Error HTTP %1$d: %2$s</string>
     <string name="error_ai_communication">Error de comunicación: %1$s</string>
 

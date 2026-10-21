@@ -88,7 +88,7 @@ class ChatAIServiceTest {
     // Simula el envío de un mensaje y la respuesta del asistente
     @Test
     fun sendMessage_addsUserMessageAndProcessesResponse() = runTest {
-        val assistantText = """{"comentario":"Hola","propuesta":{"tasks":[{"title":"Tarea"}]}}"""
+        val assistantText = """{"comentario":"Hola","propuesta":{"tasks":[{"id":0,"title":"Tarea","deadline":"","priority":1,"periodicity":"","notes":"","completed":false,"notify":"","subtasks":[]}]}}"""
         val assistantMessage = Message.assistantMessage(assistantText)
 
         coEvery { mockAIService.sendMessage(any()) } returns ChatResponse(listOf(Choice(assistantMessage)))
@@ -178,7 +178,7 @@ class ChatAIServiceTest {
         val mockResponse = ChatResponse(
             choices = listOf(
                 Choice(
-                    message = Message.assistantMessage("Respuesta del asistente")
+                    message = Message.assistantMessage("""{"comentario":"Respuesta del asistente","propuesta":{"tasks":[]}}""")
                 )
             )
         )
@@ -308,7 +308,8 @@ class ChatAIServiceTest {
         val changed = """{"propuesta":{"tasks":[{"id":42,"title":"Conducir actualizado"}]}}"""
         chatAIService.addUserAndAssistantMessage("Tarea para editar", first)
         chatAIService.addUserAndAssistantMessage("Tarea para editar", changed)
-        coEvery { mockAIService.sendMessage(any()) } returns ChatResponse(listOf(Choice(Message.assistantMessage("Podemos ajustarlo."))))
+        val realReply = """{"comentario":"Podemos ajustarlo.","propuesta":{"tasks":[]}}"""
+        coEvery { mockAIService.sendMessage(any()) } returns ChatResponse(listOf(Choice(Message.assistantMessage(realReply))))
         chatAIService.sendMessage("Solo puedo por las tardes")
         chatAIService.addUserAndAssistantMessage("Tarea para editar", changed)
         testDispatcher.scheduler.advanceUntilIdle()
@@ -317,7 +318,7 @@ class ChatAIServiceTest {
         assertEquals(first, chatAIService.messages.value[1].content)
         assertEquals(changed, chatAIService.messages.value[3].content)
         assertTrue(chatAIService.messages.value[4].content.startsWith("Solo puedo por las tardes"))
-        assertEquals("Podemos ajustarlo.", chatAIService.messages.value[5].content)
+        assertEquals(realReply, chatAIService.messages.value[5].content)
         assertEquals(changed, chatAIService.messages.value.last().content)
     }
 
