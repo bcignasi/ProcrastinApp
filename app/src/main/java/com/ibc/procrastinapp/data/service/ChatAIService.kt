@@ -195,6 +195,7 @@ Por favor, recuerda devolver siempre la lista JSON con TODAS las tareas actualiz
 
             // Creamos la solicitud con todos los mensajes (incluido el prompt del sistema)
             val request = ChatRequest(
+                model = "gpt-6-luna",
                 messages = conversationMessages,
                 responseFormat = AssistantResponseFormat.responseFormat
             )

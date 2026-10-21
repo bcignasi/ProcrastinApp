@@ -110,11 +110,22 @@ Dependencia: 5. Alcance: medio por pantalla o componente.
 
 ## 7. Contrato JSON del Asistente
 
-- [x] Structured Outputs con JSON Schema estricto, tareas y subtareas recursivas, campos obligatorios y rechazo de propiedades adicionales. Se conserva `gpt-4o-mini` y las frases motivacionales siguen usando texto libre.
+- [x] Structured Outputs con JSON Schema estricto, tareas y subtareas recursivas, campos obligatorios y rechazo de propiedades adicionales. En ese incremento se conservó `gpt-4o-mini`; el cambio posterior del Asistente a Luna se recoge en el punto 8. Las frases motivacionales siguen usando texto libre.
 - [x] Comprobar finalización, denegaciones y contenido antes de crear mensajes internos; validar el JSON antes de añadirlo al historial. Ante errores, conservar la última propuesta válida y mostrar un aviso en español o inglés en ambas pestañas.
 - [x] Mantener compatibilidad del historial anterior y los contextos de edición, sin migrar datos ni aplicar todavía el nuevo prompt de entrevista.
 - [x] 23 pruebas nuevas; suite completa de 171 aprobadas, cero fallos y omitidas. App y pruebas de interfaz compiladas; lint con 0 errores, 41 advertencias y 1 sugerencia anteriores. [Guía del código y límites](../docs/development/structured-outputs.md).
 - [ ] Ignasi prueba una respuesta real desde el móvil; las pruebas automatizadas usan un cliente externo simulado, sin llamadas a OpenAI.
+
+## 8. Luna, prompt de metas e interfaz de entrevista
+
+- [x] Seleccionar `gpt-6-luna` solo para el Asistente, conservando Structured Outputs; las frases motivacionales mantienen su modelo anterior.
+- [x] Verificación local del cambio: 171 pruebas aprobadas, sin fallos ni omitidas, y `:app:assembleDebug` correcto. La prueba de integración comprueba Luna en la petición del Asistente y la prueba del contrato confirma el modelo anterior para las frases. Sin llamadas reales a OpenAI ni instalación en el móvil.
+- [ ] Probar Luna desde el móvil con una meta real y registrar calidad, tiempo y consumo; las verificaciones locales no llaman a la API.
+- [ ] Implementar y pulir el prompt de planificación conversada: metas acotadas, acuerdos, condición de éxito, propuestas realistas y organización de acciones; empezar por aprobar el teórico.
+- [ ] Cuando el prompt funcione, diseñar y enseñar a Ignasi propuestas para una entrevista agradable, intuitiva y fácil: bocadillos con opciones pulsables, pantallas por pasos u otra presentación a decidir, siempre con respuesta libre.
+- [ ] Especificar el contrato y el estado de preguntas/respuestas antes de implementar esa entrevista; conservar los acuerdos, permitir revisiones y confirmar antes de guardar la meta.
+
+Alcance personal y porfolio; compartir con amigos, publicar en tiendas y configurar claves por usuario se dejan para el futuro. [Decisión y concepto de entrevista](../docs/ideas/proyectos-de-vida.md#próximos-pasos-acordados-luna-planificación-y-entrevista--21-de-octubre-de-2026).
 
 ## Evolución posterior conservada
 

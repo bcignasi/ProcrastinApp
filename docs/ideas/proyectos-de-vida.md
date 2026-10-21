@@ -2,7 +2,39 @@
 
 Creado: 12 de octubre de 2026. Última revisión de dirección: 21 de octubre de 2026.
 
-Estado: dirección de producto confirmada por Ignasi; experimento de prompt propuesto y pendiente de implementación. Esta revisión sustituye las prioridades anteriores de centrarse solo en el rediseño visual y mantener una aplicación genérica de tareas. No fija todavía el esquema de datos ni la nueva navegación.
+Estado: dirección de producto confirmada por Ignasi; Structured Outputs implementado y Luna seleccionado para el Asistente. El experimento de prompt sigue pendiente y después se diseñará la entrevista guiada con opciones y respuesta libre. Esta revisión sustituye las prioridades anteriores de centrarse solo en el rediseño visual y mantener una aplicación genérica de tareas. No fija todavía el esquema de datos ni la nueva navegación.
+
+## Próximos pasos acordados: Luna, planificación y entrevista — 21 de octubre de 2026
+
+El alcance inmediato es el uso personal de Ignasi y una versión funcional y cuidada para el porfolio. Compartir con amigos es una posibilidad posterior. Publicación en tiendas, backend multiusuario y configuración de claves por persona quedan como evolución futura, sin condicionar la siguiente prueba.
+
+Orden confirmado:
+
+1. **Usar `gpt-6-luna` en el Asistente**, manteniendo Structured Outputs y el formato actual de tareas. Las frases motivacionales conservan su modelo anterior. El cambio de modelo no incorpora por sí solo el nuevo comportamiento de entrevista.
+2. **Pulir el prompt y el proceso para establecer y organizar metas.** Probar con objetivos reales, empezando por aprobar el teórico; acordar alcance, condición de éxito, ritmo y plazos, proponer acciones útiles y comprobar que el plan se puede seguir. Evaluar la organización de la meta y sus acciones antes de cerrar su presentación definitiva.
+3. **Cuando el prompt funcione bien, diseñar la experiencia de entrevista.** Ayudar a especificar la meta mediante preguntas breves con opciones sugeridas y la posibilidad de escribir una respuesta propia. Este es el siguiente paso de experiencia de usuario, todavía pendiente de diseño e implementación.
+
+### Entrevista guiada: opciones para elegir y texto libre
+
+Objetivo: que definir una meta resulte agradable, intuitivo y fácil, con poca carga de lectura y sin exigir que el usuario sepa redactar una especificación completa desde el principio.
+
+- El asistente propone preguntas pertinentes según la meta, lo ya contado y los acuerdos previos. Las opciones deben ayudar a decidir y poder modificarse; no son decisiones impuestas por la IA.
+- Cada pregunta puede presentar opciones pulsables dentro de un «bocadillo» o tarjeta de conversación. También se explorarán pantallas por pasos u otra presentación que facilite el recorrido; la distribución definitiva sigue abierta.
+- **Siempre debe poder escribirse una respuesta propia**, incluida una matización de una opción sugerida. Elegir una opción y escribir son dos maneras de responder a la misma entrevista.
+- Las elecciones y respuestas deben formar parte del contexto del asistente, conservarse al avanzar y poder revisarse. Cambiar una respuesta debe permitir ajustar el plan manteniendo los demás acuerdos que sigan siendo válidos.
+- Mostrar el avance y un resumen corregible cuando ayude a orientarse. El guardado de la meta mantiene una confirmación explícita del usuario.
+- Mantener una cantidad manejable de preguntas y opciones por paso, evitando repetir datos ya proporcionados. La cantidad exacta se decidirá con pruebas de uso.
+- Diseñar esta interacción con el lenguaje visual de Serena y controles accesibles, incluidos textos largos y el teclado del móvil.
+
+Ejemplo de concepto, sin fijar todavía el diseño:
+
+> **¿Cómo prefieres preparar el teórico?**
+>
+> [Por mi cuenta] [Con una autoescuela] [Ayúdame a decidir]
+>
+> También puedes escribir: «Ya estoy apuntado, pero estudiaré en casa».
+
+Al especificar esta fase se decidirá cómo representar las preguntas y opciones en el contrato de IA y cómo integrarlas con la conversación. El esquema actual `comentario` / `propuesta.tasks` sigue vigente; esta nota no añade todavía campos, controles ni pantallas.
 
 ## Dirección confirmada — 21 de octubre de 2026
 
@@ -46,7 +78,7 @@ La aspiración es completar un recorrido pequeño y funcional en aproximadamente
 
 ## Experimento de prompt propuesto: `metas-conversadas-v1`
 
-Estado: borrador para revisar antes de implementar. El prompt de producción, la base de datos, la interfaz y el modelo de IA no se cambian con esta documentación. La prueba evaluará conversación y planificación de una meta; no implementa todavía Metas, conversaciones separadas ni agrupaciones.
+Estado: borrador para revisar antes de implementar. El prompt de producción, la base de datos y la interfaz no se cambian con este borrador; la selección de Luna se hace en un incremento independiente. La prueba evaluará conversación y planificación de una meta; no implementa todavía Metas, conversaciones separadas ni agrupaciones.
 
 ### Bloque de comportamiento que sustituiría las instrucciones genéricas
 
@@ -130,7 +162,7 @@ Referencia metodológica: [guía oficial de prompting](https://developers.openai
 
 ## Contrato JSON y comparación de modelos — propuesta del 21 de octubre de 2026
 
-Estado actualizado el 21 de octubre: implementado el contrato de Structured Outputs del Asistente, manteniendo `gpt-4o-mini`. El nuevo prompt de entrevista y la comparación de modelos siguen pendientes. [Código, compatibilidad y pruebas](../development/structured-outputs.md).
+Estado actualizado el 21 de octubre: contrato de Structured Outputs implementado y Asistente configurado con `gpt-6-luna` por decisión de Ignasi. El nuevo prompt y la entrevista guiada siguen pendientes. [Código, compatibilidad y pruebas](../development/structured-outputs.md).
 
 ### Separar comportamiento, estructura y coherencia
 
@@ -148,17 +180,17 @@ Un esquema correcto no garantiza un plan útil, una estadística real ni fechas 
 
 ### Modelos a comparar
 
-El modelo configurado actualmente es `gpt-4o-mini`. Los fallos del caso del carné no demuestran por sí solos una limitación del modelo: las instrucciones actuales favorecen crear tareas inmediatamente y ordenan repetir las subtareas en notas.
+El modelo del Asistente pasa a ser `gpt-6-luna`; las frases motivacionales mantienen `gpt-4o-mini`. Los fallos anteriores del caso del carné no demuestran por sí solos una limitación del modelo: las instrucciones genéricas favorecen crear tareas inmediatamente y ordenan repetir las subtareas en notas.
 
-Recomendación a evaluar: utilizar `gpt-6.1-sol` como primera referencia de calidad para la planificación conversada y compararlo con `gpt-6-luna` como candidato económico para el uso habitual. Si Luna mantiene la calidad requerida en las pruebas, sería preferible por coste. Esta es una hipótesis de selección, no una superioridad demostrada en nuestra aplicación ni una decisión de migración ya tomada.
+Decisión posterior de Ignasi: empezar con `gpt-6-luna` por coste y pulir sobre él el proceso de planificación. La propuesta anterior de usar primero `gpt-6.1-sol` queda como referencia opcional de comparación si las pruebas lo justifican; no es un requisito del siguiente paso ni una superioridad demostrada en nuestra aplicación.
 
 Precios consultados el 21 de octubre de 2026: USD por millón de tokens de texto, tarifas estándar de entrada sin caché y salida. Son una referencia fechada; deben revisarse al implementar y no equivalen al coste de una conversación.
 
 | Modelo | Entrada | Salida | Papel propuesto en la evaluación |
 |---|---|---|---|
 | [GPT-4o mini](https://developers.openai.com/api/docs/models/gpt-4o-mini) | $0,15 | $0,60 | Referencia del comportamiento anterior. |
-| [GPT-6 Luna](https://developers.openai.com/api/docs/models/gpt-6-luna) | $0,10 | $0,50 | Candidato económico para el uso habitual. |
-| [GPT-6.1 Sol](https://developers.openai.com/api/docs/models/gpt-6.1-sol) | $2,00 | $10,00 | Primera referencia propuesta para evaluar calidad. |
+| [GPT-6 Luna](https://developers.openai.com/api/docs/models/gpt-6-luna) | $0,10 | $0,50 | Modelo elegido para el Asistente y las próximas pruebas. |
+| [GPT-6.1 Sol](https://developers.openai.com/api/docs/models/gpt-6.1-sol) | $2,00 | $10,00 | Referencia opcional de calidad si hace falta comparar. |
 
 La [guía oficial de modelos](https://developers.openai.com/api/docs/guides/latest-model) sitúa Sol como opción para trabajo complejo con equilibrio entre capacidad y coste, y Luna para tareas acotadas de alto volumen. No aporta una evaluación específica de nuestro planificador personal.
 
@@ -166,7 +198,7 @@ OpenAI ha anunciado la retirada de GPT-4o mini (`gpt-4o-mini-2024-07-18`) de la 
 
 ### Orden acordado y comparación pendiente
 
-Ignasi ha autorizado implementar primero Structured Outputs. Después se recomienda probar el nuevo prompt de planificación conversada con la meta de aprobar el teórico y, con el mismo contrato y casos, comparar los modelos. La elección final sigue pendiente y debe basarse en calidad, tiempo de respuesta y coste medidos.
+Structured Outputs está implementado. Ignasi elige Luna para el Asistente; después se pulirá el prompt de planificación conversada con la meta de aprobar el teórico. Cuando el proceso funcione, se diseñará la entrevista guiada con opciones y respuesta libre. La comparación con otros modelos queda disponible si hace falta evaluar calidad, tiempo de respuesta o coste.
 
 Para comparar modelos, usar el mismo prompt, esquema, casos y respuestas de usuario, registrando también la configuración efectiva de razonamiento cuando corresponda. Observar si preguntan lo necesario, mantienen acuerdos, respetan el ritmo relajado, proponen acciones ejecutables y justifican los plazos sin inventar medias. Registrar respuestas, errores, tiempo y consumo de tokens; el historial reenviado también influye en el coste. Cambiar el modelo no añade por sí solo búsqueda web ni fuentes verificadas.
 

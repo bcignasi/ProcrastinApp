@@ -65,7 +65,7 @@ class StructuredAssistantIntegrationTest {
         val format = request.getAsJsonObject("response_format")
         assertEquals("json_schema", format["type"].asString)
         assertTrue(format.getAsJsonObject("json_schema")["strict"].asBoolean)
-        assertEquals("gpt-4o-mini", captured.captured.model)
+        assertEquals("gpt-6-luna", captured.captured.model)
         assertEquals(reply, service.messages.value.last().content)
         assertTrue(repository.tasks.value.isEmpty())
         assertNull(repository.error.value)

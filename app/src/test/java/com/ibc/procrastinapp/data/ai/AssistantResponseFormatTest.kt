@@ -42,6 +42,7 @@ class AssistantResponseFormatTest {
     fun ordinaryRequestsSuchAsQuotesDoNotSendAResponseFormat() {
         val json = gson.toJsonTree(ChatRequest(messages = listOf(Message.userMessage("Una frase")))).asJsonObject
         assertFalse(json.has("response_format"))
+        assertEquals("gpt-4o-mini", json["model"].asString)
     }
 
     @Test

@@ -1,6 +1,8 @@
 # Structured Outputs del Asistente
 
-Implementación del 21 de octubre de 2026. El Asistente usa Chat Completions con `gpt-4o-mini` y un JSON Schema estricto. Esta entrega cambia el contrato de respuesta, no la estrategia de planificación conversada ni el modelo.
+Implementación del 21 de octubre de 2026. La primera entrega añadió un JSON Schema estricto a Chat Completions con `gpt-4o-mini`, sin cambiar la planificación. En el siguiente incremento, Ignasi elige `gpt-6-luna` para el Asistente. El esquema y el comportamiento del prompt siguen siendo los mismos.
+
+`ChatAIService` indica ahora `model = "gpt-6-luna"` en su petición. `ChatRequest` mantiene su valor predeterminado para las frases motivacionales. Luna admite Chat Completions y Structured Outputs; no usamos herramientas ni enviamos parámetros de razonamiento, por lo que se aplica su valor predeterminado, `medium`. La compatibilidad documental no confirma el acceso de una cuenta concreta: la primera respuesta real se comprobará desde el móvil. [Ficha oficial de Luna](https://developers.openai.com/api/docs/models/gpt-6-luna).
 
 ## Petición y contrato
 
