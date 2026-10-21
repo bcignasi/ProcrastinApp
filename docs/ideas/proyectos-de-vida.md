@@ -128,6 +128,48 @@ Guardar para cada prueba el contexto, el prompt y modelo efectivos, la respuesta
 
 Referencia metodológica: [guía oficial de prompting](https://developers.openai.com/api/docs/guides/prompt-engineering) y [evaluación de respuestas](https://developers.openai.com/api/docs/guides/evaluation-best-practices). Son apoyo para instrucciones, ejemplos y comparación de resultados; no aportan medias de preparación del carné ni garantizan que el plan sea útil.
 
+## Contrato JSON y comparación de modelos — propuesta del 21 de octubre de 2026
+
+Estado: recomendaciones registradas a petición de Ignasi, sin implementación ni elección definitiva de modelo. El siguiente paso y el orden de los cambios se decidirán después.
+
+### Separar comportamiento, estructura y coherencia
+
+| Capa | Responsabilidad propuesta |
+|---|---|
+| Prompt | Guiar la entrevista, las propuestas, la negociación y la calidad del plan. |
+| Structured Outputs con JSON Schema y `strict: true` | Exigir los campos, tipos, valores admitidos y estructura de la respuesta. |
+| Validación de la app | Comprobar fechas, identidad de tareas, coherencia del plan y conservación de datos y borradores. |
+
+La petición actual no envía `response_format`; solicita JSON mediante instrucciones y después intenta extraerlo y validar los títulos. Se propone añadir un esquema formal en la petición de la API, conservando inicialmente `comentario`, `propuesta.tasks` y los campos de las tareas y subtareas. El modo JSON simple asegura JSON válido; Structured Outputs añade el cumplimiento de un esquema admitido.
+
+El esquema debe expresar, entre otras reglas, texto para `comentario`, listas para tareas y subtareas, booleanos para `completed`, prioridades permitidas y rechazo de propiedades inesperadas. Las respuestas incompletas y las denegaciones requieren tratamiento específico antes de interpretar el contenido como una propuesta. Si una respuesta falla, debe mantenerse el último borrador válido; una respuesta inválida no debe confundirse con una lista vacía legítima durante la entrevista.
+
+Un esquema correcto no garantiza un plan útil, una estadística real ni fechas compatibles con la vida del usuario. Estas cuestiones siguen necesitando contexto, validación y evaluación. Fuente: [Structured Outputs, documentación oficial](https://developers.openai.com/api/docs/guides/structured-outputs).
+
+### Modelos a comparar
+
+El modelo configurado actualmente es `gpt-4o-mini`. Los fallos del caso del carné no demuestran por sí solos una limitación del modelo: las instrucciones actuales favorecen crear tareas inmediatamente y ordenan repetir las subtareas en notas.
+
+Recomendación a evaluar: utilizar `gpt-6.1-sol` como primera referencia de calidad para la planificación conversada y compararlo con `gpt-6-luna` como candidato económico para el uso habitual. Si Luna mantiene la calidad requerida en las pruebas, sería preferible por coste. Esta es una hipótesis de selección, no una superioridad demostrada en nuestra aplicación ni una decisión de migración ya tomada.
+
+Precios consultados el 21 de octubre de 2026: USD por millón de tokens de texto, tarifas estándar de entrada sin caché y salida. Son una referencia fechada; deben revisarse al implementar y no equivalen al coste de una conversación.
+
+| Modelo | Entrada | Salida | Papel propuesto en la evaluación |
+|---|---|---|---|
+| [GPT-4o mini](https://developers.openai.com/api/docs/models/gpt-4o-mini) | $0,15 | $0,60 | Referencia del comportamiento anterior. |
+| [GPT-6 Luna](https://developers.openai.com/api/docs/models/gpt-6-luna) | $0,10 | $0,50 | Candidato económico para el uso habitual. |
+| [GPT-6.1 Sol](https://developers.openai.com/api/docs/models/gpt-6.1-sol) | $2,00 | $10,00 | Primera referencia propuesta para evaluar calidad. |
+
+La [guía oficial de modelos](https://developers.openai.com/api/docs/guides/latest-model) sitúa Sol como opción para trabajo complejo con equilibrio entre capacidad y coste, y Luna para tareas acotadas de alto volumen. No aporta una evaluación específica de nuestro planificador personal.
+
+OpenAI ha anunciado la retirada de GPT-4o mini (`gpt-4o-mini-2024-07-18`) de la API para el 14 de enero de 2027, con `gpt-6-luna` como reemplazo recomendado. Fuente: [aviso oficial de retirada](https://developers.openai.com/api/docs/deprecations).
+
+### Comparación propuesta y orden pendiente
+
+La secuencia sugerida fue asegurar primero el contrato JSON, después comparar el nuevo prompt con Sol y Luna y finalmente elegir según calidad, tiempo de respuesta y coste medidos. Ignasi prefiere decidir el primer paso después de registrar estas ideas: esta secuencia sigue siendo una propuesta.
+
+Para comparar modelos, usar el mismo prompt, esquema, casos y respuestas de usuario, registrando también la configuración efectiva de razonamiento cuando corresponda. Observar si preguntan lo necesario, mantienen acuerdos, respetan el ritmo relajado, proponen acciones ejecutables y justifican los plazos sin inventar medias. Registrar respuestas, errores, tiempo y consumo de tokens; el historial reenviado también influye en el coste. Cambiar el modelo no añade por sí solo búsqueda web ni fuentes verificadas.
+
 ## Antecedentes y exploraciones — 12 a 19 de octubre de 2026
 
 Las secciones siguientes conservan decisiones y propuestas anteriores como contexto. Sus prioridades y valoraciones de implementación corresponden a esas fechas y quedan subordinadas a la dirección del 21 de octubre descrita arriba. En particular, Miscelánea, la organización global de toda la vida, los porcentajes por hitos y la navegación anterior no son compromisos nuevos de este experimento.
