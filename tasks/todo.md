@@ -127,6 +127,18 @@ Dependencia: 5. Alcance: medio por pantalla o componente.
 
 Alcance personal y porfolio; compartir con amigos, publicar en tiendas y configurar claves por usuario se dejan para el futuro. [Decisión y concepto de entrevista](../docs/ideas/proyectos-de-vida.md#próximos-pasos-acordados-luna-planificación-y-entrevista--21-de-octubre-de-2026).
 
+## 9. Incidencias conocidas del Asistente — auditoría del 22 de octubre de 2026
+
+Decisión de Ignasi: documentar los cinco errores confirmados y posponer su corrección. El nuevo prompt sigue siendo un trabajo separado. [Diagnóstico, reproducción, soluciones propuestas y criterios de cierre](../docs/development/incidencias-asistente.md).
+
+- [ ] AUD-001 (P1): hacer atómico el reemplazo de tareas y conservar originales y propuesta si falla el guardado.
+- [ ] AUD-002 (P2): impedir que una edición parcial borre tareas que no se pudieron cargar.
+- [ ] AUD-003 (P2): recuperar el historial antes de escribir una sesión nueva al arrancar.
+- [ ] AUD-004 (P2): descartar respuestas de IA pertenecientes a sesiones anteriores.
+- [ ] AUD-005 (P2): cancelar los avisos de todos los descendientes al borrar o reemplazar una jerarquía.
+
+Verificación de la auditoría: cinco reproducciones temporales confirmaron los fallos; la suite permanente de 171 pruebas y `assembleDebug` pasan, pero todavía no cubren estos casos. Las pruebas de regresión se incorporarán con cada corrección. Ninguno de los cinco errores se ha arreglado en este registro.
+
 ## Evolución posterior conservada
 
 - [ ] Opción **Ver diagrama** para abrir una representación visual del plan (mapa mental o diagrama de pasos) fuera de los mensajes del chat. [Idea y alcance](../docs/ideas/proyectos-de-vida.md#visualización-del-plan-mediante-un-diagrama--idea-registrada-el-19-de-octubre-de-2026).
