@@ -40,6 +40,8 @@ class AssistantRepository(
 ) {
     private val session = AtomicLong()
     val sessionVersion: Long get() = session.get()
+    private val proposalLock = Any()
+    private var acceptsProposals = true
 
     val messages: StateFlow<List<Message>> = chatAIService.messages
     val isLoading: StateFlow<Boolean> = chatAIService.isLoading
@@ -60,12 +62,17 @@ class AssistantRepository(
     init {
         coroutineScope.launch {
             chatAIService.messages.collectLatest { messages ->
-                val lastAssistantMessage = messages.lastOrNull { it.isAssistant }
-                if (lastAssistantMessage != null) {
-                    updateProposal(lastAssistantMessage.content)
-                } else {
-                    _lastResponse.value = null
-                    _tasks.value = emptyList()
+                synchronized(proposalLock) {
+                    // Cancelar/guardar no debe reabrir una propuesta por una emisión pendiente.
+                    if (acceptsProposals) {
+                        val lastAssistantMessage = messages.lastOrNull { it.isAssistant }
+                        if (lastAssistantMessage != null) {
+                            updateProposal(lastAssistantMessage.content)
+                        } else {
+                            _lastResponse.value = null
+                            _tasks.value = emptyList()
+                        }
+                    }
                 }
             }
         }
@@ -87,8 +94,12 @@ class AssistantRepository(
     }
 
     fun clearTasks() {
-        _tasks.value = emptyList()
-        _lastResponse.value = null
+        chatAIService.cancelPendingEdit()
+        synchronized(proposalLock) {
+            acceptsProposals = false
+            _tasks.value = emptyList()
+            _lastResponse.value = null
+        }
     }
 
     // Un guardado anterior no debe borrar la propuesta de otro objetivo o edición.
@@ -96,14 +107,21 @@ class AssistantRepository(
         if (sessionVersion == version) clearTasks()
     }
 
-    suspend fun sendMessage(userInput: String) = chatAIService.sendMessage(userInput)
+    suspend fun sendMessage(userInput: String) {
+        if (userInput.isBlank()) return
+        synchronized(proposalLock) { acceptsProposals = true }
+        chatAIService.sendMessage(userInput)
+    }
 
     fun initSession() {
         session.incrementAndGet()
         chatAIService.initSession()
-        _lastResponse.value = null
-        _tasks.value = emptyList()
-        _parserError.value = null
+        synchronized(proposalLock) {
+            acceptsProposals = true
+            _lastResponse.value = null
+            _tasks.value = emptyList()
+            _parserError.value = null
+        }
     }
 
     fun addUserAndAssistantMessage(userMsg: String, taskJson: String) {
@@ -111,6 +129,9 @@ class AssistantRepository(
         chatAIService.addUserAndAssistantMessage(userMsg, taskJson)
         // StateFlow no emite si el historial queda igual tras compactar las copias.
         // Una apertura explícita debe restaurar Propuesta, incluso después de cancelar.
-        updateProposal(taskJson)
+        synchronized(proposalLock) {
+            acceptsProposals = true
+            updateProposal(taskJson)
+        }
     }
 }

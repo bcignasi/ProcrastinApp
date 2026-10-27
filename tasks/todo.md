@@ -130,15 +130,16 @@ Alcance personal y porfolio; compartir con amigos, publicar en tiendas y configu
 
 ## 9. Incidencias conocidas del Asistente — auditoría del 22 de octubre de 2026
 
-Decisión inicial de Ignasi: documentar los cinco errores confirmados y posponer su corrección. Al integrar el prompt se corrige AUD-003 para conservar las conversaciones del experimento; los otros cuatro siguen pendientes. [Diagnóstico, reproducción, soluciones propuestas y criterios de cierre](../docs/development/incidencias-asistente.md).
+Decisión inicial de Ignasi: documentar los cinco errores confirmados y posponer su corrección. Al integrar y auditar el prompt se corrigen AUD-003 y AUD-004; los otros tres siguen pendientes. [Diagnóstico, reproducción, soluciones propuestas y criterios de cierre](../docs/development/incidencias-asistente.md).
 
 - [ ] AUD-001 (P1): hacer atómico el reemplazo de tareas y conservar originales y propuesta si falla el guardado.
 - [ ] AUD-002 (P2): impedir que una edición parcial borre tareas que no se pudieron cargar.
 - [x] AUD-003 (P2): recuperar el historial antes de escribir una sesión nueva al arrancar; cubierto por pruebas permanentes en `feature/prompt-metas-v1`.
-- [ ] AUD-004 (P2): descartar respuestas de IA pertenecientes a sesiones anteriores.
+- [x] AUD-004 (P2): descartar envíos pendientes, respuestas y errores de sesiones anteriores sin alterar la carga de la sesión nueva.
+- [x] Auditoría del prompt: invalidar la apertura de una edición al cancelar y evitar que la carga del historial reconstruya su propuesta.
 - [ ] AUD-005 (P2): cancelar los avisos de todos los descendientes al borrar o reemplazar una jerarquía.
 
-Verificación original de la auditoría: cinco reproducciones temporales confirmaron los fallos; la suite permanente de 171 pruebas y `assembleDebug` pasaban sin cubrir esos casos. El 27 de octubre se incorporan pruebas permanentes para AUD-003; las demás se incorporarán con sus respectivas correcciones.
+Verificación original de la auditoría: cinco reproducciones temporales confirmaron los fallos; la suite permanente de 171 pruebas y `assembleDebug` pasaban sin cubrir esos casos. El 27 de octubre se incorporan pruebas permanentes para AUD-003, AUD-004 y la cancelación durante el arranque. Tras estas correcciones pasan 187 pruebas, `assembleDebug` y `lintDebug`. Las pruebas de los tres fallos restantes se incorporarán con sus respectivas correcciones.
 
 ## Evolución posterior conservada
 

@@ -14,7 +14,18 @@ El Asistente usa los dos bloques de [prompt-metas-consolidado-v1.md](../ideas/pr
 
 El primer arranque del experimento muestra una conversación vacía. Los siguientes recuperan sus mensajes. El historial anterior permanece almacenado, aunque no hay selector de historial en la interfaz. Volver a la configuración anterior permite leer su clave original.
 
-Se corrige el orden de arranque de AUD-003: cargar antes de guardar, esperar la inicialización al enviar o abrir una tarea, y evitar que una lectura tardía restaure una conversación que el usuario ya ha reiniciado. Las escrituras y solicitudes reciben copias de la lista. Esto no resuelve AUD-004: una respuesta de IA ya pendiente durante un reinicio sigue siendo un problema separado.
+Se corrige el orden de arranque de AUD-003: cargar antes de guardar, esperar la inicialización al enviar o abrir una tarea, y evitar que una lectura tardía restaure una conversación que el usuario ya ha reiniciado. Las escrituras y solicitudes reciben copias de la lista. La corrección posterior de la auditoría cubre también AUD-004, como se describe a continuación.
+
+### Cancelación y reinicio durante la carga
+
+La auditoría independiente reprodujo dos problemas: una edición cancelada reaparecía al terminar la carga y un envío que esperaba al historial sobrevivía al reinicio. Sus reproducciones forman parte de `AssistantSessionLifecycleTest`.
+
+- `ChatAIService` identifica cada apertura de edición con `editRevision`. Cancelar, abrir otra tarea o reiniciar invalida la apertura pendiente. `cancelPendingEdit()` no borra el historial.
+- `AssistantRepository.clearTasks()` invalida esa apertura y deja de reconstruir propuestas a partir de emisiones pendientes del historial. Una apertura explícita, un nuevo mensaje o un reinicio vuelven a permitir propuestas. Así tampoco reaparece una propuesta histórica tras cancelar.
+- Cada envío tiene un `requestToken`. Reiniciar lo invalida; sus respuestas, errores y finalización ya no modifican la sesión siguiente. La carga se activa antes de esperar al historial y solo se admite un envío activo por sesión.
+- `stateLock` protege conjuntamente las comprobaciones y modificaciones en memoria entre IO y Main. No se mantiene durante la llamada a la IA ni durante la escritura en disco. `persistenceMutex` ordena las escrituras y obtiene una copia actualizada después de las anteriores.
+
+El prompt, el modelo, el contrato JSON y las tareas de Agenda mantienen su comportamiento. La invalidación no garantiza cancelar en el servidor una petición que ya haya empezado.
 
 ## Cómo probar en el móvil
 
@@ -35,3 +46,5 @@ Estas pruebas utilizan respuestas simuladas. Verifican la integración y la pers
 Resultado del 27 de octubre de 2026: las 24 pruebas enfocadas y la suite completa de **177 pruebas** pasan, con cero fallos, errores y omitidas. `:app:assembleDebug` genera el APK correctamente. `:app:lintDebug` termina con 0 errores, 44 advertencias y 1 sugerencia; ninguna señala los archivos modificados en esta integración. Se incorporan seis pruebas nuevas. Cuatro de ellas se ejecutaron primero sobre la implementación anterior y fallaron antes de aplicar el arreglo.
 
 En este Windows, la ejecución local de Gradle necesitó `JAVA_TOOL_OPTIONS=-Djdk.net.unixdomain.tmpdir=C:/Users/ibuendiac/Documents/ChatGPT/ProcrastinApp/build` para evitar un error de conexión de la JVM al crear su canal interno. Se aplicó solo al proceso de verificación, sin modificar la configuración del proyecto.
+
+Tras corregir la auditoría, `AssistantSessionLifecycleTest` añade **10 pruebas permanentes**: los dos casos originales, cancelación con propuesta histórica, reapertura de otra tarea, bloqueo de envíos mientras carga, cancelación de un envío, reinicio seguido de otro envío, respuesta y error tardíos, y orden de guardados. Las nueve primeras fallaron antes de aplicar el arreglo. La suite completa pasa ahora con **187 pruebas, 0 fallos, errores u omitidas**; `assembleDebug` y `lintDebug` terminan correctamente. La comprobación usa servicios de IA simulados y no instala la app en el móvil.

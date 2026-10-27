@@ -2,7 +2,7 @@
 
 Auditoría del 22 de octubre de 2026 sobre el commit `10249f3`, en `feature/serena-agenda`. Se revisaron historial, sesiones, apertura de tareas, guardado de propuestas y avisos, además del contrato JSON y la selección de modelo. Incluyó una revisión independiente y pruebas locales de reproducción.
 
-**Estado: cuatro incidencias pendientes; AUD-003 corregida en la rama `feature/prompt-metas-v1` el 27 de octubre de 2026.** La decisión inicial fue documentarlas y posponer su arreglo. Se ha corregido el arranque al integrar el experimento del prompt para poder conservar sus conversaciones; las otras soluciones siguen siendo propuestas.
+**Estado: tres incidencias pendientes; AUD-003 y AUD-004 corregidas en la rama `feature/prompt-metas-v1` el 27 de octubre de 2026.** La decisión inicial fue documentarlas y posponer su arreglo. Al integrar y auditar el experimento se corrigen el arranque y la invalidación de operaciones de sesiones anteriores. AUD-001, AUD-002 y AUD-005 siguen pendientes.
 
 Los fallos son anteriores a Structured Outputs y al cambio a Luna. No se encontró una regresión concreta en esos dos cambios. La auditoría no hizo llamadas a OpenAI ni accedió al móvil, y no verifica la calidad de planes reales ni la disponibilidad del modelo en la cuenta.
 
@@ -15,7 +15,7 @@ P1 indica prioridad alta por riesgo de pérdida de datos. P2 indica prioridad me
 | [AUD-001](#aud-001-guardado-de-ediciones-sin-reemplazo-atómico) | P1 | Pérdida de la tarea original si falla su reemplazo | Pendiente |
 | [AUD-002](#aud-002-eliminación-de-tareas-que-no-se-pudieron-cargar) | P2 | Guardar una edición parcial elimina tareas no cargadas | Pendiente |
 | [AUD-003](#aud-003-el-arranque-puede-sobrescribir-el-historial) | P2 | Escritura inicial antes de recuperar la conversación | Corregida en la rama del prompt |
-| [AUD-004](#aud-004-respuesta-antigua-dentro-de-una-sesión-nueva) | P2 | Una respuesta pendiente reaparece después del reinicio | Pendiente |
+| [AUD-004](#aud-004-respuesta-antigua-dentro-de-una-sesión-nueva) | P2 | Una respuesta pendiente reaparece después del reinicio | Corregida en la rama del prompt |
 | [AUD-005](#aud-005-avisos-de-subtareas-eliminadas) | P2 | Alarmas de descendientes sin cancelar | Pendiente |
 
 ## AUD-001: guardado de ediciones sin reemplazo atómico
@@ -58,7 +58,7 @@ Separar las escrituras de base de datos de la programación de alarmas: Room no 
 
 ## AUD-003: el arranque puede sobrescribir el historial
 
-**Corrección aplicada, 27 de octubre de 2026.** El servicio carga antes de guardar y espera esa carga al enviar mensajes o abrir una tarea. Un reinicio explícito invalida la recuperación pendiente. `StructuredAssistantIntegrationTest` comprueba el historial con almacenamiento que refleja las escrituras, envío y apertura de tareas durante una carga retrasada, y reinicio durante la carga. `GoalPlanningHistoryTest` comprueba la separación de historiales con DataStore real. Las 24 pruebas enfocadas del servicio pasan. El alcance es el orden de inicialización: no corrige AUD-004 ni cambia el tratamiento de errores de lectura de `MessageStorageImpl`. [Detalle de integración](prompt-metas-v1.md).
+**Corrección aplicada, 27 de octubre de 2026.** El servicio carga antes de guardar y espera esa carga al enviar mensajes o abrir una tarea. Un reinicio explícito invalida la recuperación pendiente; la comprobación y la restauración usan el mismo bloqueo que el reinicio. `StructuredAssistantIntegrationTest` comprueba el historial con almacenamiento que refleja las escrituras, envío y apertura de tareas durante una carga retrasada, y reinicio durante la carga. `GoalPlanningHistoryTest` comprueba la separación de historiales con DataStore real. La corrección posterior de AUD-004 se describe debajo. No cambia el tratamiento de errores de lectura de `MessageStorageImpl`. [Detalle de integración](prompt-metas-v1.md).
 
 **Impacto.** Al iniciar el servicio puede desaparecer la conversación persistida y recuperarse únicamente el prompt de una sesión vacía.
 
@@ -75,6 +75,8 @@ Separar las escrituras de base de datos de la programación de alarmas: Room no 
 **Criterios de cierre.** Pruebas permanentes para historial existente, primer arranque sin historial y carga retrasada. El historial previo debe conservarse sin una escritura inicial que lo sustituya.
 
 ## AUD-004: respuesta antigua dentro de una sesión nueva
+
+**Corrección aplicada, 27 de octubre de 2026.** Cada envío obtiene una identidad propia antes de esperar al historial y activa el estado de carga. Reiniciar invalida esa identidad. El envío comprueba que sigue vigente antes de construir la petición, publicar respuestas o errores y liberar el estado de carga. Un resultado anterior no puede modificar el envío nuevo. Los guardados se serializan y toman su copia dentro de esa cola para que una escritura antigua no termine sobrescribiendo la conversación nueva. `AssistantSessionLifecycleTest` cubre reinicio antes del envío, respuesta tardía, error tardío y envío nuevo simultáneo con la finalización del anterior. No se garantiza cancelar una petición HTTP que ya se haya iniciado: se descartan sus efectos en la sesión nueva.
 
 **Impacto.** Una respuesta que pertenecía a una conversación borrada puede reaparecer en el chat y convertirse en la propuesta de la sesión nueva.
 

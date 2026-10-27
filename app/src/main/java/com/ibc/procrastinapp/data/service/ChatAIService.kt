@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 
@@ -46,7 +48,12 @@ class ChatAIService(
 
     // Lista de mensajes de la conversación actual
     private val conversationMessages = mutableListOf(Message.systemMessage(taskPrompt))
+    // El arranque se ejecuta en IO y las acciones pueden llegar desde Main.
+    private val stateLock = Any()
+    private val persistenceMutex = Mutex()
     private var contextRevision = 0L
+    private var editRevision = 0L
+    private var activeRequest: Any? = null
 
     // Flujo de mensajes para la UI (solo mensajes visibles de usuario y asistente)
     private val _messagesFlow = MutableStateFlow<List<Message>>(emptyList())
@@ -69,17 +76,16 @@ class ChatAIService(
      */
     fun initSession() {
         Logger.d(logTag, "initSession() Iniciando nueva sesión")
-        contextRevision++
-        conversationMessages.clear()
-
-        // Añadimos el mensaje del sistema (prompt)
-        conversationMessages.add(Message.systemMessage(taskPrompt))
-
-        // Actualizamos el flujo de mensajes (sin mostrar el del sistema)
-        _messagesFlow.value = emptyList()
-
-        // Limpiamos cualquier error
-        _error.value = null
+        synchronized(stateLock) {
+            contextRevision++
+            editRevision++
+            activeRequest = null
+            _isLoading.value = false
+            conversationMessages.clear()
+            conversationMessages.add(Message.systemMessage(taskPrompt))
+            _messagesFlow.value = emptyList()
+            _error.value = null
+        }
 
         // Guardamos el estado
         coroutineScope.launch {
@@ -97,40 +103,38 @@ class ChatAIService(
 
         if (userInput.isBlank()) return
 
-        initialization.join()
-
-        _error.value = null
-        _isLoading.value = true
-
+        val requestToken = Any()
+        synchronized(stateLock) {
+            if (activeRequest != null) return
+            activeRequest = requestToken
+            _error.value = null
+            _isLoading.value = true
+        }
         val userText = userInput.trim()
 
         try {
+            initialization.join()
             // Añadir un mensaje del sistema con la hora actual
             val currentDateTime = LocalDateTime.now().format(
                 DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")
             )
-            Logger.d(logTag, "-> conversationMessages.add(Message.systemMessage(...))")
-            conversationMessages.add(Message.systemMessage(
-                "La fecha y hora actual es $currentDateTime. " +
-                    "El formato vigente es el JSON Schema de response_format: incluye todos sus campos, " +
-                    "usa cadenas vacías para textos sin definir y listas vacías cuando no haya tareas " +
-                    "o subtareas; no uses null ni texto fuera del JSON."
-            ))
-
-            // Creamos y añadimos el mensaje del usuario
-            Logger.d(logTag, "-> conversationMessages.add(Message.userMessage(…)")
-            conversationMessages.add(Message.userMessage(userText))
-
-            Logger.d(logTag, "-> update _messagesFlow.value")
-            _messagesFlow.value = filterUiMessages(conversationMessages)
-            Logger.w(logTag, "-> esto (_messagesFlow) debería actualizar la UI")
-
-            // Creamos la solicitud con todos los mensajes (incluido el prompt del sistema)
-            val request = ChatRequest(
-                model = "gpt-6-luna",
-                messages = conversationMessages.toList(),
-                responseFormat = AssistantResponseFormat.responseFormat
-            )
+            val request = synchronized(stateLock) {
+                // Un reinicio invalida también los envíos que aún esperaban al historial.
+                if (activeRequest !== requestToken) return
+                conversationMessages.add(Message.systemMessage(
+                    "La fecha y hora actual es $currentDateTime. " +
+                        "El formato vigente es el JSON Schema de response_format: incluye todos sus campos, " +
+                        "usa cadenas vacías para textos sin definir y listas vacías cuando no haya tareas " +
+                        "o subtareas; no uses null ni texto fuera del JSON."
+                ))
+                conversationMessages.add(Message.userMessage(userText))
+                _messagesFlow.value = filterUiMessages(conversationMessages)
+                ChatRequest(
+                    model = "gpt-6-luna",
+                    messages = conversationMessages.toList(),
+                    responseFormat = AssistantResponseFormat.responseFormat
+                )
+            }
 
             // Enviamos la solicitud
             Logger.d(logTag, "-> aiService.sendMessage(request)")
@@ -142,14 +146,11 @@ class ChatAIService(
 
             AssistantResponseFormat.validate(assistantMessage.content)
 
-            Logger.d(logTag, "<- respuesta = $assistantMessage")
-            conversationMessages.add(assistantMessage)
-
-            Logger.d(logTag, "update _messagesFlow.value tras añadir assistantMessage")
-            Logger.d(logTag, "-> ANTES _messagesFlow.value.size = ${_messagesFlow.value.size}")
-            _messagesFlow.value = filterUiMessages(conversationMessages)
-            Logger.d(logTag, "-> DESPUES _messagesFlow.value.size = ${_messagesFlow.value.size}")
-            Logger.w(logTag, "-> esto (_messagesFlow) debería actualizar la UI")
+            synchronized(stateLock) {
+                if (activeRequest !== requestToken) return
+                conversationMessages.add(assistantMessage)
+                _messagesFlow.value = filterUiMessages(conversationMessages)
+            }
 
             // Guardamos los mensajes
             Logger.d(logTag, "saveMessages()")
@@ -162,14 +163,23 @@ class ChatAIService(
             // Pasamos el error tal cual
             // Los mensajes de error se retrasan hasta llegar al composable
             Logger.e(logTag, "Error de AIService: ${e.message}")
-            _error.value = e
+            synchronized(stateLock) {
+                if (activeRequest === requestToken) _error.value = e
+            }
 
         } catch (e: Exception) {
             Logger.e(logTag, "Error inesperado en ChatAIService: ${e.message}")
-            _error.value = e    // Este error conserva su tipo Exception
+            synchronized(stateLock) {
+                if (activeRequest === requestToken) _error.value = e
+            }
 
         } finally {
-            _isLoading.value = false
+            synchronized(stateLock) {
+                if (activeRequest === requestToken) {
+                    activeRequest = null
+                    _isLoading.value = false
+                }
+            }
         }
     }
 
@@ -186,40 +196,38 @@ class ChatAIService(
      */
 
     fun addUserAndAssistantMessage(userMsg: String, taskJson: String) {
+        val revision = synchronized(stateLock) { ++editRevision }
         if (!initialization.isCompleted) {
-            val revision = contextRevision
             coroutineScope.launch {
                 initialization.join()
-                if (contextRevision == revision) addUserAndAssistantMessage(userMsg, taskJson)
+                appendEditingMessages(userMsg, taskJson, revision)
             }
             return
         }
+        appendEditingMessages(userMsg, taskJson, revision)
+    }
 
-        val logTag = logTag+"IBC11"
+    fun cancelPendingEdit() {
+        synchronized(stateLock) { editRevision++ }
+    }
 
-        Logger.d(logTag, "-> userMsg = $userMsg")
-        Logger.d(logTag, "-> taskJson = $taskJson")
-
+    private fun appendEditingMessages(userMsg: String, taskJson: String, revision: Long) {
         val userMessage = Message.userMessage(userMsg)
         val assistantMessage = Message.assistantMessage(taskJson)
-
-        // Reabrir el mismo contexto no es una nueva intervención del usuario.
-        // Compactamos también las copias consecutivas acumuladas antes de este arreglo.
-        // Las respuestas reales y los contextos distintos se conservan.
-        while (conversationMessages.size >= 2 &&
-            conversationMessages[conversationMessages.lastIndex - 1] == userMessage &&
-            conversationMessages.last() == assistantMessage
-        ) {
-            conversationMessages.removeAt(conversationMessages.lastIndex)
-            conversationMessages.removeAt(conversationMessages.lastIndex)
+        synchronized(stateLock) {
+            if (editRevision != revision) return
+            // Reabrir el mismo contexto no es una nueva intervención del usuario.
+            while (conversationMessages.size >= 2 &&
+                conversationMessages[conversationMessages.lastIndex - 1] == userMessage &&
+                conversationMessages.last() == assistantMessage
+            ) {
+                conversationMessages.removeAt(conversationMessages.lastIndex)
+                conversationMessages.removeAt(conversationMessages.lastIndex)
+            }
+            conversationMessages.add(userMessage)
+            conversationMessages.add(assistantMessage)
+            _messagesFlow.value = filterUiMessages(conversationMessages)
         }
-
-        Logger.d(logTag, "-> conversationMessages.add()")
-        conversationMessages.add(userMessage)
-        conversationMessages.add(assistantMessage)
-
-        Logger.d(logTag, "-> update _messagesFlow.value")
-        _messagesFlow.value = filterUiMessages(conversationMessages)
 
         // Guardamos los mensajes
         coroutineScope.launch {
@@ -247,28 +255,25 @@ class ChatAIService(
         try {
             val messages = messageStorage.loadMessages()
 
-            // Un reinicio durante la lectura tiene prioridad sobre el historial anterior.
-            if (contextRevision != 0L) return
-
-            if (messages == null) {
-                saveMessages()
-                return
+            synchronized(stateLock) {
+                // La comprobación y restauración son atómicas respecto al reinicio.
+                if (contextRevision != 0L) return
+                if (messages != null) {
+                    conversationMessages.clear()
+                    conversationMessages.add(Message.systemMessage(taskPrompt))
+                    conversationMessages.addAll(messages.filter { !it.isSystem })
+                    _messagesFlow.value = filterUiMessages(conversationMessages)
+                }
             }
-
-            conversationMessages.clear()
-            conversationMessages.add(Message.systemMessage(taskPrompt))
-            // Las instrucciones y fechas persistidas no deben prevalecer sobre el prompt vigente.
-            conversationMessages.addAll(messages.filter { !it.isSystem })
-
-            Logger.w(logTag, "-> update _messagesFlow.value")
-            _messagesFlow.value = conversationMessages.filter { it.isUser || it.isAssistant }
-            Logger.w(logTag, "-> esto (_messagesFlow) debería actualizar la UI")
+            if (messages == null) saveMessages()
 
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             Logger.e(logTag, "Error general al cargar mensajes: ${e.message}", e)
-            _error.value = e
+            synchronized(stateLock) {
+                if (contextRevision == 0L) _error.value = e
+            }
         }
     }
 
@@ -276,13 +281,22 @@ class ChatAIService(
      * Guarda los mensajes usando el servicio de almacenamiento
      */
     private suspend fun saveMessages() {
-
-        try {
-            messageStorage.saveMessages(conversationMessages.toList())
-            Logger.d(logTag, "Mensajes guardados correctamente")
-        } catch (e: Exception) {
-            _error.value = SaveMessagesException(e) // Para distinguirlo del error genérico
-            Logger.e(logTag, "${_error.value}")
+        // Tomar la copia dentro de la cola evita que un guardado viejo termine el último.
+        persistenceMutex.withLock {
+            val (revision, snapshot) = synchronized(stateLock) {
+                contextRevision to conversationMessages.toList()
+            }
+            try {
+                messageStorage.saveMessages(snapshot)
+                Logger.d(logTag, "Mensajes guardados correctamente")
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                synchronized(stateLock) {
+                    if (contextRevision == revision) _error.value = SaveMessagesException(e)
+                }
+                Logger.e(logTag, "Error al guardar mensajes", e)
+            }
         }
     }
 }
