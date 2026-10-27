@@ -121,7 +121,8 @@ Dependencia: 5. Alcance: medio por pantalla o componente.
 - [x] Seleccionar `gpt-6-luna` solo para el Asistente, conservando Structured Outputs; las frases motivacionales mantienen su modelo anterior.
 - [x] Verificación local del cambio: 171 pruebas aprobadas, sin fallos ni omitidas, y `:app:assembleDebug` correcto. La prueba de integración comprueba Luna en la petición del Asistente y la prueba del contrato confirma el modelo anterior para las frases. Sin llamadas reales a OpenAI ni instalación en el móvil.
 - [ ] Probar Luna desde el móvil con una meta real y registrar calidad, tiempo y consumo; las verificaciones locales no llaman a la API.
-- [ ] Implementar y pulir el prompt de planificación conversada: metas acotadas, acuerdos, condición de éxito, propuestas realistas y organización de acciones; empezar por aprobar el teórico.
+- [x] Conectar el borrador consolidado en `feature/prompt-metas-v1`, con historial experimental separado. [Integración y guía de prueba](../docs/development/prompt-metas-v1.md).
+- [ ] Evaluar y pulir el prompt en conversaciones reales: metas acotadas, acuerdos, condición de éxito, propuestas realistas y organización de acciones; empezar por aprobar el teórico.
 - [ ] Cuando el prompt funcione, diseñar y enseñar a Ignasi propuestas para una entrevista agradable, intuitiva y fácil: bocadillos con opciones pulsables, pantallas por pasos u otra presentación a decidir, siempre con respuesta libre.
 - [ ] Especificar el contrato y el estado de preguntas/respuestas antes de implementar esa entrevista; conservar los acuerdos, permitir revisiones y confirmar antes de guardar la meta.
 
@@ -129,15 +130,15 @@ Alcance personal y porfolio; compartir con amigos, publicar en tiendas y configu
 
 ## 9. Incidencias conocidas del Asistente — auditoría del 22 de octubre de 2026
 
-Decisión de Ignasi: documentar los cinco errores confirmados y posponer su corrección. El nuevo prompt sigue siendo un trabajo separado. [Diagnóstico, reproducción, soluciones propuestas y criterios de cierre](../docs/development/incidencias-asistente.md).
+Decisión inicial de Ignasi: documentar los cinco errores confirmados y posponer su corrección. Al integrar el prompt se corrige AUD-003 para conservar las conversaciones del experimento; los otros cuatro siguen pendientes. [Diagnóstico, reproducción, soluciones propuestas y criterios de cierre](../docs/development/incidencias-asistente.md).
 
 - [ ] AUD-001 (P1): hacer atómico el reemplazo de tareas y conservar originales y propuesta si falla el guardado.
 - [ ] AUD-002 (P2): impedir que una edición parcial borre tareas que no se pudieron cargar.
-- [ ] AUD-003 (P2): recuperar el historial antes de escribir una sesión nueva al arrancar.
+- [x] AUD-003 (P2): recuperar el historial antes de escribir una sesión nueva al arrancar; cubierto por pruebas permanentes en `feature/prompt-metas-v1`.
 - [ ] AUD-004 (P2): descartar respuestas de IA pertenecientes a sesiones anteriores.
 - [ ] AUD-005 (P2): cancelar los avisos de todos los descendientes al borrar o reemplazar una jerarquía.
 
-Verificación de la auditoría: cinco reproducciones temporales confirmaron los fallos; la suite permanente de 171 pruebas y `assembleDebug` pasan, pero todavía no cubren estos casos. Las pruebas de regresión se incorporarán con cada corrección. Ninguno de los cinco errores se ha arreglado en este registro.
+Verificación original de la auditoría: cinco reproducciones temporales confirmaron los fallos; la suite permanente de 171 pruebas y `assembleDebug` pasaban sin cubrir esos casos. El 27 de octubre se incorporan pruebas permanentes para AUD-003; las demás se incorporarán con sus respectivas correcciones.
 
 ## Evolución posterior conservada
 

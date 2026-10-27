@@ -99,7 +99,10 @@ val chatAIModule = module {
     }
 
     // Implementación de almacenamiento de mensajes
-    single<MessageStorage> { MessageStorageImpl(get()) }
+    // El experimento conserva intacto el historial anterior en su clave original.
+    single<MessageStorage> {
+        MessageStorageImpl(get(), com.ibc.procrastinapp.data.ai.GoalPlanningPrompt.HISTORY_KEY)
+    }
 
     // El servicio de chat con IA
     single {

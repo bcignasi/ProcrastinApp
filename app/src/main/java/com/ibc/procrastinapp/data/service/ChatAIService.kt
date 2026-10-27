@@ -10,6 +10,7 @@ import com.ibc.procrastinapp.data.ai.AIService
 import com.ibc.procrastinapp.data.ai.AIServiceError
 import com.ibc.procrastinapp.data.ai.AssistantResponseFormat
 import com.ibc.procrastinapp.data.ai.ChatRequest
+import com.ibc.procrastinapp.data.ai.GoalPlanningPrompt
 import com.ibc.procrastinapp.data.ai.Message
 //import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.utils.Logger
@@ -41,10 +42,11 @@ class ChatAIService(
     private val logTag = "IBC-ChatAIService"
 
     // Prompt especializado para tareas
-    private val taskPrompt = buildTaskPrompt()
+    private val taskPrompt = GoalPlanningPrompt.text
 
     // Lista de mensajes de la conversación actual
-    private val conversationMessages = mutableListOf<Message>()
+    private val conversationMessages = mutableListOf(Message.systemMessage(taskPrompt))
+    private var contextRevision = 0L
 
     // Flujo de mensajes para la UI (solo mensajes visibles de usuario y asistente)
     private val _messagesFlow = MutableStateFlow<List<Message>>(emptyList())
@@ -59,87 +61,15 @@ class ChatAIService(
     private val _error = MutableStateFlow<Throwable?>(null)
     val error: StateFlow<Throwable?> = _error.asStateFlow()
 
-    init {
-        // Inicializamos cargando los mensajes guardados
-        Logger.w(logTag, "init: initSession() + loadMessages()")
-        initSession()
-        coroutineScope.launch {
-            loadMessages()
-        }
-    }
-
-    /**
-     * Construye el prompt especializado para tareas
-     */
-    private fun buildTaskPrompt(): String {
-        val currentDateTime = LocalDateTime.now().format(
-            DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-        )
-        return """
-Contesta en español.
-
-SOY UN ASISTENTE ANTIPROCRASTINACIÓN
-
-Mi función es ayudar al usuario a gestionar tareas, superar la procrastinación y mantener su productividad. La fecha actual es ${currentDateTime}.
-
-OPERACIONES PRINCIPALES:
-a) Crear una tarea nueva
-b) Modificar una tarea existente
-c) Crear una propuesta de tarea desglosada en subtareas
-d) Revisar una propuesta de tarea
-e) Reagendar tareas o subtareas
-f) Consultar fecha y hora actual
-
-REGLA CRÍTICA PARA MANEJO DE IDs:
-- Para tareas NUEVAS: usar id=0.
-- Para tareas EXISTENTES: SIEMPRE preservar el ID original recibido (cualquier id > 0).
-- NUNCA modificar, reemplazar o inventar IDs para tareas existentes.
-
-REGLA CRÍTICA PARA MANEJO DE TAREAS:
-- Las tareas se ACUMULAN en una lista de tareas, salvo petición explícita de limpiar.
-- Siempre devolverás la lista COMPLETA de tareas.
-
-ESTRUCTURA DE DATOS Y FORMATO JSON REQUERIDO:
-{
-    "comentario": "Texto con estrategias antiprocrastinación y orientación para el usuario",
-    "propuesta": {
-        "tasks": [
-            {
-                "title": "Llamar a Pedro",         // String: resumen corto pero significativo
-                "deadline": "2023-12-15 14:30",    // String? (yyyy-MM-dd hh:mm): fecha límite, puede ser null
-                "priority": 2,                     // Int: 0-normal, 1-media, 2-alta, 3-urgente
-                "periodicity": "1 vez al mes",     // String?: frecuencia de repetición, puede ser null
-                "notes": "Cancelar reunión",       // String?: información adicional, puede ser null
-                "completed": false,                // Boolean: false-pendiente, true-completada
-                "notify": "2023-12-14 10:00",      // String? (yyyy-MM-dd hh:mm): próxima notificación, puede ser null
-                "subtasks": []                     // List<Task>?: lista de subtareas, puede ser null o vacía
-            },
-            {...}                                  // Pueden haber más tareas...
-        ]
-    }
-}
-
-DIRECTRICES ADICIONALES:
-- Usar la fecha actual como referencia para ajustar deadlines y notificaciones
-- Incluir estrategias antiprocrastinación útiles en el campo "comentario"
-- No mezclar el campo "comentario" con la estructura JSON de "propuesta"
-- La parte "propuesta" DEBE seguir EXACTAMENTE la estructura JSON especificada
-
-Este manejo correcto de IDs es CRÍTICO para el funcionamiento de la base de datos Room.
-
-En las tareas con subtareas, si no se definen notas, el campo notas se crea 
-a partir de los nombres de las subtareas, en líneas separadas.
-
-POR ÚLTIMO
-Por favor, recuerda devolver siempre la lista JSON con TODAS las tareas actualizadas.
-""".trimIndent()
-    }
+    // Restaurar antes de permitir escrituras evita sobrescribir el historial al arrancar.
+    private val initialization = coroutineScope.launch { loadMessages() }
 
     /**
      * Inicia una nueva sesión de conversación
      */
     fun initSession() {
         Logger.d(logTag, "initSession() Iniciando nueva sesión")
+        contextRevision++
         conversationMessages.clear()
 
         // Añadimos el mensaje del sistema (prompt)
@@ -153,6 +83,7 @@ Por favor, recuerda devolver siempre la lista JSON con TODAS las tareas actualiz
 
         // Guardamos el estado
         coroutineScope.launch {
+            initialization.join()
             saveMessages()
         }
     }
@@ -166,11 +97,12 @@ Por favor, recuerda devolver siempre la lista JSON con TODAS las tareas actualiz
 
         if (userInput.isBlank()) return
 
+        initialization.join()
+
         _error.value = null
         _isLoading.value = true
 
-        val userInputEnhanced = userInput.trim() +
-                " IMPORTANTE: Recuerda darme la lista de tareas actualizadas en formato JSON."
+        val userText = userInput.trim()
 
         try {
             // Añadir un mensaje del sistema con la hora actual
@@ -187,7 +119,7 @@ Por favor, recuerda devolver siempre la lista JSON con TODAS las tareas actualiz
 
             // Creamos y añadimos el mensaje del usuario
             Logger.d(logTag, "-> conversationMessages.add(Message.userMessage(…)")
-            conversationMessages.add(Message.userMessage(userInputEnhanced))
+            conversationMessages.add(Message.userMessage(userText))
 
             Logger.d(logTag, "-> update _messagesFlow.value")
             _messagesFlow.value = filterUiMessages(conversationMessages)
@@ -196,7 +128,7 @@ Por favor, recuerda devolver siempre la lista JSON con TODAS las tareas actualiz
             // Creamos la solicitud con todos los mensajes (incluido el prompt del sistema)
             val request = ChatRequest(
                 model = "gpt-6-luna",
-                messages = conversationMessages,
+                messages = conversationMessages.toList(),
                 responseFormat = AssistantResponseFormat.responseFormat
             )
 
@@ -254,6 +186,14 @@ Por favor, recuerda devolver siempre la lista JSON con TODAS las tareas actualiz
      */
 
     fun addUserAndAssistantMessage(userMsg: String, taskJson: String) {
+        if (!initialization.isCompleted) {
+            val revision = contextRevision
+            coroutineScope.launch {
+                initialization.join()
+                if (contextRevision == revision) addUserAndAssistantMessage(userMsg, taskJson)
+            }
+            return
+        }
 
         val logTag = logTag+"IBC11"
 
@@ -283,6 +223,7 @@ Por favor, recuerda devolver siempre la lista JSON con TODAS las tareas actualiz
 
         // Guardamos los mensajes
         coroutineScope.launch {
+            initialization.join()
             saveMessages()
         }
     }
@@ -306,27 +247,28 @@ Por favor, recuerda devolver siempre la lista JSON con TODAS las tareas actualiz
         try {
             val messages = messageStorage.loadMessages()
 
+            // Un reinicio durante la lectura tiene prioridad sobre el historial anterior.
+            if (contextRevision != 0L) return
+
             if (messages == null) {
-                initSession()
+                saveMessages()
                 return
             }
 
             conversationMessages.clear()
-            conversationMessages.addAll(messages)
-
-            // Si no hay mensaje del sistema, lo añadimos
-            if (conversationMessages.none { it.isSystem }) {
-                conversationMessages.add(0, Message.systemMessage(taskPrompt))
-            }
+            conversationMessages.add(Message.systemMessage(taskPrompt))
+            // Las instrucciones y fechas persistidas no deben prevalecer sobre el prompt vigente.
+            conversationMessages.addAll(messages.filter { !it.isSystem })
 
             Logger.w(logTag, "-> update _messagesFlow.value")
             _messagesFlow.value = conversationMessages.filter { it.isUser || it.isAssistant }
             Logger.w(logTag, "-> esto (_messagesFlow) debería actualizar la UI")
 
+        } catch (e: CancellationException) {
+            throw e
         } catch (e: Exception) {
             Logger.e(logTag, "Error general al cargar mensajes: ${e.message}", e)
-            // Si hay error, limpiamos e iniciamos una nueva sesión
-            initSession()
+            _error.value = e
         }
     }
 
@@ -336,7 +278,7 @@ Por favor, recuerda devolver siempre la lista JSON con TODAS las tareas actualiz
     private suspend fun saveMessages() {
 
         try {
-            messageStorage.saveMessages(conversationMessages)
+            messageStorage.saveMessages(conversationMessages.toList())
             Logger.d(logTag, "Mensajes guardados correctamente")
         } catch (e: Exception) {
             _error.value = SaveMessagesException(e) // Para distinguirlo del error genérico

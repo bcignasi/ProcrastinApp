@@ -7,6 +7,7 @@ import com.ibc.procrastinapp.data.ai.AIServiceError
 import com.ibc.procrastinapp.data.ai.ChatRequest
 import com.ibc.procrastinapp.data.ai.ChatResponse
 import com.ibc.procrastinapp.data.ai.Choice
+import com.ibc.procrastinapp.data.ai.GoalPlanningPrompt
 import com.ibc.procrastinapp.data.ai.Message
 import com.ibc.procrastinapp.data.repository.AssistantRepository
 import com.ibc.procrastinapp.utils.Logger
@@ -17,7 +18,9 @@ import io.mockk.mockkObject
 import io.mockk.slot
 import io.mockk.unmockkObject
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.After
@@ -47,6 +50,100 @@ class StructuredAssistantIntegrationTest {
 
     @After
     fun tearDown() = unmockkObject(Logger)
+
+    @Test
+    fun interviewSendsExactlyTheUserTextWithoutAnInstructionToGenerateTasks() = runTest {
+        val captured = slot<ChatRequest>()
+        coEvery { aiService.sendMessage(capture(captured)) } returns response(
+            """{"comentario":"¿Qué quieres aprender?","propuesta":{"tasks":[]}}"""
+        )
+        val service = ChatAIService(storage, aiService, backgroundScope)
+        runCurrent()
+
+        service.sendMessage("  Quiero hacer música  ")
+
+        assertEquals("Quiero hacer música", captured.captured.messages.last { it.isUser }.content)
+        assertEquals("Quiero hacer música", service.messages.value.first().content)
+    }
+
+    @Test
+    fun startupPreservesStoredConversationAndReplacesObsoleteSystemInstructions() = runTest {
+        val previous = listOf(
+            Message.systemMessage("Instrucciones antiguas"),
+            Message.userMessage("Quiero hacer música"),
+            Message.assistantMessage("¿Con qué instrumento?"),
+            Message.systemMessage("Fecha antigua")
+        )
+        savedMessages = previous
+        coEvery { storage.loadMessages() } coAnswers { savedMessages.toList() }
+        val captured = slot<ChatRequest>()
+        coEvery { aiService.sendMessage(capture(captured)) } returns response(
+            """{"comentario":"¿Qué estilo?","propuesta":{"tasks":[]}}"""
+        )
+        val service = ChatAIService(storage, aiService, backgroundScope)
+        runCurrent()
+
+        assertEquals(previous.filter { !it.isSystem }, service.messages.value)
+        assertEquals(previous, savedMessages)
+        service.sendMessage("Piano")
+
+        val sent = captured.captured.messages
+        assertEquals(previous.filter { !it.isSystem } + Message.userMessage("Piano"), sent.filter { !it.isSystem })
+        assertFalse(sent.any { it.content == "Instrucciones antiguas" || it.content == "Fecha antigua" })
+        assertTrue(sent.first().isSystem)
+        assertEquals(GoalPlanningPrompt.text, sent.first().content)
+    }
+
+    @Test
+    fun openingATaskWhileLoadingPreservesHistoryAndTheEditingContext() = runTest {
+        val loaded = CompletableDeferred<List<Message>?>()
+        coEvery { storage.loadMessages() } coAnswers { loaded.await() }
+        val service = ChatAIService(storage, aiService, backgroundScope)
+        runCurrent()
+        val json = """{"comentario":"Plan","propuesta":{"tasks":[]}}"""
+        service.addUserAndAssistantMessage("Tarea para editar", json)
+        loaded.complete(listOf(Message.userMessage("Conversación anterior")))
+        runCurrent()
+
+        assertEquals(listOf("Conversación anterior", "Tarea para editar", json),
+            service.messages.value.map { it.content })
+        assertEquals(service.messages.value, savedMessages.filter { !it.isSystem })
+    }
+
+    @Test
+    fun sendingWhileHistoryLoadsWaitsAndKeepsThePreviousConversation() = runTest {
+        val loaded = CompletableDeferred<List<Message>?>()
+        coEvery { storage.loadMessages() } coAnswers { loaded.await() }
+        val captured = slot<ChatRequest>()
+        coEvery { aiService.sendMessage(capture(captured)) } returns response(
+            """{"comentario":"Continuamos","propuesta":{"tasks":[]}}"""
+        )
+        val service = ChatAIService(storage, aiService, backgroundScope)
+        runCurrent()
+        val send = launch { service.sendMessage("Piano") }
+        runCurrent()
+        assertFalse(captured.isCaptured)
+
+        loaded.complete(listOf(Message.userMessage("Quiero hacer música")))
+        send.join()
+
+        assertEquals(listOf("Quiero hacer música", "Piano"),
+            captured.captured.messages.filter { it.isUser }.map { it.content })
+    }
+
+    @Test
+    fun newSessionDuringLoadingIsNotReplacedByOldHistory() = runTest {
+        val loaded = CompletableDeferred<List<Message>?>()
+        coEvery { storage.loadMessages() } coAnswers { loaded.await() }
+        val service = ChatAIService(storage, aiService, backgroundScope)
+        runCurrent()
+        service.initSession()
+        loaded.complete(listOf(Message.userMessage("Conversación anterior")))
+        runCurrent()
+
+        assertTrue(service.messages.value.isEmpty())
+        assertTrue(savedMessages.none { it.isUser || it.isAssistant })
+    }
 
     @Test
     fun assistantRequestsStrictJsonSchemaAndAcceptsAnEmptyProposalWithCommentary() = runTest {

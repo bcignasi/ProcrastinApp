@@ -22,10 +22,11 @@ private val Context.dataStore by preferencesDataStore(name = "tasks_messages")
  * Implementación de MessageStorage que utiliza DataStore para persistir mensajes.
  */
 class MessageStorageImpl(
-    private val context: Context
+    private val context: Context,
+    historyKey: String = "task_messages"
 ) : MessageStorage {
     private val logTag = "MessageStorageImpl"
-    private val messagesKey = stringPreferencesKey("task_messages")
+    private val messagesKey = stringPreferencesKey(historyKey)
 
     override suspend fun saveMessages(messages: List<Message>) {
         try {
