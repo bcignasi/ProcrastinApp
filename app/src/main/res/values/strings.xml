@@ -154,6 +154,8 @@
     <string name="proposal_details">Details</string>
     <string name="proposal_show_details_cd">Show details for %1$s</string>
     <string name="proposal_hide_details_cd">Hide details for %1$s</string>
+    <string name="assistant_view_proposal">View proposal</string>
+    <string name="assistant_proposal_unseen">New proposal not yet viewed</string>
     <string name="proposal_scheduled_date">Scheduled: %1$s</string>
     <string name="proposal_deadline">Deadline: %1$s</string>
     <string name="proposal_reminder">Reminder: %1$s</string>

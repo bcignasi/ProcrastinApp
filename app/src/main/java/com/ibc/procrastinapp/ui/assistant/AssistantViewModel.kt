@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
@@ -52,17 +53,34 @@ class AssistantViewModel(
     // Estado derivado correspondiente al parsing del último mensaje
     val lastResponse: StateFlow<AssistantResponse?> = assistantRepository.lastResponse
 
+    // Solo estado de presentación; no modifica las tareas ni el historial.
+    private val viewedProposal = MutableStateFlow<List<Task>>(emptyList())
+    private val proposalState = combine(
+        assistantRepository.tasks.onEach { tasks ->
+            if (tasks.isEmpty()) viewedProposal.value = emptyList()
+        },
+        viewedProposal
+    ) { tasks, viewed -> tasks to (tasks.isNotEmpty() && tasks != viewed) }
+
+    fun markProposalSeen(proposal: List<Task>) {
+        // Un efecto de una composición anterior no debe reconocer una propuesta nueva.
+        if (proposal.isNotEmpty() && proposal == assistantRepository.tasks.value) {
+            viewedProposal.value = proposal.toList()
+        }
+    }
+
     // Unifica los varios flows en un UiState común
     val uiState: StateFlow<AssistantState> = combine(
         assistantRepository.messages,
-        assistantRepository.tasks,
+        proposalState,
         assistantRepository.isLoading,
         assistantRepository.error,
         _event
-    ) { messages, tasks, isLoading, error, event ->
+    ) { messages, proposal, isLoading, error, event ->
         AssistantState(
             messages = messages,
-            tasks = tasks,
+            tasks = proposal.first,
+            hasUnseenProposal = proposal.second && !isLoading,
             isLoading = isLoading,
             chatAIServiceError = error,
             event = event
@@ -86,6 +104,7 @@ class AssistantViewModel(
     fun startNewSession() {
         if (_isSaving.value) return
         viewModelScope.launch {
+            viewedProposal.value = emptyList()
             assistantRepository.initSession()
             originalTaskIds.clear()
             _event.value = null
@@ -130,6 +149,7 @@ class AssistantViewModel(
                 }
                 originalTaskIds.clear()
                 assistantRepository.clearTasksIfSession(sessionVersion)
+                if (assistantRepository.tasks.value.isEmpty()) viewedProposal.value = emptyList()
                 AssistantEvent.CommitDone(saved = saved, updated = 0, failed = failed).also {
                     _event.value = it
                 }
@@ -159,6 +179,7 @@ class AssistantViewModel(
                 }
             }
             if (tasks.isNotEmpty()) {
+                viewedProposal.value = emptyList()
                 originalTaskIds.clear()
                 originalTaskIds.addAll(taskIds)
                 val userMessage = if (tasks.size == 1) "Tarea para editar"
@@ -175,6 +196,7 @@ class AssistantViewModel(
 
     fun cancelEdit() {
         if (_isSaving.value) return
+        viewedProposal.value = emptyList()
         assistantRepository.clearTasks()
         originalTaskIds.clear()
     }

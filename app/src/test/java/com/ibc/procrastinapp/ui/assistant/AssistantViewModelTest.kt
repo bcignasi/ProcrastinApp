@@ -21,6 +21,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceUntilIdle
@@ -30,6 +33,7 @@ import kotlinx.coroutines.test.setMain
 import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertFalse
 import org.junit.Before
 import org.junit.Test
 
@@ -90,6 +94,71 @@ class AssistantViewModelTest {
         advanceUntilIdle()
 
         assertEquals(listOf(proposal), tasksFlow.value)
+    }
+
+    @Test
+    fun `unseen compares complete proposal and ignores unchanged commentary`() = testScope.runTest {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
+        val original = listOf(Task(title = "Teórico", subtasks = listOf(Task(title = "Test", scheduledDate = "2026-11-02"))))
+        tasksFlow.value = original
+        runCurrent()
+        assertTrue(viewModel.uiState.value.hasUnseenProposal)
+        viewModel.markProposalSeen(original)
+        runCurrent()
+        assertFalse(viewModel.uiState.value.hasUnseenProposal)
+        messagesFlow.value = listOf(Message.assistantMessage("De acuerdo"))
+        tasksFlow.value = original.map { it.copy() }
+        runCurrent()
+        assertFalse(viewModel.uiState.value.hasUnseenProposal)
+        tasksFlow.value = listOf(original.single().copy(subtasks = listOf(
+            original.single().subtasks.single().copy(scheduledDate = "2026-11-04")
+        )))
+        runCurrent()
+        viewModel.markProposalSeen(original) // Efecto tardío de una pantalla anterior.
+        runCurrent()
+        assertTrue(viewModel.uiState.value.hasUnseenProposal)
+    }
+
+    @Test
+    fun `clearing saving cancelling and restarting reset seen proposal`() = testScope.runTest {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
+        val proposal = listOf(Task(title = "Sesión"))
+        every { assistantRepository.initSession() } answers { tasksFlow.value = emptyList() }
+        every { assistantRepository.clearTasks() } answers { tasksFlow.value = emptyList() }
+        every { assistantRepository.clearTasksIfSession(any()) } answers { tasksFlow.value = emptyList() }
+        val clearActions = listOf<() -> Unit>(
+            { tasksFlow.value = emptyList() },
+            { viewModel.cancelEdit() },
+            { viewModel.startNewSession() },
+            { viewModel.commitTasksFromAssistant() }
+        )
+        for (clear in clearActions) {
+            tasksFlow.value = proposal
+            runCurrent()
+            viewModel.markProposalSeen(proposal)
+            runCurrent()
+            assertFalse(viewModel.uiState.value.hasUnseenProposal)
+            clear()
+            advanceUntilIdle()
+            assertFalse(viewModel.uiState.value.hasUnseenProposal)
+            tasksFlow.value = proposal
+            runCurrent()
+            assertTrue(viewModel.uiState.value.hasUnseenProposal)
+        }
+    }
+
+    @Test
+    fun `indicator waits until response finishes and empty interview has none`() = testScope.runTest {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
+        runCurrent()
+        assertFalse(viewModel.uiState.value.hasUnseenProposal)
+        isLoadingFlow.value = true
+        tasksFlow.value = listOf(Task(title = "Paso"))
+        runCurrent()
+        assertFalse(viewModel.uiState.value.hasUnseenProposal)
+        isLoadingFlow.value = false
+        runCurrent()
+        assertTrue(viewModel.uiState.value.hasUnseenProposal)
     }
 
     @Test

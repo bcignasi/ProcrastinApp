@@ -163,6 +163,18 @@ class AssistantScreenTabsTest {
     }
 
     @Test
+    fun viewProposalButtonOpensTheExistingTabAndKeepsTheInputDraft() {
+        showScreen()
+        compose.onNode(hasSetTextAction()).performTextInput("Mover el lunes")
+        compose.onNodeWithText("View proposal").assertIsDisplayed().performClick()
+        compose.onNodeWithText("Proposal").assertIsSelected()
+        compose.onNodeWithText("Ensayar preguntas", substring = true).assertIsDisplayed()
+        compose.onNode(hasSetTextAction()).assertTextContains("Mover el lunes")
+        compose.onNodeWithText("Conversation").performClick()
+        compose.onNodeWithText("View proposal").assertIsDisplayed()
+    }
+
+    @Test
     fun settingsReturnsToTheSameProposalAndDraftInLightMode() {
         showScreen(darkTheme = false)
         compose.onNodeWithText("Proposal").performClick().assertIsSelected()

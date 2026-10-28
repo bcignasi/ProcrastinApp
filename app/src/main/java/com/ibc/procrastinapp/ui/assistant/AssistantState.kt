@@ -23,6 +23,7 @@ data class AssistantState(
     val isLoading: Boolean = false,
     val chatAIServiceError: Throwable? = null,
     val event: AssistantEvent? = null,
+    val hasUnseenProposal: Boolean = false,
 ) {
     val hasTasks: Boolean get() = tasks.isNotEmpty()
 

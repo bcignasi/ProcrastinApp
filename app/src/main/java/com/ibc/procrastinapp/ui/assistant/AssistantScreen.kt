@@ -24,6 +24,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.currentStateAsState
 import androidx.navigation.NavController
 import androidx.activity.compose.BackHandler
 import com.ibc.procrastinapp.ui.navigation.AGENDA_ROUTE
@@ -65,6 +68,13 @@ fun AssistantScreen(
 
     // Estados locales de la pantalla
     var currentScreenMode by rememberSaveable { mutableStateOf(AssistantScreenType.MESSAGES) }
+    val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
+    LaunchedEffect(currentScreenMode, uiState.tasks, uiState.isLoading, lifecycleState) {
+        if (currentScreenMode == AssistantScreenType.TASKS &&
+            lifecycleState == Lifecycle.State.RESUMED && !uiState.isLoading && uiState.hasTasks) {
+            assistantViewModel.markProposalSeen(uiState.tasks)
+        }
+    }
     val today by produceState(initialValue = LocalDate.now()) {
         while (true) {
             value = LocalDate.now()
@@ -121,6 +131,7 @@ fun AssistantScreen(
                     onOpenSettings = { navController.navigate("settings") },
                     date = today,
                     compact = compactHeader,
+                    hasUnseenProposal = uiState.hasUnseenProposal && currentScreenMode != AssistantScreenType.TASKS,
                 )
             }
         }) { paddingValues ->
@@ -147,6 +158,7 @@ fun AssistantScreen(
                                 uiState = uiState,
                                 onClearViewModelInfo = { assistantViewModel.clearEvent() },
                                 quoteViewModel = quoteViewModel,
+                                onViewProposal = { currentScreenMode = AssistantScreenType.TASKS },
                                 // Quita el padding inferior para dejar espacio al input
                                 modifier = Modifier.padding(bottom = 0.dp)
                             )

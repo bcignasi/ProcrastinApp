@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
@@ -44,15 +46,18 @@ fun AssistantMessagesView(
     uiState: AssistantState,
     onClearViewModelInfo: () -> Unit,
     modifier: Modifier = Modifier,
-    quoteViewModel: QuoteViewModel
+    quoteViewModel: QuoteViewModel,
+    onViewProposal: () -> Unit = {}
 ) {
     // Estado local para el LazyColumn
     val lazyListState = rememberLazyListState()
+    val showProposalAction = uiState.hasTasks && !uiState.isLoading
 
     // Efecto para desplazarse al último mensaje cuando se añade uno nuevo
-    LaunchedEffect(uiState.messages.size) {
+    LaunchedEffect(uiState.messages.size, showProposalAction, uiState.tasks) {
         if (uiState.messages.isNotEmpty()) {
-            lazyListState.animateScrollToItem(uiState.messages.size - 1)
+            val lastItem = if (showProposalAction) uiState.messages.size else uiState.messages.size - 1
+            lazyListState.animateScrollToItem(lastItem)
         }
     }
 
@@ -161,6 +166,14 @@ fun AssistantMessagesView(
                 ) {
                     items(uiState.messages) { message ->
                         AssistantMessagesViewMessageItem(message)
+                    }
+
+                    if (showProposalAction) {
+                        item(key = "view-proposal") {
+                            OutlinedButton(onClick = onViewProposal, modifier = Modifier.fillMaxWidth()) {
+                                Text(stringResource(R.string.assistant_view_proposal))
+                            }
+                        }
                     }
 
                     // Indicador de "escribiendo..." cuando está cargando

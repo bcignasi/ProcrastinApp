@@ -11,6 +11,9 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
@@ -45,6 +48,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -65,7 +69,8 @@ fun AssistantTopBar(
     onCurrentScreenModeChange: (AssistantScreenType) -> Unit,
     onOpenSettings: () -> Unit,
     date: LocalDate,
-    compact: Boolean
+    compact: Boolean,
+    hasUnseenProposal: Boolean = false
 ) {
     val colors = MaterialTheme.colorScheme
     val locale = LocalConfiguration.current.locales[0]
@@ -82,7 +87,7 @@ fun AssistantTopBar(
         ) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 if (compact) {
-                    AssistantModeTabs(currentScreenMode, onCurrentScreenModeChange, Modifier.weight(1f))
+                    AssistantModeTabs(currentScreenMode, onCurrentScreenModeChange, Modifier.weight(1f), hasUnseenProposal)
                 } else {
                     Icon(
                         Icons.Outlined.CheckCircle, contentDescription = null,
@@ -135,7 +140,7 @@ fun AssistantTopBar(
                     style = MaterialTheme.typography.bodyLarge, color = colors.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp, bottom = 20.dp)
                 )
-                AssistantModeTabs(currentScreenMode, onCurrentScreenModeChange)
+                AssistantModeTabs(currentScreenMode, onCurrentScreenModeChange, hasUnseenProposal = hasUnseenProposal)
             }
         }
     }
@@ -145,7 +150,8 @@ fun AssistantTopBar(
 private fun AssistantModeTabs(
     currentMode: AssistantScreenType,
     onModeChange: (AssistantScreenType) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    hasUnseenProposal: Boolean = false
 ) {
     val colors = MaterialTheme.colorScheme
     Surface(
@@ -155,11 +161,14 @@ private fun AssistantModeTabs(
         Row(Modifier.fillMaxWidth().selectableGroup()) {
             AssistantScreenType.entries.forEach { mode ->
                 val selected = currentMode == mode
+                val unread = mode == AssistantScreenType.TASKS && hasUnseenProposal
+                val unreadDescription = stringResource(R.string.assistant_proposal_unseen)
                 Row(
                     modifier = Modifier.weight(1f)
                         .clip(MaterialTheme.shapes.medium)
                         .background(if (selected) colors.primaryContainer else Color.Transparent)
                         .selectable(selected = selected, role = Role.Tab, onClick = { onModeChange(mode) })
+                        .semantics { if (unread) stateDescription = unreadDescription }
                         .heightIn(min = 48.dp)
                         .padding(horizontal = 8.dp, vertical = 12.dp),
                     horizontalArrangement = Arrangement.Center,
@@ -167,10 +176,15 @@ private fun AssistantModeTabs(
                 ) {
                     Text(
                         stringResource(mode.titleResId), style = MaterialTheme.typography.labelLarge,
+                        modifier = Modifier.weight(1f, fill = false),
                         fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
                         color = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant,
                         maxLines = 2, overflow = TextOverflow.Ellipsis
                     )
+                    if (unread) {
+                        Spacer(Modifier.width(6.dp))
+                        Box(Modifier.size(6.dp).background(colors.primary, CircleShape))
+                    }
                 }
             }
         }
