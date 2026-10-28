@@ -29,6 +29,18 @@ El prompt, el modelo, el contrato JSON y las tareas de Agenda mantienen su compo
 
 ## Cómo probar en el móvil
 
+### Revisión del 28 de octubre: método, opciones y sesiones
+
+El prompt y los dos bloques de su Markdown se actualizan con las instrucciones aprobadas tras la primera prueba del teórico. Se sustituyen indicaciones genéricas por opciones numeradas con respuesta libre, elección del método y recurso antes de cerrar el plan, propuesta de días y horizonte revisable, detalle de las sesiones próximas y una dedicación coherente en toda la propuesta. El práctico queda como contexto futuro cuando solo se acuerda planificar el teórico.
+
+Las opciones siguen siendo texto dentro de `comentario`. Se conservan el modelo, Structured Outputs, el esquema, la clave de historial y las tareas existentes. No se añaden búsqueda web, botones de respuesta ni recurrencias. Los días sin hora se describen en `notes`; no se inventan horas ni avisos para rellenar los campos de fecha.
+
+Para comparar esta revisión, actualizar la app sobre la instalación existente y usar **Reiniciar conversación** desde el menú del Asistente antes de empezar una meta nueva. Esta acción descarta el chat experimental actual; no elimina las tareas de Agenda. Debe realizarla el usuario cuando esté listo, no durante la instalación. Al arrancar, el servicio ya reemplaza las instrucciones de sistema guardadas por el prompt vigente, aunque mantiene el contenido anterior de usuario y asistente hasta ese reinicio.
+
+Comprobar especialmente que la entrevista permite contestar con números, distingue estudiar por cuenta propia de hacerlo con la autoescuela, concreta el recurso sin atribuirse verificaciones inexistentes y produce pasos con método, días y duración. La evaluación de esas respuestas reales sigue pendiente; las pruebas de integración solo comprueban la conexión del prompt y el contrato de la app.
+
+### Recorrido de prueba
+
 1. Abrir esta carpeta y rama en Android Studio y ejecutar la app sobre la instalación existente. No desinstalar ni borrar datos.
 2. Entrar directamente en Asistente, sin abrir una tarea antigua para editarla, y comenzar con una meta nueva.
 3. Comprobar que pregunta lo necesario, recomienda una vía y recursos adecuados y acuerda la dedicación antes de cerrar el plan.
@@ -38,6 +50,8 @@ El prompt, el modelo, el contrato JSON y las tareas de Agenda mantienen su compo
 La revisión visual y la evaluación de respuestas reales corresponden al usuario. La integración no añade búsqueda web: el modelo no puede verificar cursos, precios o enlaces en directo. Tampoco añade recurrencias de calendario ni cambia los fallos de edición de tareas documentados aparte; empezar con una meta nueva.
 
 ## Comprobaciones automatizadas
+
+Revisión del prompt del 28 de octubre de 2026: los dos bloques del Markdown coinciden con `GoalPlanningPrompt.text`. Pasan las **9 pruebas de `StructuredAssistantIntegrationTest`**, sin fallos, errores ni omitidas, y `assembleDebug` termina correctamente. No se realizan llamadas reales a la IA. El APK queda preparado; ADB no detecta un móvil conectado y la instalación y evaluación del nuevo plan quedan pendientes.
 
 Las pruebas del servicio cubren envío sin instrucciones añadidas, prompt vigente al restaurar historial, conservación de mensajes, envío durante una lectura pendiente, reinicio durante carga y apertura de tarea durante carga. Una prueba con DataStore real bajo Robolectric verifica que la clave experimental empieza vacía, persiste su conversación y conserva la clave anterior.
 
