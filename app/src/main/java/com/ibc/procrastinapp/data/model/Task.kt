@@ -15,7 +15,9 @@ data class Task(
     val notes: String = "",
     val completed: Boolean = false,
     val notify: String = "",
-    val subtasks: List<Task> = emptyList()
+    val subtasks: List<Task> = emptyList(),
+    /** Día de trabajo (yyyy-MM-dd), independiente del límite y del aviso. Vacío si no está planificado. */
+    val scheduledDate: String = ""
 ) {
     companion object {
         fun empty() = Task(title = "")
@@ -33,6 +35,7 @@ data class Task(
             periodicity = periodicity ?: "",
             notes = notes ?: "",
             notify = notify ?: "",
+            scheduledDate = scheduledDate ?: "",
             //subtasks = subtasks.map { it.withNonNullStrings() }
             subtasks = subtasks?.map { it.withNonNullStrings() } ?: emptyList()
         )

@@ -8,15 +8,17 @@ import com.google.gson.Strictness
 import com.google.gson.stream.JsonReader
 import com.google.gson.stream.JsonToken
 import java.io.StringReader
+import java.time.LocalDate
+import java.time.format.DateTimeParseException
 
 /** Contrato de las respuestas nuevas de IA; el lector del historial antiguo sigue siendo tolerante. */
 object AssistantResponseFormat {
-    private val taskTextFields = listOf("title", "deadline", "periodicity", "notes", "notify")
+    private val taskTextFields = listOf("title", "deadline", "periodicity", "notes", "notify", "scheduledDate")
     private val taskFields = taskTextFields.toSet() + setOf("id", "priority", "completed", "subtasks")
 
     val responseFormat = StructuredResponseFormat(
         jsonSchema = ResponseJsonSchema(
-            name = "assistant_tasks_v1",
+            name = "assistant_tasks_v2",
             schema = objectSchema(
                 "comentario" to type("string"),
                 "propuesta" to objectSchema("tasks" to taskArray())
@@ -33,6 +35,7 @@ object AssistantResponseFormat {
                         "notes" to type("string"),
                         "completed" to type("boolean"),
                         "notify" to type("string"),
+                        "scheduledDate" to type("string"),
                         "subtasks" to taskArray()
                     ))
                 })
@@ -69,11 +72,23 @@ object AssistantResponseFormat {
         element.asJsonArray.forEach { item ->
             val task = exactObject(item, taskFields)
             taskTextFields.forEach { requireString(task[it]) }
+            require(isValidScheduledDate(task["scheduledDate"].asString))
             require(task["title"].asString.isNotBlank())
             require(integer(task["id"]) >= 0)
             require(integer(task["priority"]) in 0L..3L)
             require(task["completed"].isJsonPrimitive && task["completed"].asJsonPrimitive.isBoolean)
             validateTasks(task["subtasks"])
+        }
+    }
+
+    private fun isValidScheduledDate(value: String): Boolean {
+        if (value.isEmpty()) return true
+        if (!Regex("""\d{4}-\d{2}-\d{2}""").matches(value)) return false
+        return try {
+            LocalDate.parse(value)
+            true
+        } catch (_: DateTimeParseException) {
+            false
         }
     }
 

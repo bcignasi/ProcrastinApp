@@ -88,7 +88,7 @@ class ChatAIServiceTest {
     // Simula el envío de un mensaje y la respuesta del asistente
     @Test
     fun sendMessage_addsUserMessageAndProcessesResponse() = runTest {
-        val assistantText = """{"comentario":"Hola","propuesta":{"tasks":[{"id":0,"title":"Tarea","deadline":"","priority":1,"periodicity":"","notes":"","completed":false,"notify":"","subtasks":[]}]}}"""
+        val assistantText = """{"comentario":"Hola","propuesta":{"tasks":[{"id":0,"title":"Tarea","deadline":"","priority":1,"periodicity":"","notes":"","completed":false,"notify":"","scheduledDate":"","subtasks":[]}]}}"""
         val assistantMessage = Message.assistantMessage(assistantText)
 
         coEvery { mockAIService.sendMessage(any()) } returns ChatResponse(listOf(Choice(assistantMessage)))

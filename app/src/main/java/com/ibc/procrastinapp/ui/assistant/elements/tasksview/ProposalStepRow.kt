@@ -53,6 +53,7 @@ internal fun ProposalStepRow(
     connectAfter: Boolean = false
 ) {
     val locale = LocalConfiguration.current.locales[0]
+    val scheduledDay = flatTaskDateText(task.scheduledDate, referenceDate, locale)
     val reminder = flatTaskDateText(task.notify, referenceDate, locale)
     val state = stringResource(
         if (task.completed) R.string.proposal_completed_read_only else R.string.proposal_pending_read_only
@@ -74,6 +75,11 @@ internal fun ProposalStepRow(
                     ) {
                         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                             Text(task.title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                            if (scheduledDay != null) {
+                                Text(stringResource(R.string.proposal_scheduled_date, scheduledDay),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = LocalContentColor.current.copy(alpha = 0.8f))
+                            }
                             if (reminder != null) {
                                 Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
                                     Icon(Icons.Outlined.Notifications, stringResource(R.string.notification_cd),

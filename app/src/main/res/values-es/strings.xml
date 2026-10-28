@@ -154,6 +154,7 @@
     <string name="proposal_details">Detalles</string>
     <string name="proposal_show_details_cd">Mostrar detalles de %1$s</string>
     <string name="proposal_hide_details_cd">Ocultar detalles de %1$s</string>
+    <string name="proposal_scheduled_date">Planificado: %1$s</string>
     <string name="proposal_deadline">Fecha límite: %1$s</string>
     <string name="proposal_reminder">Aviso: %1$s</string>
     <string name="proposal_priority">Prioridad: %1$s</string>

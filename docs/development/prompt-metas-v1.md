@@ -4,7 +4,9 @@ Fecha: 27 de octubre de 2026. Rama: `feature/prompt-metas-v1`.
 
 ## Alcance
 
-El Asistente usa los dos bloques de [prompt-metas-consolidado-v1.md](../ideas/prompt-metas-consolidado-v1.md), copiados en `data/ai/GoalPlanningPrompt.kt`. El primer bloque guía la entrevista y el segundo adapta sus respuestas al contrato JSON vigente. Se mantienen Luna, Structured Outputs y el esquema de tareas.
+Actualización posterior del 28 de octubre: se incorpora `scheduledDate` con contrato `assistant_tasks_v2` y migración Room 1 → 2. Véase [Día de trabajo independiente del aviso](scheduled-date.md). Las notas históricas de las primeras pruebas de esta página describen el contrato anterior, que no podía representar el día de trabajo sin hora.
+
+El Asistente usa los dos bloques de [prompt-metas-consolidado-v1.md](../ideas/prompt-metas-consolidado-v1.md), copiados en `data/ai/GoalPlanningPrompt.kt`. El primer bloque guía la entrevista y el segundo adapta sus respuestas al contrato JSON vigente. Se mantienen Luna y Structured Outputs. La integración inicial conservaba el esquema de tareas; la revisión con `scheduledDate` lo amplía como se indica arriba.
 
 `ChatAIService` deja de añadir a cada mensaje del usuario la orden antigua de generar tareas. Al restaurar una conversación carga las instrucciones actuales y conserva los mensajes de usuario y asistente; descarta las instrucciones y fechas antiguas del sistema.
 

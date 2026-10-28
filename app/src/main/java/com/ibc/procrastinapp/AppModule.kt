@@ -69,7 +69,7 @@ val dataModule = module {
             AppDatabase::class.java,
             "tasks_database"
         )
-            .fallbackToDestructiveMigration(false) // Solo durante desarrollo
+            .addMigrations(AppDatabase.MIGRATION_1_2)
             .build()
     }
 

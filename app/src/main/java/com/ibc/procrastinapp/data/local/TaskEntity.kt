@@ -14,7 +14,7 @@ import androidx.room.PrimaryKey
 @Entity(
     tableName = "tasks",
     indices = [
-        Index(value = ["title", "deadline", "notify"], unique = true)
+        Index(value = ["title", "deadline", "notify", "scheduledDate"], unique = true)
     ],
     foreignKeys = [
         ForeignKey(
@@ -39,5 +39,8 @@ data class TaskEntity(
     val notify: String = "",  // Ahora es un String en formato "yyyy-MM-dd (hh:mm opcional)"
 
     @ColumnInfo(index = true)
-    val parentTaskId: Long? = null
+    val parentTaskId: Long? = null,
+
+    @ColumnInfo(defaultValue = "''")
+    val scheduledDate: String = ""
 )

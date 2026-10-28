@@ -23,7 +23,7 @@ class AssistantResponseFormatTest {
         assertEquals("json_schema", format["type"].asString)
         assertFalse(format.has("jsonSchema"))
         val contract = format.getAsJsonObject("json_schema")
-        assertEquals("assistant_tasks_v1", contract["name"].asString)
+        assertEquals("assistant_tasks_v2", contract["name"].asString)
         assertTrue(contract["strict"].asBoolean)
         val schema = contract.getAsJsonObject("schema")
         assertClosedObjects(schema)
@@ -98,6 +98,23 @@ class AssistantResponseFormatTest {
             assertThrows(content, AIServiceError.InvalidStructuredResponse::class.java) {
                 AssistantResponseFormat.validate(content)
             }
+        }
+    }
+
+    @Test
+    fun acceptsScheduledDaysWithoutRequiringATimeOrReminder() {
+        for (day in listOf("", "2026-11-02", "2028-02-29")) {
+            val response = reply().apply { task(this).addProperty("scheduledDate", day) }
+            AssistantResponseFormat.validate(response.toString())
+        }
+    }
+
+    @Test
+    fun rejectsInvalidScheduledDaysIncludingInsideSubtasks() {
+        for (day in listOf("lunes", "2026-02-30", "2026-02-29", "2026-1-02", "2026-11-02 12:00", " ")) {
+            val response = reply(Task(title = "Meta", subtasks = listOf(Task(title = "Sesión"))))
+            task(response).getAsJsonArray("subtasks")[0].asJsonObject.addProperty("scheduledDate", day)
+            rejects(response)
         }
     }
 

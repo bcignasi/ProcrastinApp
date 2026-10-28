@@ -20,6 +20,7 @@ object TaskMapper {
             notes = notes,
             completed = completed,
             notify = notify,
+            scheduledDate = scheduledDate,
             subtasks = emptyList()
         )
 
@@ -33,6 +34,7 @@ object TaskMapper {
             notes = notes?:  "",
             completed = completed,
             notify = notify?: "",
+            scheduledDate = scheduledDate,
             parentTaskId = null // Si no es una subtarea
         )
 }

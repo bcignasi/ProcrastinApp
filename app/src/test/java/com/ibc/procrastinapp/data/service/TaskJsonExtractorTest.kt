@@ -49,6 +49,21 @@ class TaskJsonExtractorTest {
         val tasks = extractor.extractTasks(text)
         assertEquals(1, tasks.size)
         assertEquals("Llamar a Pedro", tasks[0].title)
+        assertEquals("", tasks[0].scheduledDate)
+    }
+
+    @Test
+    fun `conserva dias de sesiones y normaliza el historial sin el campo`() {
+        val tasks = extractor.extractTasks("""{"propuesta":{"tasks":[
+            {"title":"Meta antigua","subtasks":[
+                {"title":"Sesión","scheduledDate":"2026-11-02"},
+                {"title":"Paso antiguo"},
+                {"title":"Paso nulo","scheduledDate":null}
+            ]}
+        ]}}""")
+        assertEquals("", tasks.single().scheduledDate)
+        assertEquals(listOf("2026-11-02", "", ""), tasks.single().subtasks.map { it.scheduledDate })
+        assertTrue(tasks.single().subtasks.all { it.notify.isEmpty() })
     }
 
     @Test

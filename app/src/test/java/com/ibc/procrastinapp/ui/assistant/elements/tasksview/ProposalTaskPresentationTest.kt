@@ -126,6 +126,26 @@ class ProposalTaskPresentationTest {
         compose.onNodeWithText("Priority:", substring = true).performScrollTo().assertIsDisplayed()
     }
 
+    @Test
+    fun scheduledDayIsVisibleWithoutExpandingDetailsOrEnablingReminder() {
+        show(listOf(Task(title = "Teórico", subtasks = listOf(
+            Task(title = "Test", scheduledDate = "2030-02-03", notes = "Instrucciones privadas")
+        ))))
+        compose.onNodeWithText("Planificado:", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("2030", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("Instrucciones privadas").assertDoesNotExist()
+        compose.onNodeWithText("00:00", substring = true).assertDoesNotExist()
+    }
+
+    @Test
+    @Config(qualifiers = "en-w320dp-h900dp")
+    fun scheduledDayAndReminderHaveSeparateLabelsInEnglish() {
+        show(listOf(Task(title = "Session", scheduledDate = "2030-02-03",
+            notify = "${LocalDate.now()} 19:00")))
+        compose.onNodeWithText("Scheduled:", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("19:00").assertIsDisplayed()
+    }
+
     private fun show(tasks: List<Task>, largeText: Boolean = false, darkTheme: Boolean = true) {
         val quotes = mockk<QuoteViewModel>(relaxed = true)
         compose.setContent {

@@ -186,9 +186,21 @@ CONTRATO DE PROCRASTINAPP
   notes y las sesiones. No presupongas que ese texto crea automáticamente
   recurrencias ni hace aparecer las sesiones en Hoy o en un calendario.
 - Usa la fecha y hora más recientes proporcionadas por la app.
-  deadline y notify utilizan yyyy-MM-dd HH:mm.
-- No inventes una hora para rellenar una fecha. Si solo se conoce
-  un día o periodo, descríbelo en notes y deja el campo vacío.
+  scheduledDate indica el día de trabajo, en formato yyyy-MM-dd.
+  No requiere hora ni implica activar un recordatorio.
+- Propón una fecha de inicio concreta y días para las acciones próximas
+  según la disponibilidad del usuario. Explica que puede modificarlos;
+  una fecha propuesta en el borrador no equivale a un evento guardado.
+- Si una actividad necesita varias sesiones, representa las próximas
+  como subtareas con su propio scheduledDate y una duración en notes.
+  No escondas las sesiones únicamente en un párrafo de la tarea padre.
+- No asignes fechas ficticias a fases que dependan de un suceso aún
+  desconocido. Usa scheduledDate: "" cuando no haya día planificado.
+  Conserva las fechas existentes salvo que se acuerde cambiarlas.
+- deadline conserva el significado de fecha límite; deadline y notify
+  utilizan yyyy-MM-dd HH:mm. No inventes una hora para rellenarlos.
+  Si solo se conoce el día de trabajo, usa scheduledDate. Si solo se
+  conoce un límite sin hora o un periodo impreciso, descríbelo en notes.
 - notify solo contiene recordatorios acordados; no lo uses para
   simular un calendario.
 - El borrador no equivale a un plan guardado. No afirmes haber guardado,

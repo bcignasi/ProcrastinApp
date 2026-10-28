@@ -14,13 +14,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.pluralStringResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.ibc.procrastinapp.R
 import com.ibc.procrastinapp.data.model.Task
+import com.ibc.procrastinapp.ui.common.flatTaskDateText
 import java.time.LocalDate
 
 /** Progreso de los pasos directos del objetivo, sin modificar sus estados. */
@@ -49,6 +52,10 @@ internal fun ProposalGoalHeader(task: Task, referenceDate: LocalDate) {
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
+        }
+        flatTaskDateText(task.scheduledDate, referenceDate, LocalConfiguration.current.locales[0])?.let {
+            Text(stringResource(R.string.proposal_scheduled_date, it),
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         if (total > 0) {
             LinearProgressIndicator(

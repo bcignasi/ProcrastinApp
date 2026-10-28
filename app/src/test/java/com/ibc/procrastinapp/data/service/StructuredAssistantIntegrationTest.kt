@@ -212,7 +212,7 @@ class StructuredAssistantIntegrationTest {
             assertFalse(service.isLoading.value)
         }
 
-        val valid = """{"comentario":"Plan ajustado","propuesta":{"tasks":[{"id":0,"title":"Aprobar el teórico","deadline":"","priority":1,"periodicity":"","notes":"","completed":false,"notify":"","subtasks":[]}]}}"""
+        val valid = """{"comentario":"Plan ajustado","propuesta":{"tasks":[{"id":0,"title":"Aprobar el teórico","deadline":"","priority":1,"periodicity":"","notes":"","completed":false,"notify":"","scheduledDate":"","subtasks":[]}]}}"""
         coEvery { aiService.sendMessage(any()) } returns response(valid)
         repository.sendMessage("Vuelve a intentarlo")
         runCurrent()
