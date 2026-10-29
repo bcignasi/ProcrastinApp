@@ -139,6 +139,23 @@ class FlatTaskRowTest {
     }
 
     @Test
+    @Config(qualifiers = "es")
+    fun scheduledDayIsVisibleWithoutReminderAndDoesNotInventAnAlarm() {
+        compose.setContent {
+            ProcAppMVVMTheme(darkTheme = true, dynamicColor = false) {
+                TaskItemContent(
+                    task = Task(id = 42, title = "Test", scheduledDate = "2030-02-03"),
+                    presentation = TaskPresentation.FLAT, actionsEnabled = false
+                )
+            }
+        }
+        compose.onNodeWithText("Planificado:", substring = true).assertExists()
+        compose.onNodeWithText("2030", substring = true).assertExists()
+        val context = RuntimeEnvironment.getApplication()
+        compose.onNodeWithContentDescription(context.getString(R.string.notification_cd)).assertDoesNotExist()
+    }
+
+    @Test
     fun flatRowShowsOnlyTheReminderDateAndUsesAPriorityLabel() {
         val today = LocalDate.of(2026, 10, 19)
         compose.setContent {

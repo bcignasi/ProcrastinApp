@@ -55,14 +55,14 @@ class TaskRepository(
         return processTaskQuery(taskDao.getPastTasks(date.toString()), includeHierarchy)
     }
 
-    /** Pendientes con aviso de hoy; mañana queda fuera del intervalo. */
+    /** Filas del día sin adjuntar hijos de otras fechas ni duplicar los que ya coinciden. */
     private fun getTodayTasksFlow(date: LocalDate): Flow<List<Task>> =
         processTaskQuery(
-            taskDao.getTodayReminderTasks(
+            taskDao.getTodayTasks(
                 fromDate = date.toString(),
                 untilDate = date.plusDays(1).toString()
             ),
-            includeHierarchy = true
+            includeHierarchy = false
         )
 
 
@@ -139,6 +139,20 @@ class TaskRepository(
         return buildTaskWithSubtasks(entity)
     }
 
+    /** La edición desde una sesión abre el objetivo completo para conservar su jerarquía. */
+    suspend fun getRootTaskIds(taskIds: List<Long>): List<Long> = database.withTransaction {
+        taskIds.mapNotNull { id ->
+            var entity = taskDao.getTaskByIdImmediate(id) ?: return@mapNotNull null
+            val visited = mutableSetOf(entity.id)
+            while (entity.parentTaskId != null) {
+                val parent = taskDao.getTaskByIdImmediate(entity.parentTaskId) ?: return@mapNotNull null
+                if (!visited.add(parent.id)) return@mapNotNull null
+                entity = parent
+            }
+            entity.id
+        }.distinct()
+    }
+
     /**
      * Guarda una tarea y todas sus subtareas.
      *
@@ -198,12 +212,8 @@ class TaskRepository(
      * Recibe una lista de tareas y las marca como completadas
      */
     suspend fun completeTasks(taskIds: List<Long>) {
-        // Actualizar cada tarea seleccionada como completada
-        taskIds.forEach { id ->
-            val task = getTask(id) ?: return@forEach
-            val updatedTask = task.copy(completed = true)
-            updateTask(updatedTask)
-        }
+        // No reconstruir subárboles: perderían su parentTaskId al guardarse como raíces.
+        taskIds.forEach { id -> setTaskCompleted(id, true) }
     }
 
     /**
@@ -284,7 +294,7 @@ class TaskRepository(
 
                 emit(tasksWithHierarchy)
             } else {
-                // Versión plana (solo tareas raíz)
+                // Versión plana: únicamente las entidades que cumplen el filtro.
                 emit(rootEntities.map { it.toTask() })
             }
         }

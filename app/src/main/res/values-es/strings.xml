@@ -10,7 +10,9 @@
     <string name="agenda_date_today">Hoy, %1$s</string>
     <string name="agenda_pending">Pendientes</string>
     <string name="agenda_done">Hechas</string>
-    <string name="agenda_empty_today">No tienes tareas con aviso para hoy.</string>
+    <string name="agenda_empty_today">No tienes tareas planificadas para hoy.</string>
+    <string name="agenda_edit_unavailable">No se ha podido abrir este objetivo. Inténtalo de nuevo.</string>
+    <string name="task_scheduled_date">Planificado: %1$s</string>
     <string name="agenda_empty_pending">No tienes tareas pendientes.</string>
     <string name="agenda_empty_done">Aún no hay tareas completadas.</string>
     <string name="task_type_Past">Tareas pasadas</string>

@@ -42,6 +42,7 @@ internal fun FlatTaskHeader(
 ) {
     val locale = LocalConfiguration.current.locales[0]
     val notify = flatTaskDateText(task.notify, referenceDate, locale)
+    val scheduledDay = flatTaskDateText(task.scheduledDate, referenceDate, locale)
     val priority = when (val value = TaskPriority.fromLevel(task.priority)) {
         TaskPriority.High, TaskPriority.Urgent -> value
         else -> null
@@ -68,6 +69,11 @@ internal fun FlatTaskHeader(
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onSurface
             )
+            if (scheduledDay != null) {
+                Text(stringResource(R.string.task_scheduled_date, scheduledDay),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
             if (notify != null) {
                 Row(
                     modifier = Modifier.semantics(mergeDescendants = true) {},

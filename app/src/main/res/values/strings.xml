@@ -19,7 +19,9 @@
     <string name="agenda_date_today">Today, %1$s</string>
     <string name="agenda_pending">Pending</string>
     <string name="agenda_done">Done</string>
-    <string name="agenda_empty_today">You have no tasks with a reminder today.</string>
+    <string name="agenda_empty_today">You have no tasks planned for today.</string>
+    <string name="agenda_edit_unavailable">Could not open this goal. Please try again.</string>
+    <string name="task_scheduled_date">Scheduled: %1$s</string>
     <string name="agenda_empty_pending">You have no pending tasks.</string>
     <string name="agenda_empty_done">No completed tasks yet.</string>
     <string name="task_type_Past">Past Tasks</string>

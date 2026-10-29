@@ -69,7 +69,7 @@ class TaskListViewModel(
 
     /**
      * Renueva las consultas cuando cambia el filtro o la fecha.
-     * Hoy consulta solo los avisos del día. Las demás pendientes se ven en ALL.
+     * Hoy consulta el día planificado (o el aviso si no hay día). Las demás pendientes se ven en ALL.
      */
     @OptIn(ExperimentalCoroutinesApi::class)
     private val tasks = combine(_currentFilter, dates) { filter, date -> filter to date }
@@ -105,6 +105,9 @@ class TaskListViewModel(
         clearSelections()
         _currentFilter.value = filter
     }
+
+    suspend fun taskIdsForEditing(taskIds: List<Long>): List<Long> =
+        taskRepository.getRootTaskIds(taskIds)
 
     /**
      * Alterna la selección de una tarea

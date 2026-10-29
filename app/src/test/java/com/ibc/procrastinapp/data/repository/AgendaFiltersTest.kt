@@ -61,16 +61,66 @@ class AgendaFiltersTest {
     }
 
     @Test
-    fun todayPreservesSubtasksWithoutPromotingChildrenFromOtherParents() = runBlocking {
+    fun todayReturnsMatchingChildrenAsIndependentRowsWithoutUndatedDescendants() = runBlocking {
         val root = dao.insertTask(TaskEntity(title = "Padre de hoy", notify = "$today"))
         val child = dao.insertTask(TaskEntity(title = "Hija", parentTaskId = root))
         val future = dao.insertTask(TaskEntity(title = "Padre futuro", notify = "${today.plusDays(1)}"))
-        dao.insertTask(TaskEntity(title = "Hija de hoy", notify = "$today", parentTaskId = future))
+        val datedChild = dao.insertTask(TaskEntity(title = "Hija de hoy", scheduledDate = "$today", parentTaskId = future))
 
         val tasks = repository.getTasks(TaskListQueryType.TODAY, today).first()
 
-        assertEquals(listOf(root), tasks.map { it.id })
-        assertEquals(listOf(child), tasks.single().subtasks.map { it.id })
+        assertEquals(setOf(root, datedChild), tasks.map { it.id }.toSet())
+        assertTrue(tasks.all { it.subtasks.isEmpty() })
+        assertEquals(listOf(child), repository.getTask(root)!!.subtasks.map { it.id })
+    }
+
+    @Test
+    fun scheduledDayTakesPrecedenceOverReminderAndIncludesNestedSessionsOnlyOnTheirDay() = runBlocking {
+        val goal = dao.insertTask(TaskEntity(title = "Teórico"))
+        val block = dao.insertTask(TaskEntity(title = "Tests", parentTaskId = goal))
+        val session = dao.insertTask(TaskEntity(title = "Sesión", parentTaskId = block, scheduledDate = "$today"))
+        val otherReminder = dao.insertTask(TaskEntity(title = "Hoy con aviso mañana", scheduledDate = "$today", notify = "${today.plusDays(1)} 09:00"))
+        dao.insertTask(TaskEntity(title = "Mañana con aviso hoy", scheduledDate = "${today.plusDays(1)}", notify = "$today 09:00"))
+        dao.insertTask(TaskEntity(title = "Atrasada", scheduledDate = "${today.minusDays(1)}", notify = "$today 09:00"))
+        dao.insertTask(TaskEntity(title = "Hecha", scheduledDate = "$today", completed = true))
+        assertEquals(setOf(session, otherReminder), repository.getTasks(TaskListQueryType.TODAY, today).first().map { it.id }.toSet())
+        repository.setTaskCompleted(session, true)
+        assertEquals(listOf(otherReminder), repository.getTasks(TaskListQueryType.TODAY, today).first().map { it.id })
+        assertEquals(listOf(goal), repository.getTasks(TaskListQueryType.ALL).first().filter { it.id == goal }.map { it.id })
+        assertTrue(repository.getTask(goal)!!.subtasks.single().subtasks.single().completed)
+    }
+
+    @Test
+    fun bulkCompletionOfASubtaskPreservesItsParentAndDescendants() = runBlocking {
+        val goal = dao.insertTask(TaskEntity(title = "Objetivo"))
+        val child = dao.insertTask(TaskEntity(title = "Bloque", parentTaskId = goal, scheduledDate = "$today"))
+        val grandchild = dao.insertTask(TaskEntity(title = "Sesión", parentTaskId = child))
+        repository.completeTasks(listOf(child))
+        assertEquals(goal, dao.getTaskByIdImmediate(child)!!.parentTaskId)
+        assertEquals(child, dao.getTaskByIdImmediate(grandchild)!!.parentTaskId)
+        assertTrue(repository.getTask(goal)!!.subtasks.single().completed)
+        assertEquals(false, dao.getTaskByIdImmediate(grandchild)!!.completed)
+    }
+
+    @Test
+    fun editingSessionsResolvesTheirWholeGoalOnceWithoutChangingStoredTasks() = runBlocking {
+        val goal = dao.insertTask(TaskEntity(title = "Objetivo"))
+        val child = dao.insertTask(TaskEntity(title = "Bloque", parentTaskId = goal))
+        val session = dao.insertTask(TaskEntity(title = "Sesión", parentTaskId = child))
+        val otherGoal = dao.insertTask(TaskEntity(title = "Otro objetivo"))
+        assertEquals(listOf(goal, otherGoal), repository.getRootTaskIds(listOf(session, child, goal, otherGoal)))
+        assertTrue(repository.getRootTaskIds(listOf(-1)).isEmpty())
+        assertEquals(child, dao.getTaskByIdImmediate(session)!!.parentTaskId)
+    }
+
+    @Test
+    fun scheduledParentAndChildAppearOnceAndNextDayExcludesBoth() = runBlocking {
+        val goal = dao.insertTask(TaskEntity(title = "Objetivo", scheduledDate = "$today"))
+        val child = dao.insertTask(TaskEntity(title = "Sesión", parentTaskId = goal, scheduledDate = "$today"))
+        val tasks = repository.getTasks(TaskListQueryType.TODAY, today).first()
+        assertEquals(listOf(goal, child), tasks.map { it.id })
+        assertTrue(tasks.all { it.subtasks.isEmpty() })
+        assertTrue(repository.getTasks(TaskListQueryType.TODAY, today.plusDays(1)).first().isEmpty())
     }
 
     @Test

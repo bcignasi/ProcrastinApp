@@ -39,15 +39,16 @@ interface TaskDao {
 
     // ===== Listas principales =====
 
-    /** Pendientes raíz cuyo aviso pertenece al día indicado, hasta el inicio del siguiente. */
+    /** Actividades del día a cualquier profundidad; el aviso solo sustituye un día sin planificar. */
     @Query("""
         SELECT * FROM tasks
         WHERE completed = 0
-          AND parentTaskId IS NULL
-          AND notify != "" AND notify >= :fromDate AND notify < :untilDate
-        ORDER BY notify ASC, priority DESC
+          AND (scheduledDate = :fromDate OR
+               (scheduledDate = "" AND notify != "" AND notify >= :fromDate AND notify < :untilDate))
+        ORDER BY CASE WHEN notify >= :fromDate AND notify < :untilDate THEN notify ELSE :fromDate END ASC,
+                 priority DESC, id ASC
     """)
-    fun getTodayReminderTasks(fromDate: String, untilDate: String): Flow<List<TaskEntity>>
+    fun getTodayTasks(fromDate: String, untilDate: String): Flow<List<TaskEntity>>
 
     /**
      * TODAS LAS TAREAS PENDIENTES (ALL)

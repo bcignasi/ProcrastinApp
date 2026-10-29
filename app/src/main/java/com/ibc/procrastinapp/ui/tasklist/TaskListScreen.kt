@@ -18,6 +18,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -33,8 +34,9 @@ import com.ibc.procrastinapp.ui.tasklist.elements.AddTaskFab
 import com.ibc.procrastinapp.ui.tasklist.elements.EmptyListMessage
 import com.ibc.procrastinapp.ui.tasklist.elements.TaskListContent
 import com.ibc.procrastinapp.ui.tasklist.elements.TaskListTopBar
-import com.ibc.procrastinapp.utils.Logger
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 import org.koin.androidx.compose.koinViewModel
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -67,6 +69,23 @@ fun TaskListScreen(
     // Estado para detectar si el botón atrás ya fue pulsado una vez recientemente
     var backPressedOnce by remember { mutableStateOf(false) }
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val openForEditing: (List<Long>) -> Unit = { ids ->
+        scope.launch {
+            try {
+                val roots = viewModel.taskIdsForEditing(ids)
+                if (roots.isNotEmpty()) {
+                    navController.openAssistant("chat/${roots.joinToString(",")}")
+                } else {
+                    Toast.makeText(context, R.string.agenda_edit_unavailable, Toast.LENGTH_SHORT).show()
+                }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                Toast.makeText(context, R.string.agenda_edit_unavailable, Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
 
     // Si está activo, lanzamos un efecto que lo desactiva tras 2 segundos
     if (backPressedOnce) {
@@ -147,7 +166,7 @@ fun TaskListScreen(
                             } else {
 
                                 // ==== NAVEGACIÓN ON CLICK PARA EDICIÓN ====================
-                                navController.openAssistant("chat/$taskId")
+                                openForEditing(listOf(taskId))
                                 // ==========================================================
 
                             }
@@ -156,9 +175,7 @@ fun TaskListScreen(
                         onCompleteTasksClick = { viewModel.completeSelectedTasks() },
                         onDeleteTasksClick = { viewModel.deleteSelectedTasks() },
                         onEditTasksClick = {
-                            val selectedTasksIds = uiState.selectedTaskIds.joinToString(",")
-                            Logger.d("IBC11-TaskListScreen", "onEditTasksClick: $selectedTasksIds")
-                            navController.openAssistant("chat/$selectedTasksIds")
+                            openForEditing(uiState.selectedTaskIds.toList())
                         },
                         onDismissDialog = {
                             viewModel.clearSelections()
