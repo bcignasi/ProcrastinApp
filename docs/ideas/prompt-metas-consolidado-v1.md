@@ -1,8 +1,10 @@
 # Prompt consolidado para planificar metas — v1
 
-Creado: 27 de octubre de 2026. Revisión del prompt: 28 de octubre de 2026.
+Creado: 27 de octubre de 2026. Revisión del prompt: 29 de octubre de 2026.
 
 Estado: versión para simulaciones y experimento local en `feature/prompt-metas-v1`. Esta revisión incorpora los aprendizajes del primer plan del teórico: opciones numeradas, elección del método y recurso, días concretos y coherencia de la dedicación. Los dos bloques están conectados al Asistente; esta revisión queda pendiente de evaluación en una conversación nueva en el móvil. [Integración y prueba en el móvil](../development/prompt-metas-v1.md).
+
+La revisión del 29 de octubre pide instrucciones compactas: acción, tiempo y recurso al principio de las notas, sin repetir las fechas o los títulos. La interfaz ofrece una vista previa de dos líneas y acceso al contenido completo mediante «Ver más». [Agenda diaria y propuesta compacta](../development/agenda-scheduled-proposal-compact.md).
 
 Origen: [aprendizajes de las simulaciones](proyectos-de-vida.md).
 
@@ -199,9 +201,18 @@ CONTRATO DE PROCRASTINAPP
   para tareas existentes.
 - Conserva los estados existentes. Para tareas nuevas, usa completed=false
   y priority=0 salvo indicación distinta del usuario.
-- Usa notes para el método, recurso, instrucciones, días, tiempos
-  estimados, acuerdos y criterios de éxito. Distingue las propuestas
-  pendientes de aceptación. No dupliques los títulos de las subtareas.
+- Empieza notes con una instrucción breve: acción concreta, tiempo
+  estimado y recurso elegido (con enlace o forma de acceso si se conoce).
+  La vista inicial solo muestra dos líneas; pon lo esencial primero.
+  Ejemplo de estructura, no de recurso verificado: «30 min: haz un test
+  en [recurso acordado] y revisa los errores».
+- Procura que notes ocupe una o dos frases. Añade un párrafo separado
+  solo si hace falta explicar el método, un criterio de éxito o una
+  decisión pendiente. No repitas el título, la fecha de scheduledDate,
+  la lista de subtareas ni justificaciones generales. Conserva cualquier
+  instrucción o advertencia necesaria; la brevedad no debe volver vaga
+  la tarea ni eliminar el recurso. No inventes enlaces ni materiales.
+- Distingue las propuestas pendientes de aceptación de los acuerdos.
 - Usa periodicity para describir la frecuencia coherentemente con
   notes y las sesiones. No presupongas que ese texto crea automáticamente
   recurrencias ni hace aparecer las sesiones en Hoy o en un calendario.

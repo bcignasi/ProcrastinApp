@@ -153,7 +153,8 @@
     </plurals>
     <string name="proposal_completed_read_only">Completed. Read only.</string>
     <string name="proposal_pending_read_only">Pending. Read only.</string>
-    <string name="proposal_details">Details</string>
+    <string name="proposal_more">Show more</string>
+    <string name="proposal_less">Show less</string>
     <string name="proposal_show_details_cd">Show details for %1$s</string>
     <string name="proposal_hide_details_cd">Hide details for %1$s</string>
     <string name="assistant_view_proposal">View proposal</string>

@@ -8,7 +8,7 @@
 
 El prompt propone días concretos según la disponibilidad y representa las sesiones próximas como subtareas. Las fechas del borrador son propuestas corregibles, no eventos guardados. Las fases condicionadas a sucesos desconocidos pueden seguir sin fecha. Los dos bloques del Markdown del prompt se mantienen iguales al texto Kotlin.
 
-Propuesta muestra el día junto al título de las filas y bajo la cabecera del objetivo, con traducciones en español e inglés. Los avisos mantienen su presentación independiente. No se añaden calendario, selector manual de fecha, duración estructurada ni cambios en el filtro Hoy: este último sigue consultando avisos de tareas raíz. Para modificar una fecha en este paso, se solicita el cambio al Asistente.
+Propuesta muestra el día junto al título de las filas y bajo la cabecera del objetivo, con traducciones en español e inglés. Los avisos mantienen su presentación independiente. No se añaden calendario, selector manual de fecha ni duración estructurada. Para modificar una fecha en este paso, se solicita el cambio al Asistente. En la entrega inicial, Hoy seguía consultando avisos de tareas raíz; desde el 29 de octubre usa el día planificado también en subtareas, como se documenta en [Agenda diaria y propuesta compacta](agenda-scheduled-proposal-compact.md).
 
 ## Persistencia y compatibilidad
 

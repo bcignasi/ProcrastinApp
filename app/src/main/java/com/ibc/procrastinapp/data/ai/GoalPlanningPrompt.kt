@@ -1,6 +1,6 @@
 package com.ibc.procrastinapp.data.ai
 
-/** Prompt metas-consolidadas-v1 (revisión 2026-10-28); origen: docs/ideas/prompt-metas-consolidado-v1.md. */
+/** Prompt metas-consolidadas-v1 (revisión 2026-10-29); origen: docs/ideas/prompt-metas-consolidado-v1.md. */
 object GoalPlanningPrompt {
     const val HISTORY_KEY = "task_messages_metas_v1"
 
@@ -179,9 +179,18 @@ CONTRATO DE PROCRASTINAPP
   para tareas existentes.
 - Conserva los estados existentes. Para tareas nuevas, usa completed=false
   y priority=0 salvo indicación distinta del usuario.
-- Usa notes para el método, recurso, instrucciones, días, tiempos
-  estimados, acuerdos y criterios de éxito. Distingue las propuestas
-  pendientes de aceptación. No dupliques los títulos de las subtareas.
+- Empieza notes con una instrucción breve: acción concreta, tiempo
+  estimado y recurso elegido (con enlace o forma de acceso si se conoce).
+  La vista inicial solo muestra dos líneas; pon lo esencial primero.
+  Ejemplo de estructura, no de recurso verificado: «30 min: haz un test
+  en [recurso acordado] y revisa los errores».
+- Procura que notes ocupe una o dos frases. Añade un párrafo separado
+  solo si hace falta explicar el método, un criterio de éxito o una
+  decisión pendiente. No repitas el título, la fecha de scheduledDate,
+  la lista de subtareas ni justificaciones generales. Conserva cualquier
+  instrucción o advertencia necesaria; la brevedad no debe volver vaga
+  la tarea ni eliminar el recurso. No inventes enlaces ni materiales.
+- Distingue las propuestas pendientes de aceptación de los acuerdos.
 - Usa periodicity para describir la frecuencia coherentemente con
   notes y las sesiones. No presupongas que ese texto crea automáticamente
   recurrencias ni hace aparecer las sesiones en Hoy o en un calendario.
