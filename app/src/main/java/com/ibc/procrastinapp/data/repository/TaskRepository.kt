@@ -235,9 +235,7 @@ class TaskRepository(
     /**
      * Elimina una tarea y todas sus subtareas.
      */
-    suspend fun deleteTask(taskId: Long) {
-        deleteTasks(listOf(taskId))
-    }
+    suspend fun deleteTask(taskId: Long): TaskDeletionResult = deleteTasks(listOf(taskId))
 
     /**
      * Recibe una lista de tareas y las marca como completadas
@@ -250,7 +248,7 @@ class TaskRepository(
     /**
      * Recibe una lista de tareas y las elimina
      */
-    suspend fun deleteTasks(taskIds: List<Long>) {
+    suspend fun deleteTasks(taskIds: List<Long>): TaskDeletionResult {
         val removedIds = mutableSetOf<Long>()
         database.withTransaction {
             // Recoger toda la jerarquía antes de que el borrado en cascada la elimine.
@@ -263,7 +261,18 @@ class TaskRepository(
             taskIds.distinct().forEach { taskDao.deleteTaskById(it) }
         }
         // Un fallo de base de datos conserva también los avisos originales.
-        removedIds.forEach(alarmScheduler::cancel)
+        var reminderFailures = 0
+        removedIds.forEach { id ->
+            try {
+                alarmScheduler.cancel(id)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                // El borrado ya está confirmado: continuar con los demás avisos.
+                reminderFailures++
+            }
+        }
+        return TaskDeletionResult(reminderFailures)
     }
 
 
@@ -349,3 +358,5 @@ class TaskRepository(
 }
 
 data class ProposalSaveResult(val rootIds: List<Long>, val reminderFailures: Int = 0)
+
+data class TaskDeletionResult(val reminderFailures: Int = 0)

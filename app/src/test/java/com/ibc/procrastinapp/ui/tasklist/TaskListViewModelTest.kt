@@ -2,6 +2,8 @@ package com.ibc.procrastinapp.ui.tasklist
 
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.data.repository.TaskRepository
+import com.ibc.procrastinapp.data.repository.TaskDeletionResult
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
@@ -87,6 +89,49 @@ class TaskListViewModelTest {
         runCurrent()
         assertEquals(doneTasks.value, viewModel.uiState.value.tasks)
         assertEquals(TaskListQueryType.COMPLETED, viewModel.uiState.value.filter)
+    }
+
+    @Test
+    fun singleAndSelectedDeletionShowWarningAfterSuccessfulDeleteWithReminderFailures() = runTest(dispatcher) {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
+        coEvery { repository.deleteTasks(any()) } returns TaskDeletionResult(reminderFailures = 2)
+        for (single in listOf(true, false)) {
+            viewModel.toggleTaskSelection(1L)
+            viewModel.showActionsDialog()
+            if (single) viewModel.deleteTask(todayTasks.value.single()) else viewModel.deleteSelectedTasks()
+            runCurrent()
+            assertEquals(TaskListResult.DeleteRemindersFailed, viewModel.uiState.value.result)
+            assertTrue(viewModel.uiState.value.selectedTaskIds.isEmpty())
+            assertTrue(!viewModel.uiState.value.isActionsDialogVisible)
+            advanceTimeBy(10_000)
+            runCurrent()
+        }
+    }
+
+    @Test
+    fun databaseFailureIsHandledForSingleAndSelectedDeletionAndPreservesSelection() = runTest(dispatcher) {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
+        coEvery { repository.deleteTasks(any()) } throws IllegalStateException("Database rejected delete")
+        viewModel.toggleTaskSelection(1L)
+        for (single in listOf(true, false)) {
+            if (single) viewModel.deleteTask(todayTasks.value.single()) else viewModel.deleteSelectedTasks()
+            runCurrent()
+            assertTrue(viewModel.uiState.value.result is TaskListResult.DeleteFailed)
+            assertEquals(setOf(1L), viewModel.uiState.value.selectedTaskIds)
+            advanceTimeBy(3_000)
+            runCurrent()
+        }
+    }
+
+    @Test
+    fun successfulDeletionShowsSuccessAndClearsSelection() = runTest(dispatcher) {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
+        coEvery { repository.deleteTasks(any()) } returns TaskDeletionResult()
+        viewModel.toggleTaskSelection(1L)
+        viewModel.deleteSelectedTasks()
+        runCurrent()
+        assertEquals(TaskListResult.Deleted, viewModel.uiState.value.result)
+        assertTrue(viewModel.uiState.value.selectedTaskIds.isEmpty())
     }
 
     @Test

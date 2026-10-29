@@ -126,6 +126,7 @@
     <string name="tasklist_complete_success">Tasks completed successfully</string>
     <string name="tasklist_complete_failed">Error completing tasks: %1$s</string>
     <string name="tasklist_delete_success">Tasks deleted successfully</string>
+    <string name="tasklist_delete_reminders_failed">The tasks were deleted, but some reminders could not be cancelled. Notifications may still appear.</string>
     <string name="tasklist_delete_failed">Error deleting tasks: %1$s</string>
 
     <!-- QuoteViewModel: error messages -->

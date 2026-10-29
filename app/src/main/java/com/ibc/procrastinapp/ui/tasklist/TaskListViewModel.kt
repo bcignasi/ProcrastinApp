@@ -12,6 +12,7 @@ import androidx.lifecycle.viewModelScope
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.data.repository.TaskRepository
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -134,10 +135,7 @@ class TaskListViewModel(
     }
 
     fun deleteTask(task: Task) {
-        viewModelScope.launch {
-            taskRepository.deleteTasks(listOf(task.id))
-            clearSelections()
-        }
+        deleteTasks(listOf(task.id))
     }
 
 
@@ -165,19 +163,25 @@ class TaskListViewModel(
      * Elimina las tareas seleccionadas
      */
     fun deleteSelectedTasks() {
+        deleteTasks(_selectedTaskIds.value.toList())
+    }
+
+    private fun deleteTasks(taskIds: List<Long>) {
+        if (taskIds.isEmpty()) return
         viewModelScope.launch {
-            try {
-                val taskIds = _selectedTaskIds.value
-                taskRepository.deleteTasks(taskIds.toList())
-                _selectedTaskIds.value = emptySet()
-                _isActionsDialogVisible.value = false
-                _result.value = TaskListResult.Deleted
+            val result = try {
+                val deletion = taskRepository.deleteTasks(taskIds)
+                clearSelections()
+                if (deletion.reminderFailures > 0) TaskListResult.DeleteRemindersFailed
+                else TaskListResult.Deleted
+            } catch (cancelled: CancellationException) {
+                throw cancelled
             } catch (e: Exception) {
-                _result.value = TaskListResult.DeleteFailed(e.message)
-            } finally {
-                delay(3000)
-                _result.value = null
+                TaskListResult.DeleteFailed(e.message)
             }
+            _result.value = result
+            delay(if (result == TaskListResult.DeleteRemindersFailed) 10_000 else 3_000)
+            if (_result.value === result) _result.value = null
         }
     }
 

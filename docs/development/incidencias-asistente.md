@@ -110,6 +110,12 @@ La carga tiene un `Job` cancelable: cancelar la edición, empezar una sesión o 
 
 Cuatro pruebas de `TaskDeletionTest`, con Room real, cubren meta con hijos y nietos, selección solapada, borrado de una sola rama conservando padre y hermanos, y fallo de un borrado múltiple mediante un trigger que fuerza `ABORT`. Este último conserva todas las filas y no cancela ningún aviso. Los avisos externos están simulados; no se ha probado el teléfono ni se añade recuperación persistente si Android interrumpe la actualización de alarmas después del commit.
 
+**Hallazgo posterior de la auditoría, corregido el 29 de octubre.** Una excepción en la primera cancelación interrumpía el bucle después de confirmar el borrado. La reproducción observó un solo intento para cuatro avisos. Ahora cada cancelación se trata por separado y `TaskDeletionResult.reminderFailures` comunica los fallos sin presentar el borrado como fallido. Agenda utiliza el mismo flujo para borrado individual y múltiple y muestra una advertencia en español o inglés. Los avisos fallidos no se reintentan automáticamente.
+
+La prueba permanente fuerza fallos en el primer y tercer aviso y exige cuatro intentos, dos cancelaciones satisfactorias y dos fallos contabilizados. Las pruebas del ViewModel distinguen éxito, fallo de base de datos y fallo parcial de avisos. Las de interfaz comprueban la advertencia en la pantalla real, también cuando se ha borrado la última tarea y Agenda queda vacía.
+
+Verificación posterior: **227 pruebas superadas**, sin fallos, errores ni omitidas; `assembleDebug` y `lintDebug` correctos. Se mantienen los 44 avisos y una sugerencia de lint anteriores. No se ha instalado el APK en el móvil.
+
 **Impacto.** Pueden seguir llegando avisos de pasos que ya no existen. Al editar una meta y crear nuevos IDs, esos avisos pueden coexistir con los de los pasos sustitutos.
 
 **Código implicado.** `data/repository/TaskRepository.kt`, `deleteTask()` y `saveTaskWithSubtasks()`; cascada de `data/local/TaskEntity.kt`; `data/alarm/AlarmReceiver.kt`.

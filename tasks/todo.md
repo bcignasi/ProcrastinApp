@@ -145,6 +145,8 @@ Verificación del guardado atómico: 213 pruebas superadas; `assembleDebug` y `l
 
 Verificación tras AUD-002 (`ae5dc65`) y AUD-005 (`9e72eab`): **221 pruebas superadas**, `assembleDebug` y `lintDebug` correctos; mismos avisos de lint. Los tres arreglos permanecen en la rama local `codex/guardado-atomico`, pendientes de integración e instalación en el móvil.
 
+Auditoría posterior de AUD-005: corregida la interrupción de cancelaciones cuando falla un aviso. Agenda distingue borrado confirmado con fallos de avisos y muestra el mensaje incluso si queda vacía. Se añaden seis pruebas permanentes; pasan 227 pruebas, `assembleDebug` y `lintDebug`, con los avisos anteriores.
+
 ## Evolución posterior conservada
 
 - [ ] Opción **Ver diagrama** para abrir una representación visual del plan (mapa mental o diagrama de pasos) fuera de los mensajes del chat. [Idea y alcance](../docs/ideas/proyectos-de-vida.md#visualización-del-plan-mediante-un-diagrama--idea-registrada-el-19-de-octubre-de-2026).

@@ -95,4 +95,19 @@ class TaskDeletionTest {
         assertNotNull(repository.getTask(other))
         assertTrue(cancelled.isEmpty())
     }
+
+    @Test fun cancellationFailuresDoNotSkipOtherDescendantsOrReportDatabaseFailure() = runBlocking {
+        val goal = seed()
+        var attempts = 0
+        onCancel = {
+            attempts++
+            if (attempts == 1 || attempts == 3) throw IllegalStateException("Alarm service unavailable")
+        }
+        val outcome = runCatching { repository.deleteTask(goal.id) }
+        assertNull(repository.getTask(goal.id))
+        assertEquals(4, attempts)
+        assertEquals(2, cancelled.size)
+        assertTrue("Alarm failures must be returned as a partial result", outcome.isSuccess)
+        assertEquals(2, outcome.getOrThrow().reminderFailures)
+    }
 }

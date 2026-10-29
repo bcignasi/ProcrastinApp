@@ -117,6 +117,7 @@
     <string name="tasklist_complete_success">Tareas completadas correctamente</string>
     <string name="tasklist_complete_failed">Error al completar tareas: %1$s</string>
     <string name="tasklist_delete_success">Tareas eliminadas correctamente</string>
+    <string name="tasklist_delete_reminders_failed">Las tareas se han eliminado, pero no se han podido cancelar algunos avisos. Podrían seguir apareciendo notificaciones.</string>
     <string name="tasklist_delete_failed">Error al eliminar tareas: %1$s</string>
 
     <!-- QuoteViewModel: mensajes de error -->

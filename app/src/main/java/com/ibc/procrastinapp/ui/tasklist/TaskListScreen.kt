@@ -9,6 +9,7 @@ package com.ibc.procrastinapp.ui.tasklist
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -33,6 +34,7 @@ import com.ibc.procrastinapp.ui.navigation.openAssistant
 import com.ibc.procrastinapp.ui.tasklist.elements.AddTaskFab
 import com.ibc.procrastinapp.ui.tasklist.elements.EmptyListMessage
 import com.ibc.procrastinapp.ui.tasklist.elements.TaskListContent
+import com.ibc.procrastinapp.ui.tasklist.elements.TaskListResultMessage
 import com.ibc.procrastinapp.ui.tasklist.elements.TaskListTopBar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -147,15 +149,19 @@ fun TaskListScreen(
 //                uiState.isLoading -> LoadingIndicator(Modifier.align(Alignment.Center))
 
                 uiState.tasks.isEmpty() ->
-                    EmptyListMessage(
-                        modifier = Modifier.align(Alignment.Center),
-                        messageResId = when (uiState.filter) {
-                            TaskListQueryType.TODAY -> R.string.agenda_empty_today
-                            TaskListQueryType.ALL -> R.string.agenda_empty_pending
-                            TaskListQueryType.COMPLETED -> R.string.agenda_empty_done
-                            else -> R.string.tasklist_empty_message
+                    Column(Modifier.fillMaxSize()) {
+                        TaskListResultMessage(uiState.result)
+                        Box(Modifier.weight(1f).fillMaxSize(), contentAlignment = Alignment.Center) {
+                            EmptyListMessage(
+                                messageResId = when (uiState.filter) {
+                                    TaskListQueryType.TODAY -> R.string.agenda_empty_today
+                                    TaskListQueryType.ALL -> R.string.agenda_empty_pending
+                                    TaskListQueryType.COMPLETED -> R.string.agenda_empty_done
+                                    else -> R.string.tasklist_empty_message
+                                }
+                            )
                         }
-                    )
+                    }
 
                 else ->
                     TaskListContent(
