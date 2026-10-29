@@ -147,6 +147,8 @@ Verificación tras AUD-002 (`ae5dc65`) y AUD-005 (`9e72eab`): **221 pruebas supe
 
 Auditoría posterior de AUD-005: corregida la interrupción de cancelaciones cuando falla un aviso. Agenda distingue borrado confirmado con fallos de avisos y muestra el mensaje incluso si queda vacía. Se añaden seis pruebas permanentes; pasan 227 pruebas, `assembleDebug` y `lintDebug`, con los avisos anteriores.
 
+Auditoría completa posterior: corregida la interferencia entre temporizadores de resultados de Agenda mediante un único temporizador cancelable. Dos pruebas permanentes cubren avisos consecutivos y completar seguido de borrar; se verifica también su vencimiento. Pasan 229 pruebas, `assembleDebug` y `lintDebug`, con los avisos anteriores.
+
 ## Evolución posterior conservada
 
 - [ ] Opción **Ver diagrama** para abrir una representación visual del plan (mapa mental o diagrama de pasos) fuera de los mensajes del chat. [Idea y alcance](../docs/ideas/proyectos-de-vida.md#visualización-del-plan-mediante-un-diagrama--idea-registrada-el-19-de-octubre-de-2026).

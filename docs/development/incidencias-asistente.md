@@ -132,6 +132,14 @@ Verificación posterior: **227 pruebas superadas**, sin fallos, errores ni omiti
 
 ## Verificación y alcance de las pruebas
 
+### Temporizadores de resultados de Agenda — seguimiento del 29 de octubre
+
+La auditoría completa detectó que una operación anterior podía ocultar una advertencia nueva: dos borrados consecutivos reducían su visibilidad a un segundo; completar tareas y después borrar podía reducirla a 100 ms. Comparar por identidad no distingue dos resultados singleton iguales, y completar tareas limpiaba cualquier resultado sin comprobar su origen.
+
+`TaskListViewModel.showResult()` centraliza la publicación y mantiene un único `Job` de cierre. Cada mensaje nuevo cancela el temporizador anterior y dispone de diez segundos si es una advertencia de avisos, o tres para el resto. Ambas acciones usan ese flujo. Dos pruebas permanentes reproducen los casos y comprueban que la advertencia permanece hasta su nuevo vencimiento y después desaparece; también se verifica el plazo normal de tres segundos. Las dos reproducciones fallaron antes del arreglo.
+
+Verificación: **229 pruebas superadas**, sin fallos, errores ni omitidas; `assembleDebug` y `lintDebug` correctos, con los 44 avisos y una sugerencia anteriores. Arreglo local en `codex/guardado-atomico`; no se instala en el móvil ni se cambia el prompt.
+
 **Cierre del 29 de octubre de 2026:** AUD-001 en `adc59d4`, AUD-002 en `ae5dc65` y AUD-005 en `9e72eab`. Suite completa: **221 pruebas, 0 fallos, 0 errores y 0 omitidas**. `assembleDebug` y `lintDebug` correctos, con los 44 avisos y una sugerencia anteriores. Las pruebas de regresión de los dos últimos arreglos fallaron con la implementación anterior. No se ha instalado esta versión en el móvil ni se han realizado llamadas a OpenAI.
 
 Las cinco pruebas de reproducción de la auditoría fallaron en sus aserciones de comportamiento seguro, confirmando los efectos descritos. Fueron pruebas temporales: sus copias y resultados se conservaron como evidencia local en `.artifacts/pre-prompt-audit-2026-10-22/`, una carpeta ignorada por Git que no debe ser necesaria para entender este documento. No forman parte de la suite permanente; deberán incorporarse y ampliarse al corregir cada incidencia.

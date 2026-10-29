@@ -132,6 +132,54 @@ class TaskListViewModelTest {
         runCurrent()
         assertEquals(TaskListResult.Deleted, viewModel.uiState.value.result)
         assertTrue(viewModel.uiState.value.selectedTaskIds.isEmpty())
+        advanceTimeBy(2_999)
+        runCurrent()
+        assertEquals(TaskListResult.Deleted, viewModel.uiState.value.result)
+        advanceTimeBy(1)
+        runCurrent()
+        assertEquals(null, viewModel.uiState.value.result)
+    }
+
+    @Test
+    fun repeatedDeletionWarningGetsItsOwnFullDisplayTime() = runTest(dispatcher) {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
+        coEvery { repository.deleteTasks(any()) } returns TaskDeletionResult(reminderFailures = 1)
+        viewModel.deleteTask(Task(id = 1, title = "First"))
+        runCurrent()
+        advanceTimeBy(9_000)
+        viewModel.deleteTask(Task(id = 2, title = "Second"))
+        runCurrent()
+        advanceTimeBy(1_000)
+        runCurrent()
+        assertEquals(TaskListResult.DeleteRemindersFailed, viewModel.uiState.value.result)
+        advanceTimeBy(8_999)
+        runCurrent()
+        assertEquals(TaskListResult.DeleteRemindersFailed, viewModel.uiState.value.result)
+        advanceTimeBy(1)
+        runCurrent()
+        assertEquals(null, viewModel.uiState.value.result)
+    }
+
+    @Test
+    fun completionTimerCannotDismissANewerDeletionWarning() = runTest(dispatcher) {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect() }
+        coEvery { repository.completeTasks(any()) } returns Unit
+        coEvery { repository.deleteTasks(any()) } returns TaskDeletionResult(reminderFailures = 1)
+        viewModel.toggleTaskSelection(1L)
+        viewModel.completeSelectedTasks()
+        runCurrent()
+        advanceTimeBy(2_900)
+        viewModel.deleteTask(Task(id = 2, title = "Second"))
+        runCurrent()
+        advanceTimeBy(100)
+        runCurrent()
+        assertEquals(TaskListResult.DeleteRemindersFailed, viewModel.uiState.value.result)
+        advanceTimeBy(9_899)
+        runCurrent()
+        assertEquals(TaskListResult.DeleteRemindersFailed, viewModel.uiState.value.result)
+        advanceTimeBy(1)
+        runCurrent()
+        assertEquals(null, viewModel.uiState.value.result)
     }
 
     @Test
