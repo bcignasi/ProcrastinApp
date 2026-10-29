@@ -2,7 +2,7 @@
 
 Auditoría del 22 de octubre de 2026 sobre el commit `10249f3`, en `feature/serena-agenda`. Se revisaron historial, sesiones, apertura de tareas, guardado de propuestas y avisos, además del contrato JSON y la selección de modelo. Incluyó una revisión independiente y pruebas locales de reproducción.
 
-**Estado: AUD-002 y AUD-005 pendientes; AUD-001 corregida en `codex/guardado-atomico` el 29 de octubre de 2026.** AUD-003 y AUD-004 se corrigieron en `feature/prompt-metas-v1` el 27 de octubre y ya están en `master`. La decisión inicial fue documentarlas y posponer su arreglo. El nuevo guardado también cancela los avisos de descendientes durante el reemplazo; AUD-005 sigue abierta para la eliminación directa desde Agenda.
+**Estado: las cinco incidencias tienen corrección.** AUD-001, AUD-002 y AUD-005 están corregidas en `codex/guardado-atomico` el 29 de octubre de 2026, pendientes de integrar en `master`. AUD-003 y AUD-004 se corrigieron en `feature/prompt-metas-v1` el 27 de octubre y ya están en `master`. Se conserva debajo el diagnóstico histórico.
 
 Los fallos son anteriores a Structured Outputs y al cambio a Luna. No se encontró una regresión concreta en esos dos cambios. La auditoría no hizo llamadas a OpenAI ni accedió al móvil, y no verifica la calidad de planes reales ni la disponibilidad del modelo en la cuenta.
 
@@ -13,10 +13,10 @@ P1 indica prioridad alta por riesgo de pérdida de datos. P2 indica prioridad me
 | ID | Prioridad | Incidencia | Estado |
 |---|---|---|---|
 | [AUD-001](#aud-001-guardado-de-ediciones-sin-reemplazo-atómico) | P1 | Pérdida de la tarea original si falla su reemplazo | Corregida en `codex/guardado-atomico` |
-| [AUD-002](#aud-002-eliminación-de-tareas-que-no-se-pudieron-cargar) | P2 | Guardar una edición parcial elimina tareas no cargadas | Pendiente |
+| [AUD-002](#aud-002-eliminación-de-tareas-que-no-se-pudieron-cargar) | P2 | Guardar una edición parcial elimina tareas no cargadas | Corregida en `codex/guardado-atomico` |
 | [AUD-003](#aud-003-el-arranque-puede-sobrescribir-el-historial) | P2 | Escritura inicial antes de recuperar la conversación | Corregida en la rama del prompt |
 | [AUD-004](#aud-004-respuesta-antigua-dentro-de-una-sesión-nueva) | P2 | Una respuesta pendiente reaparece después del reinicio | Corregida en la rama del prompt |
-| [AUD-005](#aud-005-avisos-de-subtareas-eliminadas) | P2 | Alarmas de descendientes sin cancelar | Pendiente |
+| [AUD-005](#aud-005-avisos-de-subtareas-eliminadas) | P2 | Alarmas de descendientes sin cancelar | Corregida en `codex/guardado-atomico` |
 
 ## AUD-001: guardado de ediciones sin reemplazo atómico
 
@@ -49,6 +49,10 @@ Separar las escrituras de base de datos de la programación de alarmas: Room no 
 **Criterios de cierre.** Pruebas permanentes con Room en memoria que fuercen un fallo en una tarea raíz y en una subtarea: deben conservar todas las originales, impedir inserciones parciales y mantener el borrador. Una prueba del ViewModel debe comprobar ausencia de navegación de éxito ante error y un reintento correcto. El recorrido satisfactorio debe seguir guardando el conjunto y limpiando la propuesta.
 
 ## AUD-002: eliminación de tareas que no se pudieron cargar
+
+**Corrección aplicada, 29 de octubre de 2026.** La edición se abre solo si se cargan todas las tareas seleccionadas. Si falta alguna o una lectura falla, no se publica una propuesta parcial, se conserva el borrador anterior y se bloquea el guardado incluso después de cerrar el aviso. El error explica en español e inglés cómo volver a abrir la edición desde Agenda o empezar una sesión nueva. Un reintento completo registra únicamente los IDs recuperados y desbloquea el guardado.
+
+La carga tiene un `Job` cancelable: cancelar la edición, empezar una sesión o solicitar otra selección descarta la carga anterior. Guardar mientras se está cargando tampoco escribe en la base de datos. Cuatro pruebas nuevas de `AssistantViewModelTest` cubren fallo parcial y reintento, tarea inexistente con borrador previo, cancelación durante una carga y nueva sesión durante la carga. `StructuredAssistantErrorTest` comprueba la explicación en ambas pestañas y ambos idiomas.
 
 **Impacto.** Guardar una edición múltiple puede eliminar una tarea existente que el usuario no llegó a revisar en esa propuesta, aunque las escrituras terminen correctamente.
 
@@ -102,7 +106,9 @@ Separar las escrituras de base de datos de la programación de alarmas: Room no 
 
 ## AUD-005: avisos de subtareas eliminadas
 
-**Avance parcial, 29 de octubre de 2026.** El reemplazo mediante `saveProposal()` ya cancela los avisos de todos los descendientes después de confirmar los datos, como parte de AUD-001. La eliminación directa mediante `deleteTask()` sigue cancelando solo el aviso de la raíz, por lo que esta incidencia permanece abierta.
+**Corrección aplicada, 29 de octubre de 2026.** El reemplazo mediante `saveProposal()` cancela los avisos de todos los descendientes después de confirmar los datos, como parte de AUD-001. La eliminación directa y múltiple usa ahora el mismo principio: recoger los IDs de toda la jerarquía antes del borrado en cascada, eliminar la selección en una transacción y cancelar los avisos después del commit. Un conjunto evita cancelaciones duplicadas cuando se seleccionan a la vez un padre y un hijo.
+
+Cuatro pruebas de `TaskDeletionTest`, con Room real, cubren meta con hijos y nietos, selección solapada, borrado de una sola rama conservando padre y hermanos, y fallo de un borrado múltiple mediante un trigger que fuerza `ABORT`. Este último conserva todas las filas y no cancela ningún aviso. Los avisos externos están simulados; no se ha probado el teléfono ni se añade recuperación persistente si Android interrumpe la actualización de alarmas después del commit.
 
 **Impacto.** Pueden seguir llegando avisos de pasos que ya no existen. Al editar una meta y crear nuevos IDs, esos avisos pueden coexistir con los de los pasos sustitutos.
 
@@ -119,6 +125,8 @@ Separar las escrituras de base de datos de la programación de alarmas: Room no 
 **Criterios de cierre.** Pruebas permanentes para borrar y reemplazar jerarquías con varios niveles y avisos, comprobando la retirada de alarmas antiguas, la programación de las nuevas y la conservación de las originales si falla la escritura.
 
 ## Verificación y alcance de las pruebas
+
+**Cierre del 29 de octubre de 2026:** AUD-001 en `adc59d4`, AUD-002 en `ae5dc65` y AUD-005 en `9e72eab`. Suite completa: **221 pruebas, 0 fallos, 0 errores y 0 omitidas**. `assembleDebug` y `lintDebug` correctos, con los 44 avisos y una sugerencia anteriores. Las pruebas de regresión de los dos últimos arreglos fallaron con la implementación anterior. No se ha instalado esta versión en el móvil ni se han realizado llamadas a OpenAI.
 
 Las cinco pruebas de reproducción de la auditoría fallaron en sus aserciones de comportamiento seguro, confirmando los efectos descritos. Fueron pruebas temporales: sus copias y resultados se conservaron como evidencia local en `.artifacts/pre-prompt-audit-2026-10-22/`, una carpeta ignorada por Git que no debe ser necesaria para entender este documento. No forman parte de la suite permanente; deberán incorporarse y ampliarse al corregir cada incidencia.
 
