@@ -53,6 +53,16 @@ La revisión visual y la evaluación de respuestas reales corresponden al usuari
 
 ## Comprobaciones automatizadas
 
+### Revisión del 29 de octubre: alcance y carga total
+
+Pedir «la meta entera» completa el último alcance acordado con el usuario; no incorpora por inferencia fases que habían quedado fuera. El prompt estima el trabajo total por fases y lo traduce a horas, sesiones y semanas con la dedicación conocida. Permite repetir sesiones con el mismo recurso y método, agrupar las lejanas y fechar las próximas como parte del total, sin duplicar su carga. Si faltan materiales o nivel, explica los supuestos de una estimación provisional o el paso necesario para poder dimensionarla.
+
+Los dos bloques del Markdown coinciden con `GoalPlanningPrompt.text`. `:app:testDebugUnitTest`, `:app:assembleDebug` y `:app:lintDebug` terminan correctamente: **221 pruebas, cero fallos, errores u omitidas**; lint mantiene 44 advertencias y 1 sugerencia, sin errores. No se añaden pruebas que busquen frases del prompt: las pruebas existentes verifican su integración y la conservación del historial, no la calidad de la respuesta del modelo.
+
+Se evaluaron tres respuestas reales con `gpt-6-luna` y el mismo contrato JSON, sobre una copia autorizada de la conversación de prueba. La primera conservó el alcance, pero aplazó toda cuantificación. Tras aclarar que se permite una estimación de planificación con supuestos, las siguientes estimaron el recorrido completo en horas, sesiones y semanas. La última aún dejó inconsistente el total con la suma de fases y ambigua la inclusión de sesiones próximas; la precisión aritmética no se considera validada. Las respuestas y el script de evaluación se conservan solo en `.artifacts/`, fuera de Git; estas ejecuciones no modificaron el chat del móvil.
+
+La verificación final se ejecutó en `.artifacts/prompt-workload-isolated-20261029`, una copia del commit `396c8a1` con esta revisión del prompt, para evitar interferencias con compilaciones concurrentes. Allí pasan las 221 pruebas, `assembleDebug` y `lintDebug`. Se instala ese APK con `adb install -r` en el SHARP A103SH: su SHA-256 coincide con el artefacto verificado, la app abre correctamente y la huella del DataStore de conversaciones permanece idéntica antes y después. La propuesta ya recibida se conserva; una nueva petición usa el prompt actualizado.
+
 Revisión del prompt del 28 de octubre de 2026: los dos bloques del Markdown coinciden con `GoalPlanningPrompt.text`. Pasan las **9 pruebas de `StructuredAssistantIntegrationTest`**, sin fallos, errores ni omitidas, y `assembleDebug` termina correctamente. No se realizan llamadas reales a la IA. El APK queda preparado; ADB no detecta un móvil conectado y la instalación y evaluación del nuevo plan quedan pendientes.
 
 Las pruebas del servicio cubren envío sin instrucciones añadidas, prompt vigente al restaurar historial, conservación de mensajes, envío durante una lectura pendiente, reinicio durante carga y apertura de tarea durante carga. Una prueba con DataStore real bajo Robolectric verifica que la clave experimental empieza vacía, persiste su conversación y conserva la clave anterior.
