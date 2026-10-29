@@ -236,12 +236,7 @@ class TaskRepository(
      * Elimina una tarea y todas sus subtareas.
      */
     suspend fun deleteTask(taskId: Long) {
-
-        // Eliminar la alarma asociada a la tarea
-        alarmScheduler.cancel(taskId)
-
-        // Eliminar la tarea y todas sus subtareas
-        taskDao.deleteTaskById(taskId)
+        deleteTasks(listOf(taskId))
     }
 
     /**
@@ -256,10 +251,19 @@ class TaskRepository(
      * Recibe una lista de tareas y las elimina
      */
     suspend fun deleteTasks(taskIds: List<Long>) {
-        // Actualizar cada tarea seleccionada como completada
-        taskIds.forEach { id ->
-            deleteTask(id)
+        val removedIds = mutableSetOf<Long>()
+        database.withTransaction {
+            // Recoger toda la jerarquía antes de que el borrado en cascada la elimine.
+            taskIds.distinct().forEach { id ->
+                removedIds.add(id)
+                taskDao.getTaskByIdImmediate(id)?.let { entity ->
+                    collectTaskIds(buildTaskWithSubtasks(entity), removedIds)
+                }
+            }
+            taskIds.distinct().forEach { taskDao.deleteTaskById(it) }
         }
+        // Un fallo de base de datos conserva también los avisos originales.
+        removedIds.forEach(alarmScheduler::cancel)
     }
 
 
