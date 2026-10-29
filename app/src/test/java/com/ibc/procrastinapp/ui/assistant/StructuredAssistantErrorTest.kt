@@ -88,5 +88,14 @@ class StructuredAssistantErrorTest {
             compose.onNodeWithText("Aprobar el teórico", substring = true).assertIsDisplayed()
             compose.onNodeWithText(context.getString(R.string.assistant_type_Messages)).performClick()
         }
+        compose.runOnIdle {
+            state.value = initial.copy(event = AssistantState.AssistantEvent.LoadFailed(
+                listOf(AssistantState.LoadTaskError.NotFound(42L))
+            ))
+        }
+        val blockedMessage = context.getString(R.string.load_edit_blocked)
+        compose.onNodeWithText(blockedMessage, substring = true).assertIsDisplayed()
+        compose.onNodeWithText(context.getString(R.string.assistant_type_Tasks)).performClick()
+        compose.onNodeWithText(blockedMessage, substring = true).assertIsDisplayed()
     }
 }

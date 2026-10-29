@@ -137,7 +137,7 @@ fun AssistantTasksView(
                         is LoadTaskError.TaskException -> stringResource(R.string.load_task_exception, err.id, err.message ?: "")
                     }
                 }
-                ViewModelInfo.Error(lines.joinToString("\n"))
+                ViewModelInfo.Error(stringResource(R.string.load_edit_blocked) + "\n" + lines.joinToString("\n"))
             }
             null -> null
         }

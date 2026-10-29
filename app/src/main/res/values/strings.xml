@@ -118,6 +118,7 @@
     <string name="commit_reminders_failed">Your plan was saved to Agenda, but some reminders could not be updated. Check your notifications.</string>
 
     <!-- AssistantViewModel: load task errors -->
+    <string name="load_edit_blocked">Some tasks could not be loaded. Saving is blocked to protect them. Return to Agenda and open the edit again, or start a new session.</string>
     <string name="load_task_not_found">❌ Task ID %1$d not found</string>
     <string name="load_task_exception">❌ Error loading task %1$d: %2$s</string>
 

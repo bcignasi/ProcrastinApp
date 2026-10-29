@@ -17,6 +17,7 @@ import com.ibc.procrastinapp.ui.assistant.AssistantState.LoadTaskError
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -47,6 +48,8 @@ class AssistantViewModel(
     // En el modo edición, la lista de tareas a editar (para borrarlas
     // en caso de que se acepten los cambios - se insertarán como nuevas)
     private val originalTaskIds = mutableListOf<Long>()
+    private var editLoadJob: Job? = null
+    private var editLoadErrors: List<LoadTaskError> = emptyList()
 
     // Estado derivado correspondiente al parsing del último mensaje
     val lastResponse: StateFlow<AssistantResponse?> = assistantRepository.lastResponse
@@ -101,6 +104,8 @@ class AssistantViewModel(
 
     fun startNewSession() {
         if (_isSaving.value) return
+        editLoadJob?.cancel()
+        editLoadErrors = emptyList()
         viewModelScope.launch {
             viewedProposal.value = emptyList()
             assistantRepository.initSession()
@@ -115,6 +120,11 @@ class AssistantViewModel(
     }
 
     fun commitTasksFromAssistant() {
+        if (editLoadJob?.isActive == true) return
+        if (editLoadErrors.isNotEmpty()) {
+            _event.value = AssistantEvent.LoadFailed(editLoadErrors)
+            return
+        }
         val tasks = assistantRepository.tasks.value
         if (tasks.isEmpty() || !_isSaving.compareAndSet(false, true)) return
 
@@ -152,35 +162,45 @@ class AssistantViewModel(
     }
 
     fun loadTasksForEditing(taskIds: List<Long>) {
-        viewModelScope.launch {
+        if (_isSaving.value || taskIds.isEmpty()) return
+        editLoadJob?.cancel()
+        editLoadJob = viewModelScope.launch {
             val tasks = mutableListOf<Task>()
             val loadErrors = mutableListOf<LoadTaskError>()
-            taskIds.forEach { id ->
+            taskIds.distinct().forEach { id ->
                 try {
                     taskRepository.getTask(id)?.let { tasks.add(it) }
                         ?: loadErrors.add(LoadTaskError.NotFound(id))
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
                 } catch (e: Exception) {
                     loadErrors.add(LoadTaskError.TaskException(id, e.message))
                 }
             }
+            editLoadErrors = loadErrors.toList()
+            if (loadErrors.isNotEmpty()) {
+                // No publicar una selección parcial ni permitir guardar el borrador anterior.
+                _event.value = AssistantEvent.LoadFailed(editLoadErrors)
+                return@launch
+            }
             if (tasks.isNotEmpty()) {
+                _event.value = null
                 viewedProposal.value = emptyList()
                 originalTaskIds.clear()
-                originalTaskIds.addAll(taskIds)
+                originalTaskIds.addAll(tasks.map { it.id })
                 val userMessage = if (tasks.size == 1) "Tarea para editar"
                 else "Tareas para edición múltiple"
                 val json = convertListTaskToJSON(tasks)
                 assistantRepository.addUserAndAssistantMessage(userMessage, json)
-            }
-
-            if (loadErrors.isNotEmpty()) {
-                _event.value = AssistantEvent.LoadFailed(loadErrors)
             }
         }
     }
 
     fun cancelEdit() {
         if (_isSaving.value) return
+        editLoadJob?.cancel()
+        editLoadErrors = emptyList()
+        _event.value = null
         viewedProposal.value = emptyList()
         assistantRepository.clearTasks()
         originalTaskIds.clear()
