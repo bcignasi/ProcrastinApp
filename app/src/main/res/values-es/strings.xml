@@ -105,6 +105,8 @@
     <string name="commit_saved_and_updated">✓ %1$d nueva(s) + %2$d actualizada(s)</string>
     <string name="commit_partial_failure">⚠️ Guardadas: %1$d, actualizadas: %2$d, fallidas: %3$d</string>
     <string name="commit_nothing_saved">❌ Ninguna tarea guardada</string>
+    <string name="commit_failed_retry">No se ha podido guardar el plan. Se conservan tus tareas anteriores y la propuesta. Puedes ajustarla o volver a guardar.</string>
+    <string name="commit_reminders_failed">El plan se ha guardado en Agenda, pero no se han podido actualizar algunos avisos. Revisa tus notificaciones.</string>
 
     <!-- AssistantViewModel: errores de carga de tareas -->
     <string name="load_task_not_found">❌ No encontrada tarea ID %1$d</string>

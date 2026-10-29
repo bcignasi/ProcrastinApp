@@ -16,6 +16,7 @@ import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.ui.tasklist.TaskListQueryType
 import com.ibc.procrastinapp.utils.Logger
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.flow
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -159,17 +160,50 @@ class TaskRepository(
      * @return ID de la tarea guardada, o -1 si falló
      */
     suspend fun saveTask(task: Task): Long {
-        var taskId: Long = -1
+        val alarms = mutableListOf<Task>()
+        val taskId = database.withTransaction {
+            insertTaskWithSubtasks(task, null, alarms)
+        }
+        alarms.forEach(alarmScheduler::schedule)
+        return taskId
+    }
 
-        Logger.d("IBC-TaskRepository", "saveTask: task=$task")
-
-        database.withTransaction {
-            taskId = saveTaskWithSubtasks(task, null)
+    /** Reemplaza el conjunto completo o conserva todos los datos originales ante un error. */
+    suspend fun saveProposal(originalTaskIds: List<Long>, proposal: List<Task>): ProposalSaveResult {
+        require(proposal.isNotEmpty()) { "Cannot save an empty proposal" }
+        val removedIds = mutableSetOf<Long>()
+        val alarms = mutableListOf<Task>()
+        val rootIds = database.withTransaction {
+            originalTaskIds.distinct().forEach { id ->
+                val entity = requireNotNull(taskDao.getTaskByIdImmediate(id)) { "Original task no longer exists" }
+                require(entity.parentTaskId == null) { "Edit the complete goal, not an isolated child" }
+                collectTaskIds(buildTaskWithSubtasks(entity), removedIds)
+            }
+            originalTaskIds.distinct().forEach { taskDao.deleteTaskById(it) }
+            proposal.map { insertTaskWithSubtasks(it, null, alarms) }
         }
 
-        Logger.d("IBC-TaskRepository", "saveTask: taskId=$taskId")
+        // Android no participa en la transacción de Room. Un fallo aquí no significa que los datos no se guardaron.
+        var reminderFailures = 0
+        fun updateReminder(action: () -> Unit) {
+            try {
+                action()
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                reminderFailures++
+            }
+        }
+        removedIds.forEach { id -> updateReminder { alarmScheduler.cancel(id) } }
+        alarms.filter { it.notify.isNotBlank() && !it.completed }.forEach { task ->
+            updateReminder { alarmScheduler.schedule(task) }
+        }
+        return ProposalSaveResult(rootIds, reminderFailures)
+    }
 
-        return taskId
+    private fun collectTaskIds(task: Task, ids: MutableSet<Long>) {
+        ids.add(task.id)
+        task.subtasks.forEach { collectTaskIds(it, ids) }
     }
 
     /**
@@ -181,10 +215,12 @@ class TaskRepository(
             taskDao.updateTask(task.toEntity())
         } else {
             // Si tiene subtareas, eliminamos toda la jerarquía y la volvemos a crear
+            val alarms = mutableListOf<Task>()
             database.withTransaction {
                 taskDao.deleteTaskById(task.id)
-                saveTaskWithSubtasks(task, null)
+                insertTaskWithSubtasks(task, null, alarms)
             }
+            alarms.forEach(alarmScheduler::schedule)
         }
     }
 
@@ -242,37 +278,17 @@ class TaskRepository(
     /**
      * Guarda recursivamente una tarea y sus subtareas.
      */
-    private suspend fun saveTaskWithSubtasks(task: Task, parentId: Long?): Long {
-
-        Logger.d(
-            "IBC-TaskRepository",
-            "saveTaskWithSubtasks 1: task=${task.title}, parentId=$parentId"
-        )
-
+    private suspend fun insertTaskWithSubtasks(task: Task, parentId: Long?, alarms: MutableList<Task>): Long {
         val taskEntity = task.toEntity().copy(
             id = if (task.id <= 0) 0 else task.id,
             parentTaskId = parentId
         )
 
-        Logger.d("IBC-TaskRepository", "saveTaskWithSubtasks 2: ->insert taskEntity=$taskEntity")
-
         val taskId = taskDao.insertTask(taskEntity)
-        alarmScheduler.schedule(task.copy(id = taskId))
-
-
-        Logger.d("IBC-TaskRepository", "saveTaskWithSubtasks 3: <-insert taskId=$taskId")
-
-
-        // Guardamos recursivamente todas las subtareas
+        alarms.add(task.copy(id = taskId, subtasks = emptyList()))
         for (subtask in task.subtasks) {
-
-            Logger.d("IBC-TaskRepository", "saveTaskWithSubtasks 4 (for): subtask=${subtask.title}")
-
-            saveTaskWithSubtasks(subtask, taskId)
+            insertTaskWithSubtasks(subtask, taskId, alarms)
         }
-
-        Logger.d("IBC-TaskRepository", "saveTaskWithSubtasks 5: output taskId=$taskId")
-
         return taskId
     }
 
@@ -327,3 +343,5 @@ class TaskRepository(
     }
 
 }
+
+data class ProposalSaveResult(val rootIds: List<Long>, val reminderFailures: Int = 0)

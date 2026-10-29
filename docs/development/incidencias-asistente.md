@@ -2,7 +2,7 @@
 
 Auditoría del 22 de octubre de 2026 sobre el commit `10249f3`, en `feature/serena-agenda`. Se revisaron historial, sesiones, apertura de tareas, guardado de propuestas y avisos, además del contrato JSON y la selección de modelo. Incluyó una revisión independiente y pruebas locales de reproducción.
 
-**Estado: tres incidencias pendientes; AUD-003 y AUD-004 corregidas en la rama `feature/prompt-metas-v1` el 27 de octubre de 2026.** La decisión inicial fue documentarlas y posponer su arreglo. Al integrar y auditar el experimento se corrigen el arranque y la invalidación de operaciones de sesiones anteriores. AUD-001, AUD-002 y AUD-005 siguen pendientes.
+**Estado: AUD-002 y AUD-005 pendientes; AUD-001 corregida en `codex/guardado-atomico` el 29 de octubre de 2026.** AUD-003 y AUD-004 se corrigieron en `feature/prompt-metas-v1` el 27 de octubre y ya están en `master`. La decisión inicial fue documentarlas y posponer su arreglo. El nuevo guardado también cancela los avisos de descendientes durante el reemplazo; AUD-005 sigue abierta para la eliminación directa desde Agenda.
 
 Los fallos son anteriores a Structured Outputs y al cambio a Luna. No se encontró una regresión concreta en esos dos cambios. La auditoría no hizo llamadas a OpenAI ni accedió al móvil, y no verifica la calidad de planes reales ni la disponibilidad del modelo en la cuenta.
 
@@ -12,7 +12,7 @@ P1 indica prioridad alta por riesgo de pérdida de datos. P2 indica prioridad me
 
 | ID | Prioridad | Incidencia | Estado |
 |---|---|---|---|
-| [AUD-001](#aud-001-guardado-de-ediciones-sin-reemplazo-atómico) | P1 | Pérdida de la tarea original si falla su reemplazo | Pendiente |
+| [AUD-001](#aud-001-guardado-de-ediciones-sin-reemplazo-atómico) | P1 | Pérdida de la tarea original si falla su reemplazo | Corregida en `codex/guardado-atomico` |
 | [AUD-002](#aud-002-eliminación-de-tareas-que-no-se-pudieron-cargar) | P2 | Guardar una edición parcial elimina tareas no cargadas | Pendiente |
 | [AUD-003](#aud-003-el-arranque-puede-sobrescribir-el-historial) | P2 | Escritura inicial antes de recuperar la conversación | Corregida en la rama del prompt |
 | [AUD-004](#aud-004-respuesta-antigua-dentro-de-una-sesión-nueva) | P2 | Una respuesta pendiente reaparece después del reinicio | Corregida en la rama del prompt |
@@ -20,7 +20,15 @@ P1 indica prioridad alta por riesgo de pérdida de datos. P2 indica prioridad me
 
 ## AUD-001: guardado de ediciones sin reemplazo atómico
 
-**Impacto.** Se pueden perder una tarea y sus subtareas al guardar una edición. También se descarta la propuesta, impidiendo reintentar con el mismo borrador.
+**Corrección aplicada, 29 de octubre de 2026.** `TaskRepository.saveProposal()` obtiene los originales y sus descendientes, borra las raíces e inserta la propuesta completa dentro de una sola transacción de Room. Si falla cualquier inserción, no se toca ninguna alarma y se recuperan todas las filas originales. `AssistantViewModel` conserva propuesta e IDs ante error y no emite la navegación a Agenda. El guardado de propuestas nuevas también es de todo o nada.
+
+Tras confirmar los datos se cancelan los avisos antiguos y se programan los nuevos. Si Android rechaza una operación de alarmas, se conserva el guardado, se limpia el borrador y se muestra una advertencia diferenciada, sin navegación automática ni invitación a repetir la inserción. No se añade una cola persistente de reintento de avisos. La eliminación directa y los problemas de selección incompleta siguen siendo incidencias separadas.
+
+`AtomicProposalSaveTest` incorpora Room real y reproduce colisiones en raíces, colisiones en subtareas y guardado parcial de una propuesta nueva; verifica conservación de originales, borrador, alarmas y ausencia de navegación de éxito, además de un reintento correcto. Comprueba la jerarquía y las fechas al guardar, la ejecución de avisos solo después del commit y la advertencia cuando falla su programación. Las pruebas de navegación conservan el guardado al cambiar de pantalla y protegen una propuesta de una sesión posterior. Los mensajes de error y advertencia están comprobados en ambas pestañas, en español e inglés. El diagnóstico original se conserva debajo.
+
+**Verificación de la corrección:** 213 pruebas superadas, sin fallos ni pruebas omitidas; `assembleDebug` y `lintDebug` correctos. Lint conserva los 44 avisos y una sugerencia anteriores. Sin llamadas a la API ni comprobaciones en el móvil.
+
+**Impacto original.** Se podían perder una tarea y sus subtareas al guardar una edición. También se descartaba la propuesta, impidiendo reintentar con el mismo borrador.
 
 **Código implicado.** `ui/assistant/AssistantViewModel.kt`, `commitTasksFromAssistant()`; `data/repository/TaskRepository.kt`, `deleteTasks()` y `saveTask()`. Las referencias de código de este documento parten de `app/src/main/java/com/ibc/procrastinapp/`.
 
@@ -29,7 +37,7 @@ P1 indica prioridad alta por riesgo de pérdida de datos. P2 indica prioridad me
 **Cómo reproducirlo.**
 
 1. Abrir una tarea existente para editarla y preparar una propuesta modificada.
-2. Provocar un error al insertar el reemplazo. Un posible desencadenante es que colisione con otra tarea por el índice único `(title, deadline, notify)` de `TaskEntity`, con inserción `ABORT` en `TaskDao`.
+2. Provocar un error al insertar el reemplazo. Un posible desencadenante es que colisione con otra tarea por el índice único de `TaskEntity`, con inserción `ABORT` en `TaskDao`. En la auditoría original era `(title, deadline, notify)`; actualmente también incluye `scheduledDate`.
 3. Guardar la propuesta: la original ya se ha eliminado, la sustituta falla y el borrador se vacía.
 
 **Evidencia.** `failedReplacementMustKeepTheOriginalTaskAndTheDraft` reprodujo el rechazo de inserción mediante un repositorio simulado con estado persistido. Observó `original=null` y `draft=[]`. El caso concreto de colisión se identificó por lectura del índice y la política de inserción, no mediante una llamada a la API.
@@ -93,6 +101,8 @@ Separar las escrituras de base de datos de la programación de alarmas: Room no 
 **Criterios de cierre.** Pruebas permanentes con una respuesta retrasada tras reiniciar y tras iniciar otra petición: ningún resultado ni error antiguo debe modificar la conversación, propuesta, persistencia o carga de la sesión vigente.
 
 ## AUD-005: avisos de subtareas eliminadas
+
+**Avance parcial, 29 de octubre de 2026.** El reemplazo mediante `saveProposal()` ya cancela los avisos de todos los descendientes después de confirmar los datos, como parte de AUD-001. La eliminación directa mediante `deleteTask()` sigue cancelando solo el aviso de la raíz, por lo que esta incidencia permanece abierta.
 
 **Impacto.** Pueden seguir llegando avisos de pasos que ya no existen. Al editar una meta y crear nuevos IDs, esos avisos pueden coexistir con los de los pasos sustitutos.
 

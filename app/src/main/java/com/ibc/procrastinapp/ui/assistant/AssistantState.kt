@@ -37,6 +37,8 @@ data class AssistantState(
     // Eventos tipados que emite el ViewModel (sin strings hardcoded)
     sealed class AssistantEvent {
         data class CommitDone(val saved: Int, val updated: Int, val failed: Int) : AssistantEvent()
+        data object CommitFailed : AssistantEvent()
+        data object CommitRemindersFailed : AssistantEvent()
         data class LoadFailed(val errors: List<LoadTaskError>) : AssistantEvent()
     }
 

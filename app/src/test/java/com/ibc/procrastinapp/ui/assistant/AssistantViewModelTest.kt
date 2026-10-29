@@ -9,6 +9,7 @@ import com.ibc.procrastinapp.data.ai.Message
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.data.repository.AssistantRepository
 import com.ibc.procrastinapp.data.repository.TaskRepository
+import com.ibc.procrastinapp.data.repository.ProposalSaveResult
 import com.ibc.procrastinapp.data.service.AssistantResponse
 import com.ibc.procrastinapp.utils.Logger
 import io.mockk.coEvery
@@ -65,6 +66,7 @@ class AssistantViewModelTest {
         every { Logger.i(any(), any()) } returns Unit
 
         taskRepository = mockk(relaxed = true)
+        coEvery { taskRepository.saveProposal(any(), any()) } returns ProposalSaveResult(listOf(100L))
         assistantRepository = mockk(relaxed = true)
 
         every { assistantRepository.messages } returns messagesFlow as StateFlow<List<Message>>
@@ -180,13 +182,12 @@ class AssistantViewModelTest {
     }
 
     @Test
-    fun `should delete old tasks and insert new ones on commit`() = testScope.runTest {
+    fun `should pass originals and proposal to the atomic operation`() = testScope.runTest {
         val oldTaskId = 1L
         val oldTask = Task(id = oldTaskId, title = "Vieja tarea")
         val newTask = Task(title = "Nueva propuesta")
 
         coEvery { taskRepository.getTask(oldTaskId) } returns oldTask
-        coEvery { taskRepository.saveTask(newTask) } returns 100L
 
         // 1. Cargar tareas en modo edición
         viewModel.loadTasksForEditing(listOf(oldTaskId))
@@ -206,21 +207,20 @@ class AssistantViewModelTest {
         advanceUntilIdle()
 
         // 5. Verificaciones
-        coVerify { taskRepository.deleteTasks(listOf(oldTaskId)) }
-        coVerify { taskRepository.saveTask(newTask) }
+        coVerify { taskRepository.saveProposal(listOf(oldTaskId), listOf(newTask)) }
+        coVerify(exactly = 0) { taskRepository.deleteTasks(any()) }
     }
 
     @Test
     fun `should insert tasks without deleting if not in edit mode`() = testScope.runTest {
         val newTask = Task(title = "Tarea sin edición")
-        coEvery { taskRepository.saveTask(newTask) } returns 200L
 
         tasksFlow.value = listOf(newTask)
 
         viewModel.commitTasksFromAssistant()
         advanceUntilIdle()
 
-        coVerify { taskRepository.saveTask(newTask) }
+        coVerify { taskRepository.saveProposal(emptyList(), listOf(newTask)) }
         coVerify(exactly = 0) { taskRepository.deleteTasks(any()) }
     }
 

@@ -76,5 +76,17 @@ class StructuredAssistantErrorTest {
             compose.onNodeWithText("Aprobar el teórico", substring = true).assertIsDisplayed()
             compose.onNodeWithText(context.getString(R.string.assistant_type_Messages)).performClick()
         }
+        val saveEvents = listOf(
+            AssistantState.AssistantEvent.CommitFailed to R.string.commit_failed_retry,
+            AssistantState.AssistantEvent.CommitRemindersFailed to R.string.commit_reminders_failed
+        )
+        for ((event, resource) in saveEvents) {
+            compose.runOnIdle { state.value = initial.copy(event = event) }
+            compose.onNodeWithText(context.getString(resource)).assertIsDisplayed()
+            compose.onNodeWithText(context.getString(R.string.assistant_type_Tasks)).performClick()
+            compose.onNodeWithText(context.getString(resource)).assertIsDisplayed()
+            compose.onNodeWithText("Aprobar el teórico", substring = true).assertIsDisplayed()
+            compose.onNodeWithText(context.getString(R.string.assistant_type_Messages)).performClick()
+        }
     }
 }

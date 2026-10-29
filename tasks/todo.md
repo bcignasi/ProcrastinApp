@@ -130,16 +130,18 @@ Alcance personal y porfolio; compartir con amigos, publicar en tiendas y configu
 
 ## 9. Incidencias conocidas del Asistente — auditoría del 22 de octubre de 2026
 
-Decisión inicial de Ignasi: documentar los cinco errores confirmados y posponer su corrección. Al integrar y auditar el prompt se corrigen AUD-003 y AUD-004; los otros tres siguen pendientes. [Diagnóstico, reproducción, soluciones propuestas y criterios de cierre](../docs/development/incidencias-asistente.md).
+Decisión inicial de Ignasi: documentar los cinco errores confirmados y posponer su corrección. Al integrar y auditar el prompt se corrigen AUD-003 y AUD-004. El 29 de octubre se corrige AUD-001 en `codex/guardado-atomico`; quedan AUD-002 y la eliminación directa de AUD-005. [Diagnóstico, reproducción, soluciones propuestas y criterios de cierre](../docs/development/incidencias-asistente.md).
 
-- [ ] AUD-001 (P1): hacer atómico el reemplazo de tareas y conservar originales y propuesta si falla el guardado.
+- [x] AUD-001 (P1): reemplazo atómico en Room, originales y borrador conservados ante fallo, reintento y avisos posteriores al commit; corregido en `codex/guardado-atomico` el 29 de octubre de 2026.
 - [ ] AUD-002 (P2): impedir que una edición parcial borre tareas que no se pudieron cargar.
 - [x] AUD-003 (P2): recuperar el historial antes de escribir una sesión nueva al arrancar; cubierto por pruebas permanentes en `feature/prompt-metas-v1`.
 - [x] AUD-004 (P2): descartar envíos pendientes, respuestas y errores de sesiones anteriores sin alterar la carga de la sesión nueva.
 - [x] Auditoría del prompt: invalidar la apertura de una edición al cancelar y evitar que la carga del historial reconstruya su propuesta.
-- [ ] AUD-005 (P2): cancelar los avisos de todos los descendientes al borrar o reemplazar una jerarquía.
+- [ ] AUD-005 (P2): cancelar los avisos de todos los descendientes al borrar una jerarquía desde Agenda; el reemplazo del Asistente ya lo hace después del commit como parte de AUD-001.
 
-Verificación original de la auditoría: cinco reproducciones temporales confirmaron los fallos; la suite permanente de 171 pruebas y `assembleDebug` pasaban sin cubrir esos casos. El 27 de octubre se incorporan pruebas permanentes para AUD-003, AUD-004 y la cancelación durante el arranque. Tras estas correcciones pasan 187 pruebas, `assembleDebug` y `lintDebug`. Las pruebas de los tres fallos restantes se incorporarán con sus respectivas correcciones.
+Verificación original de la auditoría: cinco reproducciones temporales confirmaron los fallos; la suite permanente de 171 pruebas y `assembleDebug` pasaban sin cubrir esos casos. El 27 de octubre se incorporan pruebas permanentes para AUD-003, AUD-004 y la cancelación durante el arranque. Tras estas correcciones pasaban 187 pruebas, `assembleDebug` y `lintDebug`. El 29 de octubre se incorporan cinco pruebas de guardado atómico con Room real y se amplían las pruebas de navegación y mensajes localizados. AUD-002 y la eliminación directa de AUD-005 requieren sus respectivas pruebas al corregirse.
+
+Verificación del guardado atómico: 213 pruebas superadas; `assembleDebug` y `lintDebug` correctos, con los 44 avisos y una sugerencia anteriores. Pendiente de revisión manual en el móvil.
 
 ## Evolución posterior conservada
 

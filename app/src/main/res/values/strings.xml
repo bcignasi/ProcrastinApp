@@ -114,6 +114,8 @@
     <string name="commit_saved_and_updated">✓ %1$d new + %2$d updated</string>
     <string name="commit_partial_failure">⚠️ Saved: %1$d, updated: %2$d, failed: %3$d</string>
     <string name="commit_nothing_saved">❌ No tasks were saved</string>
+    <string name="commit_failed_retry">Could not save the plan. Your existing tasks and proposal have been kept. Adjust the proposal or try saving again.</string>
+    <string name="commit_reminders_failed">Your plan was saved to Agenda, but some reminders could not be updated. Check your notifications.</string>
 
     <!-- AssistantViewModel: load task errors -->
     <string name="load_task_not_found">❌ Task ID %1$d not found</string>
