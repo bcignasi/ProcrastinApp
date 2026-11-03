@@ -12,6 +12,7 @@ import androidx.navigation.navigation
 
 const val AGENDA_ROUTE = "task_list"
 const val ASSISTANT_ROUTE = "assistant"
+const val TASK_EDIT_ROUTE = "task_edit"
 
 fun NavDestination.mainDestination(): String? = hierarchy.firstOrNull {
     it.route == AGENDA_ROUTE || it.route == ASSISTANT_ROUTE
@@ -28,6 +29,11 @@ fun NavController.openMainDestination(route: String) {
         launchSingleTop = true
         restoreState = true
     }
+}
+
+// Pantalla de edición clásica de una tarea (distinta del editor conversacional del asistente).
+fun NavController.openTaskEdit(taskId: Long) {
+    navigate("$TASK_EDIT_ROUTE/$taskId")
 }
 
 // The + button and editing are explicit requests, so they replace a saved assistant.

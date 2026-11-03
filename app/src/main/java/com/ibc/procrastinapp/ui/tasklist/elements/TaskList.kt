@@ -32,6 +32,7 @@ fun TaskList(
     showInlineActionsForId: Long?,
     onInlineComplete: (Task) -> Unit,
     onInlineDelete: (Task) -> Unit,
+    onInlineEdit: (Task) -> Unit = {},
     modifier: Modifier = Modifier,
     presentation: TaskPresentation = TaskPresentation.CARDS,
     referenceDate: LocalDate = LocalDate.now()
@@ -56,6 +57,7 @@ fun TaskList(
                 showInlineActions = showActions,
                 onComplete = { t -> onInlineComplete(t) },
                 onDelete = { t -> onInlineDelete(t) },
+                onEdit = { t -> onInlineEdit(t) },
                 modifier = Modifier.fillMaxWidth()
             )
             if (presentation == TaskPresentation.FLAT && index < tasks.lastIndex) {

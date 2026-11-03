@@ -60,9 +60,19 @@
     <string name="tasklist_periodicity_prefix">Repetition: %1$s</string>
     <string name="tasklist_complete">Completed</string>
     <string name="tasklist_delete">Delete</string>
+    <string name="tasklist_edit">Edit</string>
     <string name="tasklist_expand_subtasks_cd">Expand subtasks</string>
     <string name="tasklist_collapse_subtasks_cd">Collapse subtasks</string>
-    
+
+    <!-- Task edit screen (classic form, separate from the AI assistant editor) -->
+    <string name="task_edit_title">Edit task</string>
+    <string name="task_edit_back_cd">Back</string>
+    <string name="task_edit_field_title">Title</string>
+    <string name="task_edit_field_notes">Notes</string>
+    <string name="task_edit_field_completed">Completed</string>
+    <string name="task_edit_save">Save</string>
+    <string name="task_edit_not_found">Task not found.</string>
+
     <!-- Content descriptions and UI labels moved from code -->
     <string name="cd_close">Close</string>
     <string name="cd_expand">Expand</string>

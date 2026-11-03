@@ -49,6 +49,7 @@ fun TaskItemContent(
     actionsEnabled: Boolean,
     onComplete: (Task) -> Unit = {},
     onDelete: (Task) -> Unit = {},
+    onEdit: (Task) -> Unit = {},
     presentation: TaskPresentation = TaskPresentation.CARDS,
     referenceDate: LocalDate = LocalDate.now()
 ) {
@@ -125,6 +126,15 @@ fun TaskItemContent(
                     horizontalArrangement = Arrangement.End // Alinea los botones a la derecha
                 ) {
                     Button(
+                        onClick = { onEdit(task) },
+                        shape = MaterialTheme.shapes.small,
+                        modifier = Modifier.padding(end = 8.dp),
+                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                    ) {
+                        Text(stringResource(id = R.string.tasklist_edit))
+                    }
+                    Button(
                         onClick = { onComplete(task) },
                         shape = MaterialTheme.shapes.small,
                         modifier = Modifier.padding(end = 8.dp), // Espacio entre botones
@@ -187,7 +197,8 @@ fun TaskItemContent(
                         depth = depth + 1,
                         actionsEnabled = actionsEnabled,
                         onComplete = onComplete,
-                        onDelete = onDelete
+                        onDelete = onDelete,
+                        onEdit = onEdit
 
                     )
                 }

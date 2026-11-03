@@ -7,6 +7,7 @@ package com.ibc.procrastinapp.ui.tasklist.elements
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -15,6 +16,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ibc.procrastinapp.data.model.Task
@@ -22,6 +25,9 @@ import com.ibc.procrastinapp.ui.common.TaskItemContent
 import com.ibc.procrastinapp.ui.common.TaskPresentation
 import com.ibc.procrastinapp.ui.common.setContainerColor
 import java.time.LocalDate
+
+/** Distancia mínima de swipe (derecha→izquierda) para activar la edición. */
+private val SwipeToEditThreshold = 56.dp
 
 @Composable
 fun TaskItemSelectable(
@@ -33,17 +39,41 @@ fun TaskItemSelectable(
     showInlineActions: Boolean = false,
     onComplete: (Task) -> Unit = {},
     onDelete: (Task) -> Unit = {},
+    onEdit: (Task) -> Unit = {},
     presentation: TaskPresentation = TaskPresentation.CARDS,
     referenceDate: LocalDate = LocalDate.now(),
 ) {
     val isFlat = presentation == TaskPresentation.FLAT
+    val density = LocalDensity.current
     Card(
         modifier = modifier.fillMaxWidth()
             // Detectar clic largo para iniciar selección
             .combinedClickable(
                 onClick = onClick,
                 onLongClick = onLongClick
-            ),
+            )
+            // Swipe derecha→izquierda: acceso directo a la edición sin pulsación larga
+            .pointerInput(task.id, onEdit) {
+                val thresholdPx = with(density) { SwipeToEditThreshold.toPx() }
+                var accumulatedDrag = 0f
+                var triggered = false
+                detectHorizontalDragGestures(
+                    onDragStart = {
+                        accumulatedDrag = 0f
+                        triggered = false
+                    },
+                    onDragEnd = {
+                        accumulatedDrag = 0f
+                        triggered = false
+                    }
+                ) { _, dragAmount ->
+                    accumulatedDrag += dragAmount
+                    if (!triggered && accumulatedDrag < -thresholdPx) {
+                        triggered = true
+                        onEdit(task)
+                    }
+                }
+            },
         shape = if (isFlat) RectangleShape else MaterialTheme.shapes.medium,
         elevation = if (isFlat) CardDefaults.cardElevation(defaultElevation = 0.dp)
                     else CardDefaults.cardElevation(),
@@ -66,7 +96,8 @@ fun TaskItemSelectable(
             referenceDate = referenceDate,
             actionsEnabled = showInlineActions,
             onComplete = onComplete,
-            onDelete = onDelete
+            onDelete = onDelete,
+            onEdit = onEdit
         )
     }
 }
