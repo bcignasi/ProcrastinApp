@@ -26,7 +26,7 @@ import com.ibc.procrastinapp.ui.common.TaskPresentation
 import com.ibc.procrastinapp.ui.common.setContainerColor
 import java.time.LocalDate
 
-/** Distancia mínima de swipe (derecha→izquierda) para activar la edición. */
+/** Distancia mínima de swipe (izquierda→derecha) para activar la edición. */
 private val SwipeToEditThreshold = 56.dp
 
 @Composable
@@ -52,7 +52,7 @@ fun TaskItemSelectable(
                 onClick = onClick,
                 onLongClick = onLongClick
             )
-            // Swipe derecha→izquierda: acceso directo a la edición sin pulsación larga
+            // Swipe izquierda→derecha: acceso directo a la edición sin pulsación larga
             .pointerInput(task.id, onEdit) {
                 val thresholdPx = with(density) { SwipeToEditThreshold.toPx() }
                 var accumulatedDrag = 0f
@@ -68,7 +68,7 @@ fun TaskItemSelectable(
                     }
                 ) { _, dragAmount ->
                     accumulatedDrag += dragAmount
-                    if (!triggered && accumulatedDrag < -thresholdPx) {
+                    if (!triggered && accumulatedDrag > thresholdPx) {
                         triggered = true
                         onEdit(task)
                     }
