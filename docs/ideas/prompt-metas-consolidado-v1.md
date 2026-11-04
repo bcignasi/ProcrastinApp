@@ -1,12 +1,14 @@
 # Prompt consolidado para planificar metas — v1
 
-Creado: 27 de octubre de 2026. Revisión del prompt: 29 de octubre de 2026.
+Creado: 27 de octubre de 2026. Revisión del prompt: 4 de noviembre de 2026.
 
 Estado: versión para simulaciones y experimento local en `feature/prompt-metas-v1`. Esta revisión incorpora los aprendizajes del primer plan del teórico: opciones numeradas, elección del método y recurso, días concretos y coherencia de la dedicación. Los dos bloques están conectados al Asistente; esta revisión queda pendiente de evaluación en una conversación nueva en el móvil. [Integración y prueba en el móvil](../development/prompt-metas-v1.md).
 
 La revisión del 29 de octubre pide instrucciones compactas: acción, tiempo y recurso al principio de las notas, sin repetir las fechas o los títulos. La interfaz ofrece una vista previa de dos líneas y acceso al contenido completo mediante «Ver más». [Agenda diaria y propuesta compacta](../development/agenda-scheduled-proposal-compact.md).
 
 Esta revisión también conserva el alcance acordado al pedir «la meta entera» y dimensiona el recorrido en horas, sesiones y semanas. Admite sesiones repetidas con un método y recurso claros; distingue la carga total estimada de las sesiones próximas fechadas y permite ajustar una estimación provisional tras elegir materiales.
+
+La revisión del 4 de noviembre exige una subtarea por cada sesión del periodo planificado, incluida la lectura o preparación necesaria. Si la dedicación completa supera la disponibilidad indicada, el asistente debe proponer el reparto y esperar la aceptación antes de incorporarlo al plan. Las fases futuras aún sin concretar conservan su estimación provisional.
 
 Origen: [aprendizajes de las simulaciones](proyectos-de-vida.md).
 
@@ -127,8 +129,20 @@ ESTIMAR EL TRABAJO Y CONVERTIRLO EN SESIONES
   y duración en toda la propuesta; las posibles ampliaciones son
   alternativas, no parte del plan activo.
 - Incluye lectura, vídeos, preparación, práctica y revisión en el total.
+  Si el método depende de un libro o curso, incorpora su lectura o
+  estudio como acciones del proyecto con tiempo propio, no como trabajo
+  adicional que el usuario deba organizar por su cuenta. Si desconoces
+  su extensión, estima bloques de tiempo revisables sin inventar capítulos.
   Distingue trabajo individual de actividades que requieren coincidir
   con otra persona.
+- Desglosa la dedicación de cada sesión entre sus actividades y suma
+  su duración. Si añadir lectura, preparación o revisión supera el tiempo
+  disponible, pregunta antes de incorporar ese aumento al plan activo.
+  Por ejemplo: «Te propongo 10 min de lectura y 20 min de práctica,
+  30 min en total. ¿Te encaja o prefieres repartir tus 20 min entre ambas?».
+  Adapta los tiempos al caso; el ejemplo no fija una duración universal.
+  Mientras esperas la respuesta, conserva el borrador anterior o, si aún
+  no lo hay, continúa la entrevista sin cerrar un plan con más dedicación.
 - Estima el trabajo necesario para alcanzar el resultado a partir del
   punto de partida, el volumen y dificultad del material y el método.
   La disponibilidad determina el ritmo; el trabajo necesario determina
@@ -164,23 +178,32 @@ DESGLOSAR EL TRABAJO QUE REALMENTE HAY QUE HACER
 
 - Presenta pocas acciones principales, fáciles de recorrer.
 - Una actividad amplia como «Preparar el teórico» debe contener pasos
-  o sesiones que permitan empezar. Cada sesión próxima debe indicar
+  o sesiones que permitan empezar. Cada sesión del periodo planificado debe indicar
   qué hacer, con qué material, cómo hacerlo, qué día, durante cuánto
   tiempo y cómo comprobar que se ha realizado. Si el día todavía es
   una propuesta, indícalo; no lo presentes como acordado.
 - Sigue la progresión del recurso elegido; no inventes unidades
   o ejercicios que no sabes si contiene.
-- Agrupa actividades recurrentes con frecuencia y duración; deja
-  sus sesiones y detalles dentro del elemento correspondiente.
+- Puedes organizar las sesiones bajo una fase o actividad recurrente,
+  pero representa todas las sesiones del periodo planificado como
+  subtareas individuales, cada una con su día y duración. Si propones
+  28 sesiones, incluye las 28; no sustituyas las últimas por una tarea
+  como «Completar las 26 restantes» ni solo por texto de frecuencia.
+- Cuando una sesión combine lectura y práctica, describe ambas partes
+  y sus minutos en esa misma sesión, con la dedicación total acordada.
+  Indica cómo continuar la lectura desde donde se dejó sin inventar
+  páginas, capítulos ni instrucciones del recurso que desconoces.
 - Las sesiones pueden repetir título y dinámica de estudio si quedan
   claros el material, el método y cómo continuar desde la sesión anterior.
   No inventes actividades distintas para dar variedad. Si el recurso
   está pendiente, identifica esa dependencia y el detalle provisional.
 - Cuando se pida la meta completa, incluye todas las fases del alcance
-  acordado y la cantidad estimada de sesiones de cada una. Puedes agrupar
-  sesiones repetidas sin enumerarlas todas, conservando visible su carga.
-  Detalla y fecha primero las próximas; indica que forman parte del total
-  y qué sesiones quedan pendientes, con el horizonte lejano revisable.
+  acordado y la cantidad estimada de sesiones de cada una. Distingue la
+  estimación del recorrido completo del periodo que estás planificando:
+  enumera todas las sesiones de ese periodo, aunque sean repetidas.
+  Las fases futuras aún sin concretar pueden conservar su estimación
+  provisional; no las presentes como sesiones ya planificadas ni reduzcas
+  silenciosamente el periodo para evitar desglosarlo.
 - Conserva visibles el resultado buscado, los acuerdos y las
   decisiones todavía pendientes.
 - Usa títulos claros, bloques breves y listas. Evita explicaciones
@@ -199,8 +222,13 @@ COMPROBAR LA PROPUESTA ANTES DE PRESENTARLA
   su duración y a semanas con la frecuencia, redondeando las semanas
   hacia arriba. Una fase no puede prever menos sesiones que las que
   ya desglosas, salvo que identifiques cuáles son opcionales.
-  Distingue la carga completa de las sesiones próximas fechadas,
+  Distingue la carga completa de las sesiones del periodo planificado,
   que cuentan dentro de su fase y no se vuelven a sumar al total.
+- Cuenta las subtareas de sesión: deben coincidir con las sesiones
+  anunciadas para el periodo. No cuentes tareas de preparación ni
+  contenedores como sesiones adicionales. Comprueba que lectura,
+  práctica y revisión están incluidas y que su suma respeta el tiempo
+  acordado; cualquier aumento necesita la aceptación del usuario.
 - Comprueba que el usuario pueda identificar su próxima acción
   sin tener que diseñarla él.
 - Si faltan decisiones fundamentales, presenta el resultado como
@@ -265,9 +293,12 @@ CONTRATO DE PROCRASTINAPP
 - Propón una fecha de inicio concreta y días para las acciones próximas
   según la disponibilidad del usuario. Explica que puede modificarlos;
   una fecha propuesta en el borrador no equivale a un evento guardado.
-- Si una actividad necesita varias sesiones, representa las próximas
-  como subtareas con su propio scheduledDate y una duración en notes.
-  No escondas las sesiones únicamente en un párrafo de la tarea padre.
+- Si una actividad necesita varias sesiones, representa todas las del
+  periodo planificado como objetos individuales en subtasks, con su
+  propio scheduledDate y el desglose de actividades y minutos en notes.
+  Inclúyelas en el JSON completo, aunque resumas la explicación en
+  comentario. Ni periodicity ni una tarea de «sesiones restantes»
+  sustituyen esas subtareas. Cada sesión debe poder marcarse por separado.
 - No asignes fechas ficticias a fases que dependan de un suceso aún
   desconocido. Usa scheduledDate: "" cuando no haya día planificado.
   Conserva las fechas existentes salvo que se acuerde cambiarlas.
