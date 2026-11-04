@@ -39,6 +39,7 @@ fun TaskListContent(
     onActionsClick: () -> Unit,
     onCompleteSingleTask: (Task) -> Unit,
     onDeleteSingleTask: (Task) -> Unit,
+    onEditSingleTask: (Task) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxSize()) {
@@ -73,7 +74,8 @@ fun TaskListContent(
             onTaskLongClick = onTaskLongClick,
             showInlineActionsForId = uiState.selectedTaskIds.singleOrNull(), // ✅
             onInlineComplete = { onCompleteSingleTask(it) }, // ← nueva lambda
-            onInlineDelete = { onDeleteSingleTask(it) }
+            onInlineDelete = { onDeleteSingleTask(it) },
+            onInlineEdit = { onEditSingleTask(it) }
         )
 
         // Diálogo de acciones si está visible

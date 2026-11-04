@@ -30,6 +30,7 @@ import androidx.navigation.NavController
 import com.ibc.procrastinapp.R
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.ui.navigation.openAssistant
+import com.ibc.procrastinapp.ui.navigation.openTaskEdit
 import com.ibc.procrastinapp.ui.tasklist.elements.AddTaskFab
 import com.ibc.procrastinapp.ui.tasklist.elements.EmptyListMessage
 import com.ibc.procrastinapp.ui.tasklist.elements.TaskListContent
@@ -183,7 +184,12 @@ fun TaskListScreen(
                         },
                         onActionsClick = { viewModel.showActionsDialog() },
                         onCompleteSingleTask = { task: Task -> viewModel.completeTask(task) },
-                        onDeleteSingleTask = { task: Task -> viewModel.deleteTask(task) }
+                        onDeleteSingleTask = { task: Task -> viewModel.deleteTask(task) },
+                        onEditSingleTask = { task: Task ->
+                            // ==== NAVEGACIÓN A LA PANTALLA DE EDICIÓN CLÁSICA ============
+                            navController.openTaskEdit(task.id)
+                            // ==============================================================
+                        }
                     )
             }
         }

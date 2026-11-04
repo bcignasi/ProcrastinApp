@@ -27,6 +27,7 @@ import com.ibc.procrastinapp.data.service.quotes.QuoteAIService
 import com.ibc.procrastinapp.ui.assistant.AssistantViewModel
 import com.ibc.procrastinapp.ui.assistant.QuoteViewModel
 import com.ibc.procrastinapp.ui.tasklist.TaskListViewModel
+import com.ibc.procrastinapp.ui.taskedit.TaskEditViewModel
 import com.ibc.procrastinapp.ui.settings.ThemeSettingsViewModel
 
 import kotlinx.coroutines.CoroutineScope
@@ -140,6 +141,9 @@ val viewModelModule = module {
 
     // ViewModel para la pantalla de lista de tareas
     viewModel { TaskListViewModel(get<TaskRepository>()) }
+
+    // ViewModel para la pantalla de edición clásica de una tarea
+    viewModel { TaskEditViewModel(get<TaskRepository>()) }
 
     // ViewModel para la visualización de frases motivadoras (en el asistente)
     viewModel { QuoteViewModel(get<QuoteAIService>()) } // 👉 nuevo

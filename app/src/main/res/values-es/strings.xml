@@ -51,8 +51,18 @@
     <string name="tasklist_periodicity_prefix">Repetición: %1$s</string>
     <string name="tasklist_complete">Completado</string>
     <string name="tasklist_delete">Eliminar</string>
+    <string name="tasklist_edit">Editar</string>
     <string name="tasklist_expand_subtasks_cd">Expandir subtareas</string>
     <string name="tasklist_collapse_subtasks_cd">Contraer subtareas</string>
+
+    <!-- Pantalla de edición clásica (distinta del editor conversacional del asistente) -->
+    <string name="task_edit_title">Editar tarea</string>
+    <string name="task_edit_back_cd">Atrás</string>
+    <string name="task_edit_field_title">Título</string>
+    <string name="task_edit_field_notes">Notas</string>
+    <string name="task_edit_field_completed">Completada</string>
+    <string name="task_edit_save">Guardar</string>
+    <string name="task_edit_not_found">Tarea no encontrada.</string>
 
     <!-- Content descriptions and UI labels moved from code -->
     <string name="cd_close">Cerrar</string>

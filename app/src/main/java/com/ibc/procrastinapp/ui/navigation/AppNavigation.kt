@@ -15,10 +15,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 
 // Importaciones para navegación
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.ime
@@ -35,6 +37,7 @@ import com.ibc.procrastinapp.R
 import com.ibc.procrastinapp.ui.assistant.AssistantScreen
 import com.ibc.procrastinapp.ui.splash.SplashScreen
 import com.ibc.procrastinapp.ui.tasklist.TaskListScreen
+import com.ibc.procrastinapp.ui.taskedit.TaskEditScreen
 import com.ibc.procrastinapp.ui.settings.SettingsScreen
 import com.ibc.procrastinapp.ui.settings.ThemeSettingsState
 import com.ibc.procrastinapp.ui.theme.LocalAppDarkTheme
@@ -137,6 +140,20 @@ fun AppNavigation(
                 TaskListScreen(
                     navController = navController
                 )
+            }
+
+            // Pantalla de edición clásica (formulario) de una tarea, independiente del asistente
+            composable(
+                route = "$TASK_EDIT_ROUTE/{taskId}",
+                arguments = listOf(navArgument("taskId") { type = NavType.LongType })
+            ) { entry ->
+                val taskId = entry.arguments?.getLong("taskId")
+                if (taskId != null) {
+                    TaskEditScreen(
+                        taskId = taskId,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
             }
         }
     }

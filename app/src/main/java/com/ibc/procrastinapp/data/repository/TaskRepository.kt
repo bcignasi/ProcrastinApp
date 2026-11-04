@@ -176,9 +176,13 @@ class TaskRepository(
      * Actualiza una tarea existente.
      */
     suspend fun updateTask(task: Task) {
-        // Si es una tarea simple sin jerarquía, hacemos un update simple
+        // Si es una tarea simple sin jerarquía, hacemos un update simple.
+        // toEntity() no conoce el parentTaskId (las subtareas no viajan en el dominio Task
+        // como relación persistida), así que lo recuperamos para no desenganchar la tarea
+        // de su padre si es una subtarea.
         if (task.subtasks.isEmpty()) {
-            taskDao.updateTask(task.toEntity())
+            val parentTaskId = taskDao.getTaskByIdImmediate(task.id)?.parentTaskId
+            taskDao.updateTask(task.toEntity().copy(parentTaskId = parentTaskId))
         } else {
             // Si tiene subtareas, eliminamos toda la jerarquía y la volvemos a crear
             database.withTransaction {
