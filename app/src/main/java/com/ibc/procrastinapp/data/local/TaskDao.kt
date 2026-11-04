@@ -61,6 +61,9 @@ interface TaskDao {
     """)
     fun getPendingTasks(): Flow<List<TaskEntity>>
 
+    /** Todas las metas, con independencia de su estado; sus hijos se cargan en el repositorio. */
+    @Query("SELECT * FROM tasks WHERE parentTaskId IS NULL ORDER BY completed ASC, id ASC")
+    fun getGoals(): Flow<List<TaskEntity>>
 
     /**
      * TAREAS POSTERGADAS (PAST)
@@ -164,8 +167,7 @@ interface TaskDao {
     @Query("""
         SELECT * FROM tasks 
         WHERE completed = 1 
-          AND parentTaskId IS NULL
-        ORDER BY deadline ASC
+        ORDER BY scheduledDate ASC, deadline ASC, id ASC
     """)
     fun getCompletedTasks(): Flow<List<TaskEntity>>
 

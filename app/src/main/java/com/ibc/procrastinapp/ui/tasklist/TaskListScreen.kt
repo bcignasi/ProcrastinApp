@@ -62,6 +62,7 @@ fun TaskListScreen(
 
     // La pestaña elegida se conserva al volver de Ajustes o Asistente.
     var currentListType by rememberSaveable { mutableStateOf(TaskListQueryType.TODAY) }
+    var pendingFilter by rememberSaveable { mutableStateOf(TaskListQueryType.ALL) }
 
     // Efecto para cargar las tareas según el tipo de lista
     LaunchedEffect(currentListType) {
@@ -124,7 +125,11 @@ fun TaskListScreen(
                 onOpenSettings = { navController.navigate("settings") },
                 currentListType = currentListType,
                 date = uiState.date,
+                pendingFilter = pendingFilter,
                 onCurrentListTypeChange = { newType -> // Proporciona la lógica para cambiar el estado
+                    if (newType == TaskListQueryType.ALL || newType == TaskListQueryType.COMPLETED) {
+                        pendingFilter = newType
+                    }
                     currentListType = newType
                 }
             )
@@ -157,6 +162,7 @@ fun TaskListScreen(
                                     TaskListQueryType.TODAY -> R.string.agenda_empty_today
                                     TaskListQueryType.ALL -> R.string.agenda_empty_pending
                                     TaskListQueryType.COMPLETED -> R.string.agenda_empty_done
+                                    TaskListQueryType.GOALS -> R.string.agenda_empty_goals
                                     else -> R.string.tasklist_empty_message
                                 }
                             )

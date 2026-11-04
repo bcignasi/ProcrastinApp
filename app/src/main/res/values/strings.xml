@@ -18,7 +18,14 @@
     <string name="agenda_title">Your agenda</string>
     <string name="agenda_date_today">Today, %1$s</string>
     <string name="agenda_pending">Pending</string>
-    <string name="agenda_done">Done</string>
+    <string name="agenda_goals">Goals</string>
+    <string name="agenda_filter_pending">To do</string>
+    <string name="agenda_filter_completed">Completed</string>
+    <string name="agenda_empty_goals">Your goals will appear here. Create one with the assistant.</string>
+    <string name="goal_expanded">Details and subtasks expanded</string>
+    <string name="goal_collapsed">Details and subtasks collapsed</string>
+    <string name="goal_edit">Edit goal</string>
+    <string name="goal_edit_cd">Edit goal: %1$s</string>
     <string name="agenda_empty_today">You have no tasks planned for today.</string>
     <string name="agenda_edit_unavailable">Could not open this goal. Please try again.</string>
     <string name="task_scheduled_date">Scheduled: %1$s</string>

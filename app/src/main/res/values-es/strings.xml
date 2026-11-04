@@ -9,7 +9,14 @@
     <string name="agenda_title">Tu agenda</string>
     <string name="agenda_date_today">Hoy, %1$s</string>
     <string name="agenda_pending">Pendientes</string>
-    <string name="agenda_done">Hechas</string>
+    <string name="agenda_goals">Metas</string>
+    <string name="agenda_filter_pending">Por hacer</string>
+    <string name="agenda_filter_completed">Completadas</string>
+    <string name="agenda_empty_goals">Tus metas aparecerán aquí. Crea una con el asistente.</string>
+    <string name="goal_expanded">Detalles y subtareas desplegados</string>
+    <string name="goal_collapsed">Detalles y subtareas ocultos</string>
+    <string name="goal_edit">Editar meta</string>
+    <string name="goal_edit_cd">Editar meta: %1$s</string>
     <string name="agenda_empty_today">No tienes tareas planificadas para hoy.</string>
     <string name="agenda_edit_unavailable">No se ha podido abrir este objetivo. Inténtalo de nuevo.</string>
     <string name="task_scheduled_date">Planificado: %1$s</string>

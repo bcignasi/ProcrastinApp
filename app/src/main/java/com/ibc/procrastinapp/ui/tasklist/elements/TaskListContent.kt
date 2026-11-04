@@ -16,6 +16,7 @@ import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.ui.common.TaskPresentation
 import com.ibc.procrastinapp.ui.tasklist.TaskListResult
 import com.ibc.procrastinapp.ui.tasklist.TaskListUiState
+import com.ibc.procrastinapp.ui.tasklist.TaskListQueryType
 
 /**
  * Contenido principal de la pantalla de lista de tareas
@@ -53,7 +54,16 @@ fun TaskListContent(
         }
 
         // Lista de tareas
-        TaskList(
+        if (uiState.filter == TaskListQueryType.GOALS) {
+            GoalList(
+                tasks = uiState.tasks,
+                selectedTaskIds = uiState.selectedTaskIds,
+                onTaskClick = onTaskClick,
+                onTaskLongClick = onTaskLongClick,
+                onCompleteTask = onCompleteSingleTask,
+                referenceDate = uiState.date
+            )
+        } else TaskList(
             tasks = uiState.tasks,
             presentation = TaskPresentation.FLAT,
             referenceDate = uiState.date,

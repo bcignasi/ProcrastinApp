@@ -44,6 +44,7 @@ class TaskRepository(
             TaskListQueryType.NOTIFICATION -> getNotificationTasksFlow()
             TaskListQueryType.NO_DATE -> getNoDateTasksFlow()
             TaskListQueryType.COMPLETED -> getCompletedTasksFlow()
+            TaskListQueryType.GOALS -> processTaskQuery(taskDao.getGoals(), includeHierarchy = true)
         }
     }
 
@@ -117,8 +118,8 @@ class TaskRepository(
     /**
      * TODAS LAS TAREAS COMPLETADAS (COMPLETED)
      */
-    private fun getCompletedTasksFlow(includeHierarchy: Boolean = true): Flow<List<Task>> =
-        processTaskQuery(taskDao.getCompletedTasks(), includeHierarchy)
+    private fun getCompletedTasksFlow(): Flow<List<Task>> =
+        processTaskQuery(taskDao.getCompletedTasks(), includeHierarchy = false)
 
     /**
      * Obtiene todas las tareas pendientes. (ALL)
