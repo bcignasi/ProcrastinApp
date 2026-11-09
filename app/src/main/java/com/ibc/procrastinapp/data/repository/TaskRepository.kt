@@ -8,6 +8,7 @@ package com.ibc.procrastinapp.data.repository
 import androidx.room.withTransaction
 import com.ibc.procrastinapp.data.alarm.AlarmScheduler
 import com.ibc.procrastinapp.data.local.AppDatabase
+import com.ibc.procrastinapp.data.local.ProjectEntity
 import com.ibc.procrastinapp.data.local.TaskDao
 import com.ibc.procrastinapp.data.local.TaskEntity
 import com.ibc.procrastinapp.data.mapper.TaskMapper.toEntity
@@ -16,6 +17,7 @@ import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.ui.tasklist.TaskListQueryType
 import com.ibc.procrastinapp.utils.Logger
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.flow
 import java.time.LocalDate
@@ -44,7 +46,12 @@ class TaskRepository(
             TaskListQueryType.NOTIFICATION -> getNotificationTasksFlow()
             TaskListQueryType.NO_DATE -> getNoDateTasksFlow()
             TaskListQueryType.COMPLETED -> getCompletedTasksFlow()
-            TaskListQueryType.GOALS -> processTaskQuery(taskDao.getGoals(), includeHierarchy = true)
+            TaskListQueryType.GOALS -> combine(
+                processTaskQuery(taskDao.getGoals(), includeHierarchy = true), projects()
+            ) { goals, projects ->
+                val names = projects.associate { it.id to it.name }
+                goals.map { it.copy(projectName = names[it.projectId]) }
+            }
         }
     }
 
@@ -138,7 +145,7 @@ class TaskRepository(
      */
     suspend fun getTask(id: Long): Task? {
         val entity = taskDao.getTaskByIdImmediate(id) ?: return null
-        return buildTaskWithSubtasks(entity)
+        return buildTaskWithSubtasks(entity).copy(projectName = entity.projectId?.let { taskDao.getProjectName(it) })
     }
 
     /** La edición desde una sesión abre el objetivo completo para conservar su jerarquía. */
@@ -170,18 +177,35 @@ class TaskRepository(
     }
 
     /** Reemplaza el conjunto completo o conserva todos los datos originales ante un error. */
-    suspend fun saveProposal(originalTaskIds: List<Long>, proposal: List<Task>): ProposalSaveResult {
+    suspend fun saveProposal(
+        originalTaskIds: List<Long>,
+        proposal: List<Task>,
+        destination: ProjectDestination = ProjectDestination.Keep
+    ): ProposalSaveResult {
         require(proposal.isNotEmpty()) { "Cannot save an empty proposal" }
         val removedIds = mutableSetOf<Long>()
         val alarms = mutableListOf<Task>()
         val rootIds = database.withTransaction {
-            originalTaskIds.distinct().forEach { id ->
+            val originals = originalTaskIds.distinct().map { id ->
                 val entity = requireNotNull(taskDao.getTaskByIdImmediate(id)) { "Original task no longer exists" }
                 require(entity.parentTaskId == null) { "Edit the complete goal, not an isolated child" }
-                collectTaskIds(buildTaskWithSubtasks(entity), removedIds)
+                buildTaskWithSubtasks(entity).also { collectTaskIds(it, removedIds) }
             }
-            originalTaskIds.distinct().forEach { taskDao.deleteTaskById(it) }
-            proposal.map { insertTaskWithSubtasks(it, null, alarms) }
+            val edited = mergeEditedTasks(proposal, originals)
+            val targetId = when (destination) {
+                ProjectDestination.Keep, ProjectDestination.Unassigned -> null
+                is ProjectDestination.Existing -> destination.id
+                is ProjectDestination.Create -> {
+                    val name = destination.name.trim()
+                    require(name.isNotEmpty())
+                    taskDao.findProjectId(name) ?: taskDao.insertProject(ProjectEntity(name = name))
+                }
+            }
+            originals.forEach { taskDao.deleteTaskById(it.id) }
+            edited.map { goal ->
+                val projectId = if (destination == ProjectDestination.Keep) goal.projectId else targetId
+                insertTaskWithSubtasks(goal.copy(projectId = projectId), null, alarms)
+            }
         }
 
         // Android no participa en la transacción de Room. Un fallo aquí no significa que los datos no se guardaron.
@@ -201,6 +225,8 @@ class TaskRepository(
         }
         return ProposalSaveResult(rootIds, reminderFailures)
     }
+
+    fun projects(): Flow<List<ProjectEntity>> = taskDao.getProjects()
 
     private fun collectTaskIds(task: Task, ids: MutableSet<Long>) {
         ids.add(task.id)
@@ -229,8 +255,7 @@ class TaskRepository(
      * Marca una tarea como completada o pendiente.
      */
     suspend fun setTaskCompleted(taskId: Long, completed: Boolean) {
-        val task = taskDao.getTaskByIdImmediate(taskId) ?: return
-        taskDao.updateTask(task.copy(completed = completed))
+        taskDao.setCompleted(taskId, completed)
     }
 
     /**
@@ -295,7 +320,8 @@ class TaskRepository(
     private suspend fun insertTaskWithSubtasks(task: Task, parentId: Long?, alarms: MutableList<Task>): Long {
         val taskEntity = task.toEntity().copy(
             id = if (task.id <= 0) 0 else task.id,
-            parentTaskId = parentId
+            parentTaskId = parentId,
+            projectId = task.projectId.takeIf { parentId == null }
         )
 
         val taskId = taskDao.insertTask(taskEntity)

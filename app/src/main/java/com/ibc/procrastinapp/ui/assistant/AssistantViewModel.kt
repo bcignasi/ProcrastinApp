@@ -11,6 +11,7 @@ import com.google.gson.GsonBuilder
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.data.repository.AssistantRepository
 import com.ibc.procrastinapp.data.repository.TaskRepository
+import com.ibc.procrastinapp.data.repository.ProjectDestination
 import com.ibc.procrastinapp.data.service.AssistantResponse
 import com.ibc.procrastinapp.ui.assistant.AssistantState.AssistantEvent
 import com.ibc.procrastinapp.ui.assistant.AssistantState.LoadTaskError
@@ -45,9 +46,15 @@ class AssistantViewModel(
     private val _commitFinished = MutableSharedFlow<Unit>()
     val commitFinished = _commitFinished.asSharedFlow()
 
-    // En el modo edición, la lista de tareas a editar (para borrarlas
-    // en caso de que se acepten los cambios - se insertarán como nuevas)
-    private val originalTaskIds = mutableListOf<Long>()
+    private val projectDestination = MutableStateFlow<ProjectDestination>(ProjectDestination.Keep)
+
+    fun projects() = taskRepository.projects()
+
+    fun chooseProject(destination: ProjectDestination) {
+        if (!_isSaving.value) projectDestination.value = destination
+    }
+
+    private val originalGoals = MutableStateFlow<List<Task>>(emptyList())
     private var editLoadJob: Job? = null
     private var editLoadErrors: List<LoadTaskError> = emptyList()
 
@@ -86,6 +93,10 @@ class AssistantViewModel(
             chatAIServiceError = error,
             event = event
         )
+    }.combine(projectDestination) { state, destination ->
+        state.copy(projectDestination = destination)
+    }.combine(originalGoals) { state, goals ->
+        state.copy(editingUnassignedGoals = goals.isNotEmpty() && goals.all { it.projectId == null })
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
@@ -108,8 +119,9 @@ class AssistantViewModel(
         editLoadErrors = emptyList()
         viewModelScope.launch {
             viewedProposal.value = emptyList()
+            projectDestination.value = ProjectDestination.Keep
             assistantRepository.initSession()
-            originalTaskIds.clear()
+            originalGoals.value = emptyList()
             _event.value = null
         }
     }
@@ -128,16 +140,17 @@ class AssistantViewModel(
         val tasks = assistantRepository.tasks.value
         if (tasks.isEmpty() || !_isSaving.compareAndSet(false, true)) return
 
-        // Capturar originalTaskIds ANTES del launch para evitar race conditions
-        val taskIdsToDelete = originalTaskIds.toList()
+        val originalIds = originalGoals.value.map { it.id }
+        val destination = projectDestination.value
         val sessionVersion = assistantRepository.sessionVersion
 
         // La operación vive en la aplicación, aunque se descarte esta entrada de navegación.
         saveScope.launch(Dispatchers.Main.immediate) {
             _event.value = null
             try {
-                val result = taskRepository.saveProposal(taskIdsToDelete, tasks)
-                originalTaskIds.clear()
+                val result = taskRepository.saveProposal(originalIds, tasks, destination)
+                projectDestination.value = ProjectDestination.Keep
+                originalGoals.value = emptyList()
                 assistantRepository.clearTasksIfSession(sessionVersion)
                 if (assistantRepository.tasks.value.isEmpty()) viewedProposal.value = emptyList()
                 if (result.reminderFailures > 0) {
@@ -186,8 +199,11 @@ class AssistantViewModel(
             if (tasks.isNotEmpty()) {
                 _event.value = null
                 viewedProposal.value = emptyList()
-                originalTaskIds.clear()
-                originalTaskIds.addAll(tasks.map { it.id })
+                originalGoals.value = tasks
+                val projectId = tasks.map { it.projectId }.distinct().singleOrNull()
+                projectDestination.value = if (projectId != null) {
+                    ProjectDestination.Existing(projectId, requireNotNull(tasks.first().projectName))
+                } else ProjectDestination.Keep
                 val userMessage = if (tasks.size == 1) "Tarea para editar"
                 else "Tareas para edición múltiple"
                 val json = convertListTaskToJSON(tasks)
@@ -202,8 +218,9 @@ class AssistantViewModel(
         editLoadErrors = emptyList()
         _event.value = null
         viewedProposal.value = emptyList()
+        projectDestination.value = ProjectDestination.Keep
         assistantRepository.clearTasks()
-        originalTaskIds.clear()
+        originalGoals.value = emptyList()
     }
 
     private fun convertListTaskToJSON(tasks: List<Task>): String {

@@ -34,8 +34,7 @@ fun AssistantTasksViewListItem(
             ProposalGoalHeader(task = task, referenceDate = referenceDate)
             task.subtasks.forEachIndexed { index, subtask ->
                 ProposalStepRow(
-                    task = subtask, number = "${index + 1}", referenceDate = referenceDate,
-                    connectBefore = index > 0, connectAfter = index < task.subtasks.lastIndex
+                    task = subtask, number = "${index + 1}", referenceDate = referenceDate
                 )
             }
         }

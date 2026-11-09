@@ -174,4 +174,12 @@
     <string name="proposal_deadline">Deadline: %1$s</string>
     <string name="proposal_reminder">Reminder: %1$s</string>
     <string name="proposal_priority">Priority: %1$s</string>
+    <string name="project_choose">Choose project</string>
+    <string name="project_add">Add to project</string>
+    <string name="project_change">Change project</string>
+    <string name="cancel_goal_edit">Cancel edit</string>
+    <string name="project_unassigned">No project</string>
+    <string name="project_destination">Project: %1$s</string>
+    <string name="project_new_name">New project name</string>
+    <string name="project_use_name">Use this name</string>
 </resources>

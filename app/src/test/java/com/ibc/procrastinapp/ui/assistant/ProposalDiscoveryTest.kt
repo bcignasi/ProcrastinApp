@@ -8,14 +8,20 @@ import androidx.compose.ui.semantics.SemanticsProperties
 import androidx.compose.ui.test.SemanticsMatcher
 import androidx.compose.ui.test.assertCountEquals
 import androidx.compose.ui.test.assertIsDisplayed
+import androidx.compose.ui.test.assertHasNoClickAction
 import androidx.compose.ui.test.assertIsSelected
 import androidx.compose.ui.test.junit4.v2.createComposeRule
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.performTextInput
+import androidx.compose.ui.test.hasAnyAncestor
+import androidx.compose.ui.test.hasSetTextAction
+import androidx.compose.ui.test.isDialog
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.ViewModelStore
 import androidx.navigation.compose.rememberNavController
 import com.ibc.procrastinapp.data.ai.Message
+import com.ibc.procrastinapp.data.local.ProjectEntity
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.data.repository.AssistantRepository
 import com.ibc.procrastinapp.data.repository.TaskRepository
@@ -56,7 +62,9 @@ class ProposalDiscoveryTest {
         every { repository.isLoading } returns loading
         every { repository.error } returns MutableStateFlow(null)
         every { repository.lastResponse } returns MutableStateFlow(null)
-        val model = AssistantViewModel(repository, mockk<TaskRepository>(relaxed = true), scope)
+        val taskRepository = mockk<TaskRepository>(relaxed = true)
+        every { taskRepository.projects() } returns MutableStateFlow(listOf(ProjectEntity(7, "Empleo")))
+        val model = AssistantViewModel(repository, taskRepository, scope)
         val quotes = QuoteViewModel(mockk<QuoteAIService>(relaxed = true))
         store.put("assistant", model)
         store.put("quotes", quotes)
@@ -108,6 +116,24 @@ class ProposalDiscoveryTest {
         compose.runOnIdle { tasks.value = emptyList() }
         compose.onNodeWithText("View proposal").assertDoesNotExist()
         compose.onAllNodes(unread).assertCountEquals(0)
+    }
+
+    @Test
+    @Config(qualifiers = "es-w320dp-h900dp")
+    fun projectDestinationCanBeCreatedSelectedOrCancelledInTheProposal() {
+        tasks.value = listOf(Task(title = "Entrevistas"))
+        show()
+        compose.onNodeWithText("Ver propuesta").performClick()
+        compose.onNodeWithText("Elegir proyecto").performClick()
+        compose.onNode(hasSetTextAction() and hasAnyAncestor(isDialog())).performTextInput("Formación")
+        compose.onNodeWithText("Usar este nombre").performClick()
+        compose.onNodeWithText("Proyecto: Formación").assertIsDisplayed().assertHasNoClickAction()
+        compose.onNodeWithText("Cambiar proyecto").performClick()
+        compose.onNodeWithText("Empleo").performClick()
+        compose.onNodeWithText("Proyecto: Empleo").assertIsDisplayed().assertHasNoClickAction()
+        compose.onNodeWithText("Cambiar proyecto").performClick()
+        compose.onNodeWithText("Cancelar").performClick()
+        compose.onNodeWithText("Proyecto: Empleo").assertIsDisplayed()
     }
 
     @Test

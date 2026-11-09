@@ -9,6 +9,7 @@ import com.ibc.procrastinapp.data.local.AppDatabase
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.data.repository.AssistantRepository
 import com.ibc.procrastinapp.data.repository.TaskRepository
+import com.ibc.procrastinapp.data.repository.ProjectDestination
 import com.ibc.procrastinapp.data.service.AssistantResponse
 import com.ibc.procrastinapp.data.service.TaskJsonExtractor
 import io.mockk.every
@@ -95,6 +96,30 @@ class AtomicProposalSaveTest {
         withTimeout(5_000) { model.isSaving.first { !it } }
     }
 
+    @Test fun editingFromAgendaPreservesCompletedSessionsMissingFromTheDraft() = runBlocking {
+        draft.value = listOf(Task(title = "Entrevistas", subtasks = listOf(
+            Task(title = "Simulacro", completed = true), Task(title = "Explicar una solución")
+        )))
+        model.chooseProject(ProjectDestination.Create("Empleo"))
+        assertTrue(repository.projects().first().isEmpty())
+        save()
+        val project = repository.projects().first().single()
+        val goal = db.taskDao().getGoals().first().single().id
+        edit(goal)
+        withTimeout(5_000) {
+            model.uiState.first { it.projectDestination == ProjectDestination.Existing(project.id, "Empleo") }
+        }
+        val done = repository.getTask(goal)!!.subtasks.first { it.completed }
+        draft.value = listOf(Task(title = "Entrevistas", subtasks = listOf(
+            Task(title = "Explicar una solución", scheduledDate = "2030-02-03")
+        )))
+        save()
+        val stored = requireNotNull(repository.getTask(goal))
+        assertEquals(project.id, stored.projectId)
+        assertEquals(done, stored.subtasks.single { it.completed })
+        assertEquals("2030-02-03", stored.subtasks.single { !it.completed }.scheduledDate)
+    }
+
     @Test fun failedRootReplacementKeepsOriginalsDraftAndSupportsRetry() = runBlocking {
         val first = repository.saveTask(Task(title = "Original A", subtasks = listOf(Task(title = "Paso original"))))
         val second = repository.saveTask(Task(title = "Original B"))
@@ -141,10 +166,12 @@ class AtomicProposalSaveTest {
     }
 
     @Test fun newProposalIsAlsoAllOrNothing() = runBlocking {
+        model.chooseProject(ProjectDestination.Create("Empleo"))
         val proposal = listOf(Task(title = "Duplicada"), Task(title = "Duplicada"))
         draft.value = proposal
         save()
         assertTrue(db.taskDao().getPendingTasks().first().isEmpty())
+        assertTrue(repository.projects().first().isEmpty())
         assertEquals(proposal, draft.value)
         assertTrue(alarmCalls.isEmpty())
         assertTrue(completions.isEmpty())

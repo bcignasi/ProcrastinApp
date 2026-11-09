@@ -8,6 +8,9 @@ import androidx.test.core.app.ApplicationProvider
 import com.ibc.procrastinapp.data.alarm.AlarmSchedulerImpl
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.data.repository.TaskRepository
+import com.ibc.procrastinapp.data.repository.ProjectDestination
+import com.ibc.procrastinapp.ui.tasklist.TaskListQueryType
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.runBlocking
 import org.junit.After
 import org.junit.Assert.*
@@ -74,8 +77,42 @@ class ScheduledDatePersistenceTest {
         assertTrue(shadowOf(context.getSystemService(AlarmManager::class.java)).scheduledAlarms.isEmpty())
     }
 
+    @Test
+    fun projectAndSessionProgressSurviveReopeningAndEditing() = runBlocking {
+        val scheduler = AlarmSchedulerImpl(context)
+        var db = open()
+        var repository = TaskRepository(db.taskDao(), db, scheduler)
+        val interviews = Task(title = "Entrevistas", subtasks = listOf(
+            Task(title = "Simulacro"), Task(title = "Diseñar una API")
+        ))
+        val id = repository.saveProposal(emptyList(), listOf(interviews),
+            ProjectDestination.Create(" Empleo ")).rootIds.single()
+        val project = repository.projects().first().single()
+        assertEquals("Empleo", project.name)
+        val destination = ProjectDestination.Existing(project.id, project.name)
+        val portfolio = repository.saveProposal(emptyList(), listOf(Task(title = "Portfolio")), destination).rootIds.single()
+        repository.saveProposal(emptyList(), listOf(interviews), ProjectDestination.Create("Formación"))
+        db.close()
+
+        db = open()
+        repository = TaskRepository(db.taskDao(), db, scheduler)
+        val saved = repository.getTask(id)!!
+        val first = saved.subtasks.single { it.title == "Simulacro" }
+        val second = saved.subtasks.single { it.title == "Diseñar una API" }
+        // La Agenda puede marcar una sesión después de que el asistente lea su borrador.
+        repository.setTaskCompleted(first.id, true)
+        val edit = saved.copy(subtasks = listOf(first, second.copy(scheduledDate = "2030-02-03")))
+        assertEquals(listOf(id), repository.saveProposal(listOf(id), listOf(edit)).rootIds)
+        val grouped = repository.getTasks(TaskListQueryType.GOALS).first().filter { it.projectId == project.id }
+        assertEquals(setOf(id, portfolio), grouped.map { it.id }.toSet())
+        val result = grouped.single { it.id == id }
+        assertEquals("Empleo", result.projectName)
+        assertEquals(first.copy(completed = true), result.subtasks.single { it.id == first.id })
+        assertEquals(second.copy(scheduledDate = "2030-02-03"), result.subtasks.single { it.id == second.id })
+    }
+
     private fun open(): AppDatabase = Room.databaseBuilder(context, AppDatabase::class.java, name)
-        .addMigrations(AppDatabase.MIGRATION_1_2)
+        .addMigrations(AppDatabase.MIGRATION_1_2, AppDatabase.MIGRATION_2_3)
         .allowMainThreadQueries()
         .build().also { database = it }
 

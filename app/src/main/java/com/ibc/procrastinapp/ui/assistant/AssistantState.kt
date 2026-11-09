@@ -7,6 +7,7 @@ package com.ibc.procrastinapp.ui.assistant
 
 import com.ibc.procrastinapp.data.ai.Message
 import com.ibc.procrastinapp.data.model.Task
+import com.ibc.procrastinapp.data.repository.ProjectDestination
 
 /**
  * Clase que representa el estado de la UI de la pantalla de asistente IA
@@ -24,6 +25,8 @@ data class AssistantState(
     val chatAIServiceError: Throwable? = null,
     val event: AssistantEvent? = null,
     val hasUnseenProposal: Boolean = false,
+    val projectDestination: ProjectDestination = ProjectDestination.Keep,
+    val editingUnassignedGoals: Boolean = false,
 ) {
     val hasTasks: Boolean get() = tasks.isNotEmpty()
 

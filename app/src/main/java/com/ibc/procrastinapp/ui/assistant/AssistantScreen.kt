@@ -19,6 +19,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalDensity
@@ -32,6 +33,7 @@ import androidx.activity.compose.BackHandler
 import com.ibc.procrastinapp.ui.navigation.AGENDA_ROUTE
 import com.ibc.procrastinapp.ui.navigation.openMainDestination
 import com.ibc.procrastinapp.ui.assistant.elements.AssistantTopBar
+import com.ibc.procrastinapp.ui.assistant.elements.tasksview.ProjectSelector
 import com.ibc.procrastinapp.ui.assistant.elements.MessageInputField
 import com.ibc.procrastinapp.ui.assistant.elements.messagesview.AssistantMessagesView
 import com.ibc.procrastinapp.ui.assistant.elements.tasksview.AssistantTasksView
@@ -68,6 +70,7 @@ fun AssistantScreen(
 
     // Estados locales de la pantalla
     var currentScreenMode by rememberSaveable { mutableStateOf(AssistantScreenType.MESSAGES) }
+    val composerState = rememberSaveableStateHolder()
     val lifecycleState by LocalLifecycleOwner.current.lifecycle.currentStateAsState()
     LaunchedEffect(currentScreenMode, uiState.tasks, uiState.isLoading, lifecycleState) {
         if (currentScreenMode == AssistantScreenType.TASKS &&
@@ -130,7 +133,7 @@ fun AssistantScreen(
                     },
                     onOpenSettings = { navController.navigate("settings") },
                     date = today,
-                    compact = compactHeader,
+                    compact = compactHeader || currentScreenMode == AssistantScreenType.TASKS,
                     hasUnseenProposal = uiState.hasUnseenProposal && currentScreenMode != AssistantScreenType.TASKS,
                 )
             }
@@ -175,6 +178,10 @@ fun AssistantScreen(
                                 onAgendaButtonClick = { assistantViewModel.commitTasksFromAssistant() },
                                 onCancelEdit = { assistantViewModel.cancelEdit() },
                                 referenceDate = today,
+                                projectSelector = { actionModifier ->
+                                    ProjectSelector(uiState.projectDestination, isEditMode, uiState.editingUnassignedGoals, !isSaving && !uiState.isLoading,
+                                        assistantViewModel::projects, assistantViewModel::chooseProject, actionModifier)
+                                },
                                 //tasksIdsString = tasksIdsString,
                                 quoteViewModel = quoteViewModel,
                                 // Quita el padding inferior para dejar espacio al input
@@ -184,17 +191,15 @@ fun AssistantScreen(
                     }
                 }
 
-                // Área de entrada de mensaje
-                MessageInputField(
-                    onSendMessage = { message ->
-                        assistantViewModel.sendMessage(message)
-                    },
-                    isLoading = uiState.isLoading || isSaving,
-                    // Aquí incluimos TODOS los modificadores que queremos aplicar
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                )
+                if (currentScreenMode == AssistantScreenType.MESSAGES) {
+                    composerState.SaveableStateProvider("message-input") {
+                        MessageInputField(
+                            onSendMessage = assistantViewModel::sendMessage,
+                            isLoading = uiState.isLoading || isSaving,
+                            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)
+                        )
+                    }
+                }
             }
         }
     }

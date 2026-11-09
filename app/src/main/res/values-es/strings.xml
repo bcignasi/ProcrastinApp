@@ -174,5 +174,13 @@
     <string name="proposal_deadline">Fecha límite: %1$s</string>
     <string name="proposal_reminder">Aviso: %1$s</string>
     <string name="proposal_priority">Prioridad: %1$s</string>
+    <string name="project_choose">Elegir proyecto</string>
+    <string name="project_add">Añadir a proyecto</string>
+    <string name="project_change">Cambiar proyecto</string>
+    <string name="cancel_goal_edit">Cancelar edición</string>
+    <string name="project_unassigned">Sin proyecto</string>
+    <string name="project_destination">Proyecto: %1$s</string>
+    <string name="project_new_name">Nombre del proyecto nuevo</string>
+    <string name="project_use_name">Usar este nombre</string>
 </resources>
 

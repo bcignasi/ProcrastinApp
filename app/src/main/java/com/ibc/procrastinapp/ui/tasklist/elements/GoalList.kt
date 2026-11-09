@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -56,11 +56,17 @@ fun GoalList(
     referenceDate: LocalDate,
     modifier: Modifier = Modifier
 ) {
+    val grouped = tasks.sortedWith(compareBy({ it.projectId == null }, { it.projectName }, { it.projectId }))
     LazyColumn(
         modifier = modifier.fillMaxSize(),
         contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 96.dp)
     ) {
-        items(tasks, key = { it.id }) { goal ->
+        itemsIndexed(grouped, key = { _, goal -> goal.id }) { index, goal ->
+            if ((index == 0 || grouped[index - 1].projectId != goal.projectId) && grouped.first().projectId != null) {
+                Text(goal.projectName ?: stringResource(R.string.project_unassigned),
+                    style = MaterialTheme.typography.titleLarge,
+                    modifier = Modifier.padding(vertical = 8.dp))
+            }
             var expanded by rememberSaveable(goal.id) { mutableStateOf(false) }
             val expansionState = stringResource(if (expanded) R.string.goal_expanded else R.string.goal_collapsed)
             Column(Modifier.fillMaxWidth()) {

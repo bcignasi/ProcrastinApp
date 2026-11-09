@@ -14,9 +14,11 @@ import androidx.room.PrimaryKey
 @Entity(
     tableName = "tasks",
     indices = [
-        Index(value = ["title", "deadline", "notify", "scheduledDate"], unique = true)
+        Index(value = ["title", "deadline", "notify", "scheduledDate"])
     ],
     foreignKeys = [
+        ForeignKey(entity = ProjectEntity::class, parentColumns = ["id"], childColumns = ["projectId"],
+            onDelete = ForeignKey.SET_NULL),
         ForeignKey(
             entity = TaskEntity::class,
             parentColumns = ["id"],
@@ -42,5 +44,6 @@ data class TaskEntity(
     val parentTaskId: Long? = null,
 
     @ColumnInfo(defaultValue = "''")
-    val scheduledDate: String = ""
+    val scheduledDate: String = "",
+    @ColumnInfo(index = true) val projectId: Long? = null
 )

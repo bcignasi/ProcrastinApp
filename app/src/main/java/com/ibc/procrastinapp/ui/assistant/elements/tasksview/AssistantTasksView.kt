@@ -14,8 +14,14 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Save
+import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material3.Icon
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.Alignment
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
@@ -24,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.ibc.procrastinapp.data.service.AssistantResponse
+import com.ibc.procrastinapp.data.repository.ProjectDestination
 import androidx.compose.ui.res.stringResource
 import com.ibc.procrastinapp.R
 import com.ibc.procrastinapp.data.ai.AIServiceError
@@ -56,7 +63,8 @@ fun AssistantTasksView(
     modifier: Modifier = Modifier,
     //tasksIdsString: String,
     quoteViewModel: QuoteViewModel,
-    referenceDate: LocalDate = LocalDate.now()
+    referenceDate: LocalDate = LocalDate.now(),
+    projectSelector: @Composable (Modifier) -> Unit = {}
 
 ) {
 
@@ -159,6 +167,33 @@ fun AssistantTasksView(
                 )
             }
         }
+        if (uiState.hasTasks) {
+            val destination = uiState.projectDestination
+            val projectName = when (destination) {
+                is ProjectDestination.Existing -> destination.name
+                is ProjectDestination.Create -> destination.name
+                else -> null
+            }
+            if (projectName != null || isEditMode) {
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (projectName != null) {
+                        Icon(Icons.Outlined.Folder, contentDescription = null, modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(stringResource(R.string.project_destination, projectName),
+                            modifier = Modifier.weight(1f), style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    } else {
+                        Spacer(Modifier.weight(1f))
+                    }
+                    if (isEditMode) {
+                        TextButton(onClick = onCancelEdit, enabled = !isSaving) {
+                            Text(stringResource(R.string.cancel_goal_edit))
+                        }
+                    }
+                }
+            }
+        }
         // Lista de tareas (ocupa el espacio restante)
         Box(
             modifier = Modifier
@@ -186,33 +221,21 @@ fun AssistantTasksView(
 
         // Botón "To Agenda?" solo si hay tareas
         if (uiState.hasTasks) {
-
             Spacer(modifier = Modifier.height(8.dp))
-
             Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.End
+                modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // Si estamos en modo edición, añadir un botón de cancelar
-                if (isEditMode) {
-                    TextButton(
-                        onClick = onCancelEdit,
-                        enabled = !isSaving,
-                        colors = ButtonDefaults.textButtonColors(
-                            containerColor = MaterialTheme.colorScheme.errorContainer,
-                            contentColor = MaterialTheme.colorScheme.error
-                        )
-                    ) {
-                        Text(stringResource(id = R.string.assistant_cancel))
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
+                val actionModifier = Modifier.weight(1f).fillMaxHeight()
+                projectSelector(actionModifier)
                 if (showSaveButton) {
-                    AssistantTasksViewSaveToAgendaButton(
+                    ProposalActionButton(
+                        label = stringResource(if (isSaving) R.string.assistant_saving_label else R.string.assistant_save_to_agenda_label),
+                        icon = Icons.Outlined.Save,
                         onClick = onAgendaButtonClick,
-                        isSaving = isSaving,
+                        modifier = actionModifier,
+                        primary = true,
+                        busy = isSaving
                     )
                 }
             }
