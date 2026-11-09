@@ -9,7 +9,14 @@
     <string name="agenda_title">Tu agenda</string>
     <string name="agenda_date_today">Hoy, %1$s</string>
     <string name="agenda_pending">Pendientes</string>
-    <string name="agenda_done">Hechas</string>
+    <string name="agenda_goals">Metas</string>
+    <string name="agenda_filter_pending">Por hacer</string>
+    <string name="agenda_filter_completed">Completadas</string>
+    <string name="agenda_empty_goals">Tus metas aparecerán aquí. Crea una con el asistente.</string>
+    <string name="goal_expanded">Detalles y subtareas desplegados</string>
+    <string name="goal_collapsed">Detalles y subtareas ocultos</string>
+    <string name="goal_edit">Editar meta</string>
+    <string name="goal_edit_cd">Editar meta: %1$s</string>
     <string name="agenda_empty_today">No tienes tareas planificadas para hoy.</string>
     <string name="agenda_edit_unavailable">No se ha podido abrir este objetivo. Inténtalo de nuevo.</string>
     <string name="task_scheduled_date">Planificado: %1$s</string>
@@ -62,6 +69,7 @@
     <string name="task_edit_field_notes">Notas</string>
     <string name="task_edit_field_completed">Completada</string>
     <string name="task_edit_save">Guardar</string>
+    <string name="task_edit_save_failed">No se han podido guardar los cambios. Revisa la tarea y vuelve a intentarlo.</string>
     <string name="task_edit_not_found">Tarea no encontrada.</string>
 
     <!-- Content descriptions and UI labels moved from code -->
@@ -115,8 +123,11 @@
     <string name="commit_saved_and_updated">✓ %1$d nueva(s) + %2$d actualizada(s)</string>
     <string name="commit_partial_failure">⚠️ Guardadas: %1$d, actualizadas: %2$d, fallidas: %3$d</string>
     <string name="commit_nothing_saved">❌ Ninguna tarea guardada</string>
+    <string name="commit_failed_retry">No se ha podido guardar el plan. Se conservan tus tareas anteriores y la propuesta. Puedes ajustarla o volver a guardar.</string>
+    <string name="commit_reminders_failed">El plan se ha guardado en Agenda, pero no se han podido actualizar algunos avisos. Revisa tus notificaciones.</string>
 
     <!-- AssistantViewModel: errores de carga de tareas -->
+    <string name="load_edit_blocked">No se han podido cargar todas las tareas. El guardado está bloqueado para protegerlas. Vuelve a Agenda y abre la edición de nuevo, o empieza una sesión nueva.</string>
     <string name="load_task_not_found">❌ No encontrada tarea ID %1$d</string>
     <string name="load_task_exception">❌ Error tarea %1$d: %2$s</string>
 
@@ -124,6 +135,7 @@
     <string name="tasklist_complete_success">Tareas completadas correctamente</string>
     <string name="tasklist_complete_failed">Error al completar tareas: %1$s</string>
     <string name="tasklist_delete_success">Tareas eliminadas correctamente</string>
+    <string name="tasklist_delete_reminders_failed">Las tareas se han eliminado, pero no se han podido cancelar algunos avisos. Podrían seguir apareciendo notificaciones.</string>
     <string name="tasklist_delete_failed">Error al eliminar tareas: %1$s</string>
 
     <!-- QuoteViewModel: mensajes de error -->
@@ -173,5 +185,13 @@
     <string name="proposal_deadline">Fecha límite: %1$s</string>
     <string name="proposal_reminder">Aviso: %1$s</string>
     <string name="proposal_priority">Prioridad: %1$s</string>
+    <string name="project_choose">Elegir proyecto</string>
+    <string name="project_add">Añadir a proyecto</string>
+    <string name="project_change">Cambiar proyecto</string>
+    <string name="cancel_goal_edit">Cancelar edición</string>
+    <string name="project_unassigned">Sin proyecto</string>
+    <string name="project_destination">Proyecto: %1$s</string>
+    <string name="project_new_name">Nombre del proyecto nuevo</string>
+    <string name="project_use_name">Usar este nombre</string>
 </resources>
 

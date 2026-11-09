@@ -109,6 +109,8 @@ fun AssistantMessagesView(
 
         // Convertir evento tipado a ViewModelInfo con strings localizadas
         val eventViewModelInfo: ViewModelInfo? = when (val e = uiState.event) {
+            AssistantEvent.CommitFailed -> ViewModelInfo.Error(stringResource(R.string.commit_failed_retry))
+            AssistantEvent.CommitRemindersFailed -> ViewModelInfo.Warning(stringResource(R.string.commit_reminders_failed))
             is AssistantEvent.CommitDone -> when {
                 e.failed == 0 && e.updated == 0 ->
                     ViewModelInfo.Success(
@@ -134,7 +136,7 @@ fun AssistantMessagesView(
                         is LoadTaskError.TaskException -> stringResource(R.string.load_task_exception, err.id, err.message ?: "")
                     }
                 }
-                ViewModelInfo.Error(lines.joinToString("\n"))
+                ViewModelInfo.Error(stringResource(R.string.load_edit_blocked) + "\n" + lines.joinToString("\n"))
             }
             null -> null
         }

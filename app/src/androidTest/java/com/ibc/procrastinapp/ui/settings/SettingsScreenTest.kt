@@ -50,7 +50,9 @@ class SettingsScreenTest {
         val context = InstrumentationRegistry.getInstrumentation().targetContext
         compose.onNodeWithText(context.getString(R.string.task_type_Today)).assertIsDisplayed().assertIsSelected()
         compose.onNodeWithText(context.getString(R.string.agenda_pending)).assertIsDisplayed().performClick().assertIsSelected()
-        compose.onNodeWithText(context.getString(R.string.agenda_done)).assertIsDisplayed().performClick().assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.agenda_filter_completed)).assertIsDisplayed().performClick().assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.agenda_pending)).assertIsSelected()
+        compose.onNodeWithText(context.getString(R.string.agenda_goals)).assertIsDisplayed().performClick().assertIsSelected()
         compose.onNodeWithText(context.getString(R.string.task_type_Priority)).assertDoesNotExist()
         compose.onNodeWithContentDescription(context.getString(R.string.title_dropdown_change_type_cd)).assertDoesNotExist()
         compose.onNodeWithContentDescription(context.getString(R.string.settings_open))

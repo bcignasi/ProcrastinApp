@@ -24,6 +24,7 @@ enum class TaskListQueryType(@StringRes override val titleResId: Int) : Dropdown
     NOTIFICATION(R.string.task_type_Notification),
     NO_DATE(R.string.task_type_NoDate),
     COMPLETED(R.string.task_type_Completed),
+    GOALS(R.string.agenda_goals),
     ;
 
 //    companion object {

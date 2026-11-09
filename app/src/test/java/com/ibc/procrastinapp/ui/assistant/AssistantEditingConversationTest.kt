@@ -66,6 +66,7 @@ class AssistantEditingConversationTest {
         checkEditingConversation(
             conversationTab = "Conversation",
             proposalTab = "Proposal",
+            projectLabel = "Add to project",
             guidance = "Your plan is available in Proposal. You can ask me for changes here."
         )
     }
@@ -80,7 +81,8 @@ class AssistantEditingConversationTest {
         )
     }
 
-    private fun checkEditingConversation(conversationTab: String, proposalTab: String, guidance: String, openings: Int = 1) {
+    private fun checkEditingConversation(conversationTab: String, proposalTab: String, guidance: String,
+                                         openings: Int = 1, projectLabel: String = "Añadir a proyecto") {
         val goal = Task(
             id = 42,
             title = "Sacar el carnet de conducir",
@@ -124,6 +126,7 @@ class AssistantEditingConversationTest {
         compose.onNodeWithText(guidance).assertIsDisplayed()
         compose.onNodeWithText(proposalTab).performClick()
         compose.onNodeWithText(goal.title, substring = true).assertIsDisplayed()
+        compose.onNodeWithText(projectLabel).assertIsDisplayed()
         compose.onNodeWithText(conversationTab).performClick()
         compose.onNodeWithText(guidance).assertIsDisplayed()
         assertEquals(raw, repository.messages.value.last { it.isAssistant }.content)

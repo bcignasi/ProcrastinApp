@@ -11,17 +11,67 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import androidx.room.Transaction
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface TaskDao {
+    @Query("SELECT * FROM projects ORDER BY name, id")
+    fun getProjects(): Flow<List<ProjectEntity>>
+
+    @Query("SELECT id FROM projects WHERE name = :name")
+    suspend fun findProjectId(name: String): Long?
+
+    @Query("SELECT name FROM projects WHERE id = :id")
+    suspend fun getProjectName(id: Long): String?
+
+    @Insert
+    suspend fun insertProject(project: ProjectEntity): Long
+
+    // Compare only rows with the same scheduling key, following their parents to the project.
+    @Query("""
+        WITH RECURSIVE lineage(candidate, parentId, project) AS (
+            SELECT 0, :parentId, :projectId
+            UNION ALL
+            SELECT 1, parentTaskId, projectId FROM tasks
+            WHERE id != :id AND title = :title AND deadline = :deadline AND notify = :notify AND scheduledDate = :day
+            UNION ALL
+            SELECT l.candidate, t.parentTaskId, t.projectId FROM tasks t JOIN lineage l ON t.id = l.parentId
+        )
+        SELECT EXISTS(SELECT 1 FROM lineage WHERE candidate = 1 AND parentId IS NULL
+            AND project IS (SELECT project FROM lineage WHERE candidate = 0 AND parentId IS NULL))
+    """)
+    suspend fun hasMatchingTask(id: Long, title: String, deadline: String, notify: String, day: String,
+                                parentId: Long?, projectId: Long?): Boolean
+
     // ===== Operaciones CRUD básicas =====
 
+    @Transaction
+    suspend fun insertTask(task: TaskEntity): Long {
+        checkUniqueInProject(task)
+        return insertRow(task)
+    }
+
+    @Transaction
+    suspend fun updateTask(task: TaskEntity) {
+        checkUniqueInProject(task)
+        updateRow(task)
+    }
+
+    private suspend fun checkUniqueInProject(task: TaskEntity) {
+        require(task.parentTaskId == null || task.projectId == null)
+        require(!hasMatchingTask(task.id, task.title, task.deadline, task.notify, task.scheduledDate,
+            task.parentTaskId, task.projectId)) { "Duplicate task in the same project" }
+    }
+
     @Insert(onConflict = OnConflictStrategy.ABORT)
-    suspend fun insertTask(task: TaskEntity): Long
+    suspend fun insertRow(task: TaskEntity): Long
 
     @Update
-    suspend fun updateTask(task: TaskEntity)
+    suspend fun updateRow(task: TaskEntity)
+
+    @Query("UPDATE tasks SET completed = :completed WHERE id = :id")
+    suspend fun setCompleted(id: Long, completed: Boolean)
 
     @Delete
     suspend fun deleteTask(task: TaskEntity)
@@ -61,6 +111,9 @@ interface TaskDao {
     """)
     fun getPendingTasks(): Flow<List<TaskEntity>>
 
+    /** Todas las metas, con independencia de su estado; sus hijos se cargan en el repositorio. */
+    @Query("SELECT * FROM tasks WHERE parentTaskId IS NULL ORDER BY completed ASC, id ASC")
+    fun getGoals(): Flow<List<TaskEntity>>
 
     /**
      * TAREAS POSTERGADAS (PAST)
@@ -164,8 +217,7 @@ interface TaskDao {
     @Query("""
         SELECT * FROM tasks 
         WHERE completed = 1 
-          AND parentTaskId IS NULL
-        ORDER BY deadline ASC
+        ORDER BY scheduledDate ASC, deadline ASC, id ASC
     """)
     fun getCompletedTasks(): Flow<List<TaskEntity>>
 

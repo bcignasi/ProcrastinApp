@@ -17,7 +17,9 @@ data class Task(
     val notify: String = "",
     val subtasks: List<Task> = emptyList(),
     /** Día de trabajo (yyyy-MM-dd), independiente del límite y del aviso. Vacío si no está planificado. */
-    val scheduledDate: String = ""
+    val scheduledDate: String = "",
+    @Transient val projectId: Long? = null,
+    @Transient val projectName: String? = null
 ) {
     companion object {
         fun empty() = Task(title = "")
@@ -29,7 +31,7 @@ data class Task(
     // al hacer las validaciones. Por eso esta programación defensiva para title.
     fun withNonNullStrings(): Task {
         return copy(
-            id = 0,
+            id = id.coerceAtLeast(0),
             title = title ?: "",
             deadline = deadline ?: "",
             periodicity = periodicity ?: "",

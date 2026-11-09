@@ -11,14 +11,14 @@ import com.google.gson.GsonBuilder
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.data.repository.AssistantRepository
 import com.ibc.procrastinapp.data.repository.TaskRepository
+import com.ibc.procrastinapp.data.repository.ProjectDestination
 import com.ibc.procrastinapp.data.service.AssistantResponse
 import com.ibc.procrastinapp.ui.assistant.AssistantState.AssistantEvent
 import com.ibc.procrastinapp.ui.assistant.AssistantState.LoadTaskError
-import com.ibc.procrastinapp.utils.Logger
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -42,13 +42,21 @@ class AssistantViewModel(
     private val _isSaving = MutableStateFlow(false)
     val isSaving = _isSaving.asStateFlow()
 
-    // Señaliza el final de la tarea asíncrona de guardado de tareas
+    // Solo se emite tras guardar correctamente y sin avisos pendientes de revisar.
     private val _commitFinished = MutableSharedFlow<Unit>()
     val commitFinished = _commitFinished.asSharedFlow()
 
-    // En el modo edición, la lista de tareas a editar (para borrarlas
-    // en caso de que se acepten los cambios - se insertarán como nuevas)
-    private val originalTaskIds = mutableListOf<Long>()
+    private val projectDestination = MutableStateFlow<ProjectDestination>(ProjectDestination.Keep)
+
+    fun projects() = taskRepository.projects()
+
+    fun chooseProject(destination: ProjectDestination) {
+        if (!_isSaving.value) projectDestination.value = destination
+    }
+
+    private val originalGoals = MutableStateFlow<List<Task>>(emptyList())
+    private var editLoadJob: Job? = null
+    private var editLoadErrors: List<LoadTaskError> = emptyList()
 
     // Estado derivado correspondiente al parsing del último mensaje
     val lastResponse: StateFlow<AssistantResponse?> = assistantRepository.lastResponse
@@ -85,6 +93,10 @@ class AssistantViewModel(
             chatAIServiceError = error,
             event = event
         )
+    }.combine(projectDestination) { state, destination ->
+        state.copy(projectDestination = destination)
+    }.combine(originalGoals) { state, goals ->
+        state.copy(editingUnassignedGoals = goals.isNotEmpty() && goals.all { it.projectId == null })
     }.stateIn(
         viewModelScope,
         SharingStarted.WhileSubscribed(5000),
@@ -103,10 +115,13 @@ class AssistantViewModel(
 
     fun startNewSession() {
         if (_isSaving.value) return
+        editLoadJob?.cancel()
+        editLoadErrors = emptyList()
         viewModelScope.launch {
             viewedProposal.value = emptyList()
+            projectDestination.value = ProjectDestination.Keep
             assistantRepository.initSession()
-            originalTaskIds.clear()
+            originalGoals.value = emptyList()
             _event.value = null
         }
     }
@@ -117,48 +132,41 @@ class AssistantViewModel(
     }
 
     fun commitTasksFromAssistant() {
+        if (editLoadJob?.isActive == true) return
+        if (editLoadErrors.isNotEmpty()) {
+            _event.value = AssistantEvent.LoadFailed(editLoadErrors)
+            return
+        }
         val tasks = assistantRepository.tasks.value
         if (tasks.isEmpty() || !_isSaving.compareAndSet(false, true)) return
 
-        // Capturar originalTaskIds ANTES del launch para evitar race conditions
-        val taskIdsToDelete = originalTaskIds.toList()
+        val originalIds = originalGoals.value.map { it.id }
+        val destination = projectDestination.value
         val sessionVersion = assistantRepository.sessionVersion
 
         // La operación vive en la aplicación, aunque se descarte esta entrada de navegación.
         saveScope.launch(Dispatchers.Main.immediate) {
-            val result = try {
-                if (taskIdsToDelete.isNotEmpty()) {
-                    try {
-                        taskRepository.deleteTasks(taskIdsToDelete)
-                    } catch (cancelled: CancellationException) {
-                        throw cancelled
-                    } catch (_: Exception) {}
-                }
-
-                var saved = 0
-                var failed = 0
-                tasks.forEach { task ->
-                    try {
-                        taskRepository.saveTask(task)
-                        saved++
-                    } catch (cancelled: CancellationException) {
-                        throw cancelled
-                    } catch (_: Exception) {
-                        failed++
-                    }
-                }
-                originalTaskIds.clear()
+            _event.value = null
+            try {
+                val result = taskRepository.saveProposal(originalIds, tasks, destination)
+                projectDestination.value = ProjectDestination.Keep
+                originalGoals.value = emptyList()
                 assistantRepository.clearTasksIfSession(sessionVersion)
                 if (assistantRepository.tasks.value.isEmpty()) viewedProposal.value = emptyList()
-                AssistantEvent.CommitDone(saved = saved, updated = 0, failed = failed).also {
-                    _event.value = it
+                if (result.reminderFailures > 0) {
+                    _event.value = AssistantEvent.CommitRemindersFailed
+                } else {
+                    _event.value = AssistantEvent.CommitDone(saved = result.rootIds.size, updated = 0, failed = 0)
+                    _commitFinished.emit(Unit)
                 }
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                // Mantener tanto el borrador como los IDs originales permite corregir y reintentar.
+                _event.value = AssistantEvent.CommitFailed
             } finally {
                 _isSaving.value = false
             }
-            _commitFinished.emit(Unit)
-            delay(3000)
-            if (_event.value === result) _event.value = null
         }
     }
 
@@ -166,39 +174,54 @@ class AssistantViewModel(
         _event.value = null
     }
 
-    fun loadTasksForEditing(taskIds: List<Long>) {
-        viewModelScope.launch {
+    fun loadTasksForEditing(taskIds: List<Long>): Job? {
+        if (_isSaving.value || taskIds.isEmpty()) return null
+        editLoadJob?.cancel()
+        editLoadJob = viewModelScope.launch {
             val tasks = mutableListOf<Task>()
             val loadErrors = mutableListOf<LoadTaskError>()
-            taskIds.forEach { id ->
+            taskIds.distinct().forEach { id ->
                 try {
                     taskRepository.getTask(id)?.let { tasks.add(it) }
                         ?: loadErrors.add(LoadTaskError.NotFound(id))
+                } catch (cancelled: CancellationException) {
+                    throw cancelled
                 } catch (e: Exception) {
                     loadErrors.add(LoadTaskError.TaskException(id, e.message))
                 }
             }
+            editLoadErrors = loadErrors.toList()
+            if (loadErrors.isNotEmpty()) {
+                // No publicar una selección parcial ni permitir guardar el borrador anterior.
+                _event.value = AssistantEvent.LoadFailed(editLoadErrors)
+                return@launch
+            }
             if (tasks.isNotEmpty()) {
+                _event.value = null
                 viewedProposal.value = emptyList()
-                originalTaskIds.clear()
-                originalTaskIds.addAll(taskIds)
+                originalGoals.value = tasks
+                val projectId = tasks.map { it.projectId }.distinct().singleOrNull()
+                projectDestination.value = if (projectId != null) {
+                    ProjectDestination.Existing(projectId, requireNotNull(tasks.first().projectName))
+                } else ProjectDestination.Keep
                 val userMessage = if (tasks.size == 1) "Tarea para editar"
                 else "Tareas para edición múltiple"
                 val json = convertListTaskToJSON(tasks)
                 assistantRepository.addUserAndAssistantMessage(userMessage, json)
             }
-
-            if (loadErrors.isNotEmpty()) {
-                _event.value = AssistantEvent.LoadFailed(loadErrors)
-            }
         }
+        return editLoadJob
     }
 
     fun cancelEdit() {
         if (_isSaving.value) return
+        editLoadJob?.cancel()
+        editLoadErrors = emptyList()
+        _event.value = null
         viewedProposal.value = emptyList()
+        projectDestination.value = ProjectDestination.Keep
         assistantRepository.clearTasks()
-        originalTaskIds.clear()
+        originalGoals.value = emptyList()
     }
 
     private fun convertListTaskToJSON(tasks: List<Task>): String {

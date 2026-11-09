@@ -9,6 +9,7 @@ package com.ibc.procrastinapp.ui.tasklist
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -34,6 +35,7 @@ import com.ibc.procrastinapp.ui.navigation.openTaskEdit
 import com.ibc.procrastinapp.ui.tasklist.elements.AddTaskFab
 import com.ibc.procrastinapp.ui.tasklist.elements.EmptyListMessage
 import com.ibc.procrastinapp.ui.tasklist.elements.TaskListContent
+import com.ibc.procrastinapp.ui.tasklist.elements.TaskListResultMessage
 import com.ibc.procrastinapp.ui.tasklist.elements.TaskListTopBar
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -61,6 +63,7 @@ fun TaskListScreen(
 
     // La pestaña elegida se conserva al volver de Ajustes o Asistente.
     var currentListType by rememberSaveable { mutableStateOf(TaskListQueryType.TODAY) }
+    var pendingFilter by rememberSaveable { mutableStateOf(TaskListQueryType.ALL) }
 
     // Efecto para cargar las tareas según el tipo de lista
     LaunchedEffect(currentListType) {
@@ -123,7 +126,11 @@ fun TaskListScreen(
                 onOpenSettings = { navController.navigate("settings") },
                 currentListType = currentListType,
                 date = uiState.date,
+                pendingFilter = pendingFilter,
                 onCurrentListTypeChange = { newType -> // Proporciona la lógica para cambiar el estado
+                    if (newType == TaskListQueryType.ALL || newType == TaskListQueryType.COMPLETED) {
+                        pendingFilter = newType
+                    }
                     currentListType = newType
                 }
             )
@@ -148,15 +155,20 @@ fun TaskListScreen(
 //                uiState.isLoading -> LoadingIndicator(Modifier.align(Alignment.Center))
 
                 uiState.tasks.isEmpty() ->
-                    EmptyListMessage(
-                        modifier = Modifier.align(Alignment.Center),
-                        messageResId = when (uiState.filter) {
-                            TaskListQueryType.TODAY -> R.string.agenda_empty_today
-                            TaskListQueryType.ALL -> R.string.agenda_empty_pending
-                            TaskListQueryType.COMPLETED -> R.string.agenda_empty_done
-                            else -> R.string.tasklist_empty_message
+                    Column(Modifier.fillMaxSize()) {
+                        TaskListResultMessage(uiState.result)
+                        Box(Modifier.weight(1f).fillMaxSize(), contentAlignment = Alignment.Center) {
+                            EmptyListMessage(
+                                messageResId = when (uiState.filter) {
+                                    TaskListQueryType.TODAY -> R.string.agenda_empty_today
+                                    TaskListQueryType.ALL -> R.string.agenda_empty_pending
+                                    TaskListQueryType.COMPLETED -> R.string.agenda_empty_done
+                                    TaskListQueryType.GOALS -> R.string.agenda_empty_goals
+                                    else -> R.string.tasklist_empty_message
+                                }
+                            )
                         }
-                    )
+                    }
 
                 else ->
                     TaskListContent(

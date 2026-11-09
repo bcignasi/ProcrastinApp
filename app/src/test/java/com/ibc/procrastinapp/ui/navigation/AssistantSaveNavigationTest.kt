@@ -13,6 +13,7 @@ import com.ibc.procrastinapp.data.ai.Message
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.data.repository.AssistantRepository
 import com.ibc.procrastinapp.data.repository.TaskRepository
+import com.ibc.procrastinapp.data.repository.ProposalSaveResult
 import com.ibc.procrastinapp.data.service.AssistantResponse
 import com.ibc.procrastinapp.ui.assistant.AssistantViewModel
 import com.ibc.procrastinapp.utils.Logger
@@ -88,18 +89,23 @@ class AssistantSaveNavigationTest {
         proposals.value = listOf(Task(title = "Paso 1"), Task(title = "Paso 2"))
         val releaseSave = CompletableDeferred<Unit>()
         val stored = mutableListOf<Task>()
-        var calls = 0
-        coEvery { tasks.saveTask(any()) } coAnswers {
-            if (++calls == 2) releaseSave.await()
-            stored.add(firstArg())
-            calls.toLong()
+        var session = 1L
+        every { assistant.sessionVersion } answers { session }
+        every { assistant.clearTasksIfSession(any()) } answers {
+            if (firstArg<Long>() == session) proposals.value = emptyList()
+        }
+        coEvery { tasks.saveProposal(any(), any()) } coAnswers {
+            val snapshot = secondArg<List<Task>>()
+            releaseSave.await()
+            stored.addAll(snapshot)
+            ProposalSaveResult(listOf(1L, 2L))
         }
         nav.openMainDestination(ASSISTANT_ROUTE)
         finishTransitions()
         val previous = model()
         previous.commitTasksFromAssistant()
         runCurrent()
-        assertEquals(1, stored.size)
+        assertTrue(stored.isEmpty())
 
         nav.openMainDestination(AGENDA_ROUTE)
         finishTransitions()
@@ -107,18 +113,25 @@ class AssistantSaveNavigationTest {
         nav.openAssistant("chat?initSession=true")
         finishTransitions()
         assertNotSame(previous, model())
+        session++
+        val nextProposal = listOf(Task(title = "Otro objetivo"))
+        proposals.value = nextProposal
         runCurrent()
         releaseSave.complete(Unit)
         runCurrent()
 
         assertEquals(2, stored.size)
+        assertEquals(nextProposal, proposals.value)
     }
 
     @Test
     fun returningAfterSaveSeesAnIdleButtonWithoutReceivingTheCompletionEvent() = runTest(dispatcher) {
         val releaseSave = CompletableDeferred<Unit>()
         var saved = 0
-        coEvery { tasks.saveTask(any()) } coAnswers { releaseSave.await(); (++saved).toLong() }
+        coEvery { tasks.saveProposal(any(), any()) } coAnswers {
+            releaseSave.await()
+            ProposalSaveResult(listOf((++saved).toLong()))
+        }
         nav.openMainDestination(ASSISTANT_ROUTE)
         finishTransitions()
         val previous = model()

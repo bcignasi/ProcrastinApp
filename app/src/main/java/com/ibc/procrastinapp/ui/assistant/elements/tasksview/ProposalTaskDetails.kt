@@ -28,7 +28,8 @@ import java.time.LocalDate
 
 /** Instrucción breve a primera vista, con acceso al contenido completo sin modificar los datos. */
 @Composable
-internal fun ProposalTaskDetails(task: Task, referenceDate: LocalDate, includeReminder: Boolean = false) {
+internal fun ProposalTaskDetails(task: Task, referenceDate: LocalDate, includeReminder: Boolean = false,
+                                 showInFull: Boolean = false) {
     val hasDetails = task.notes.isNotBlank() || task.periodicity.isNotBlank() || task.deadline.isNotBlank() ||
         task.priority > 0 || (includeReminder && task.notify.isNotBlank())
     if (!hasDetails) return
@@ -53,17 +54,17 @@ internal fun ProposalTaskDetails(task: Task, referenceDate: LocalDate, includeRe
                 text = task.notes,
                 style = MaterialTheme.typography.bodySmall,
                 color = LocalContentColor.current.copy(alpha = 0.8f),
-                maxLines = if (expanded) Int.MAX_VALUE else 2,
+                maxLines = if (expanded || showInFull) Int.MAX_VALUE else 2,
                 overflow = TextOverflow.Ellipsis,
                 onTextLayout = { if (!expanded) notesOverflow = it.hasVisualOverflow }
             )
         }
-        if (expanded) {
+        if (expanded || showInFull) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 lines.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
             }
         }
-        if (expanded || notesOverflow || lines.isNotEmpty()) {
+        if (!showInFull && (expanded || notesOverflow || lines.isNotEmpty())) {
             TextButton(
                 onClick = { expanded = !expanded },
                 contentPadding = PaddingValues(horizontal = 0.dp),

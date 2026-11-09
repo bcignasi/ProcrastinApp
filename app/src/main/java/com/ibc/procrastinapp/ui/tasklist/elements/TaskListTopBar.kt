@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material3.Icon
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.IconButton
@@ -46,7 +47,7 @@ import java.time.format.DateTimeFormatter
 import com.ibc.procrastinapp.R
 
 /**
- * Cabecera Serena. Los demás filtros siguen disponibles en la capa de datos.
+ * Cabecera Serena: Hoy, Pendientes (por hacer/completadas) y Metas.
  *
  * @param currentListType Tipo actual de consulta de tareas.
  * @param onCurrentListTypeChange Función que se invoca cuando se selecciona un nuevo tipo de consulta.
@@ -58,7 +59,8 @@ fun TaskListTopBar(
     currentListType: TaskListQueryType,
     onCurrentListTypeChange: (TaskListQueryType) -> Unit,
     onOpenSettings: () -> Unit,
-    date: LocalDate = LocalDate.now()
+    date: LocalDate = LocalDate.now(),
+    pendingFilter: TaskListQueryType = TaskListQueryType.ALL
 ) {
     val colors = MaterialTheme.colorScheme
     val locale = LocalConfiguration.current.locales[0]
@@ -68,8 +70,9 @@ fun TaskListTopBar(
     val tabs = listOf(
         TaskListQueryType.TODAY to R.string.task_type_Today,
         TaskListQueryType.ALL to R.string.agenda_pending,
-        TaskListQueryType.COMPLETED to R.string.agenda_done
+        TaskListQueryType.GOALS to R.string.agenda_goals
     )
+    val inPendingTab = currentListType == TaskListQueryType.ALL || currentListType == TaskListQueryType.COMPLETED
 
     Surface(color = colors.background) {
         Column(Modifier.fillMaxWidth().windowInsetsPadding(TopAppBarDefaults.windowInsets).padding(horizontal = 16.dp)) {
@@ -110,7 +113,7 @@ fun TaskListTopBar(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 tabs.forEach { (filter, label) ->
-                    val selected = currentListType == filter
+                    val selected = currentListType == filter || (filter == TaskListQueryType.ALL && inPendingTab)
                     Row(
                         modifier = Modifier.weight(1f)
                             .clip(MaterialTheme.shapes.medium)
@@ -118,7 +121,9 @@ fun TaskListTopBar(
                             .selectable(
                                 selected = selected,
                                 role = Role.Tab,
-                                onClick = { onCurrentListTypeChange(filter) }
+                                onClick = {
+                                    onCurrentListTypeChange(if (filter == TaskListQueryType.ALL) pendingFilter else filter)
+                                }
                             )
                             .heightIn(min = 48.dp)
                             .padding(horizontal = 4.dp, vertical = 12.dp),
@@ -132,6 +137,21 @@ fun TaskListTopBar(
                             color = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant,
                             maxLines = 2,
                             overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+            if (inPendingTab) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    listOf(
+                        TaskListQueryType.ALL to R.string.agenda_filter_pending,
+                        TaskListQueryType.COMPLETED to R.string.agenda_filter_completed
+                    ).forEach { (filter, label) ->
+                        FilterChip(
+                            selected = currentListType == filter,
+                            onClick = { onCurrentListTypeChange(filter) },
+                            label = { Text(stringResource(label)) },
+                            modifier = Modifier.heightIn(min = 48.dp)
                         )
                     }
                 }

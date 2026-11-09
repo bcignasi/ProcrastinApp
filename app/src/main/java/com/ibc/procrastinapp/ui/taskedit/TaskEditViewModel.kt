@@ -14,12 +14,14 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.CancellationException
 
 data class TaskEditUiState(
     val task: Task? = null,
     val isLoading: Boolean = true,
     val isSaving: Boolean = false,
-    val notFound: Boolean = false
+    val notFound: Boolean = false,
+    val saveFailed: Boolean = false
 )
 
 /**
@@ -58,9 +60,17 @@ class TaskEditViewModel(
 
     fun save(onSaved: () -> Unit) {
         val task = _uiState.value.task ?: return
+        if (_uiState.value.isSaving) return
+        _uiState.update { it.copy(isSaving = true, saveFailed = false) }
         viewModelScope.launch {
-            _uiState.update { it.copy(isSaving = true) }
-            taskRepository.updateTask(task)
+            try {
+                taskRepository.updateTaskDetails(task.id, task.title, task.notes, task.completed)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                _uiState.update { it.copy(isSaving = false, saveFailed = true) }
+                return@launch
+            }
             _uiState.update { it.copy(isSaving = false) }
             onSaved()
         }

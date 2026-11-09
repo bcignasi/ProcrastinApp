@@ -8,6 +8,7 @@ package com.ibc.procrastinapp.data.repository
 import androidx.room.withTransaction
 import com.ibc.procrastinapp.data.alarm.AlarmScheduler
 import com.ibc.procrastinapp.data.local.AppDatabase
+import com.ibc.procrastinapp.data.local.ProjectEntity
 import com.ibc.procrastinapp.data.local.TaskDao
 import com.ibc.procrastinapp.data.local.TaskEntity
 import com.ibc.procrastinapp.data.mapper.TaskMapper.toEntity
@@ -16,6 +17,8 @@ import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.ui.tasklist.TaskListQueryType
 import com.ibc.procrastinapp.utils.Logger
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.flow
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -43,6 +46,12 @@ class TaskRepository(
             TaskListQueryType.NOTIFICATION -> getNotificationTasksFlow()
             TaskListQueryType.NO_DATE -> getNoDateTasksFlow()
             TaskListQueryType.COMPLETED -> getCompletedTasksFlow()
+            TaskListQueryType.GOALS -> combine(
+                processTaskQuery(taskDao.getGoals(), includeHierarchy = true), projects()
+            ) { goals, projects ->
+                val names = projects.associate { it.id to it.name }
+                goals.map { it.copy(projectName = names[it.projectId]) }
+            }
         }
     }
 
@@ -116,8 +125,8 @@ class TaskRepository(
     /**
      * TODAS LAS TAREAS COMPLETADAS (COMPLETED)
      */
-    private fun getCompletedTasksFlow(includeHierarchy: Boolean = true): Flow<List<Task>> =
-        processTaskQuery(taskDao.getCompletedTasks(), includeHierarchy)
+    private fun getCompletedTasksFlow(): Flow<List<Task>> =
+        processTaskQuery(taskDao.getCompletedTasks(), includeHierarchy = false)
 
     /**
      * Obtiene todas las tareas pendientes. (ALL)
@@ -136,7 +145,7 @@ class TaskRepository(
      */
     suspend fun getTask(id: Long): Task? {
         val entity = taskDao.getTaskByIdImmediate(id) ?: return null
-        return buildTaskWithSubtasks(entity)
+        return buildTaskWithSubtasks(entity).copy(projectName = entity.projectId?.let { taskDao.getProjectName(it) })
     }
 
     /** La edición desde una sesión abre el objetivo completo para conservar su jerarquía. */
@@ -159,17 +168,69 @@ class TaskRepository(
      * @return ID de la tarea guardada, o -1 si falló
      */
     suspend fun saveTask(task: Task): Long {
-        var taskId: Long = -1
+        val alarms = mutableListOf<Task>()
+        val taskId = database.withTransaction {
+            insertTaskWithSubtasks(task, null, alarms)
+        }
+        alarms.forEach(alarmScheduler::schedule)
+        return taskId
+    }
 
-        Logger.d("IBC-TaskRepository", "saveTask: task=$task")
-
-        database.withTransaction {
-            taskId = saveTaskWithSubtasks(task, null)
+    /** Reemplaza el conjunto completo o conserva todos los datos originales ante un error. */
+    suspend fun saveProposal(
+        originalTaskIds: List<Long>,
+        proposal: List<Task>,
+        destination: ProjectDestination = ProjectDestination.Keep
+    ): ProposalSaveResult {
+        require(proposal.isNotEmpty()) { "Cannot save an empty proposal" }
+        val removedIds = mutableSetOf<Long>()
+        val alarms = mutableListOf<Task>()
+        val rootIds = database.withTransaction {
+            val originals = originalTaskIds.distinct().map { id ->
+                val entity = requireNotNull(taskDao.getTaskByIdImmediate(id)) { "Original task no longer exists" }
+                require(entity.parentTaskId == null) { "Edit the complete goal, not an isolated child" }
+                buildTaskWithSubtasks(entity).also { collectTaskIds(it, removedIds) }
+            }
+            val edited = mergeEditedTasks(proposal, originals)
+            val targetId = when (destination) {
+                ProjectDestination.Keep, ProjectDestination.Unassigned -> null
+                is ProjectDestination.Existing -> destination.id
+                is ProjectDestination.Create -> {
+                    val name = destination.name.trim()
+                    require(name.isNotEmpty())
+                    taskDao.findProjectId(name) ?: taskDao.insertProject(ProjectEntity(name = name))
+                }
+            }
+            originals.forEach { taskDao.deleteTaskById(it.id) }
+            edited.map { goal ->
+                val projectId = if (destination == ProjectDestination.Keep) goal.projectId else targetId
+                insertTaskWithSubtasks(goal.copy(projectId = projectId), null, alarms)
+            }
         }
 
-        Logger.d("IBC-TaskRepository", "saveTask: taskId=$taskId")
+        // Android no participa en la transacción de Room. Un fallo aquí no significa que los datos no se guardaron.
+        var reminderFailures = 0
+        fun updateReminder(action: () -> Unit) {
+            try {
+                action()
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                reminderFailures++
+            }
+        }
+        removedIds.forEach { id -> updateReminder { alarmScheduler.cancel(id) } }
+        alarms.filter { it.notify.isNotBlank() && !it.completed }.forEach { task ->
+            updateReminder { alarmScheduler.schedule(task) }
+        }
+        return ProposalSaveResult(rootIds, reminderFailures)
+    }
 
-        return taskId
+    fun projects(): Flow<List<ProjectEntity>> = taskDao.getProjects()
+
+    private fun collectTaskIds(task: Task, ids: MutableSet<Long>) {
+        ids.add(task.id)
+        task.subtasks.forEach { collectTaskIds(it, ids) }
     }
 
     /**
@@ -185,10 +246,12 @@ class TaskRepository(
             taskDao.updateTask(task.toEntity().copy(parentTaskId = parentTaskId))
         } else {
             // Si tiene subtareas, eliminamos toda la jerarquía y la volvemos a crear
+            val alarms = mutableListOf<Task>()
             database.withTransaction {
                 taskDao.deleteTaskById(task.id)
-                saveTaskWithSubtasks(task, null)
+                insertTaskWithSubtasks(task, null, alarms)
             }
+            alarms.forEach(alarmScheduler::schedule)
         }
     }
 
@@ -196,21 +259,21 @@ class TaskRepository(
      * Marca una tarea como completada o pendiente.
      */
     suspend fun setTaskCompleted(taskId: Long, completed: Boolean) {
-        val task = taskDao.getTaskByIdImmediate(taskId) ?: return
-        taskDao.updateTask(task.copy(completed = completed))
+        taskDao.setCompleted(taskId, completed)
+    }
+
+    /** The classic editor changes one row, even when it is a phase with completed sessions. */
+    suspend fun updateTaskDetails(id: Long, title: String, notes: String, completed: Boolean) {
+        database.withTransaction {
+            val current = requireNotNull(taskDao.getTaskByIdImmediate(id))
+            taskDao.updateTask(current.copy(title = title, notes = notes, completed = completed))
+        }
     }
 
     /**
      * Elimina una tarea y todas sus subtareas.
      */
-    suspend fun deleteTask(taskId: Long) {
-
-        // Eliminar la alarma asociada a la tarea
-        alarmScheduler.cancel(taskId)
-
-        // Eliminar la tarea y todas sus subtareas
-        taskDao.deleteTaskById(taskId)
-    }
+    suspend fun deleteTask(taskId: Long): TaskDeletionResult = deleteTasks(listOf(taskId))
 
     /**
      * Recibe una lista de tareas y las marca como completadas
@@ -223,11 +286,31 @@ class TaskRepository(
     /**
      * Recibe una lista de tareas y las elimina
      */
-    suspend fun deleteTasks(taskIds: List<Long>) {
-        // Actualizar cada tarea seleccionada como completada
-        taskIds.forEach { id ->
-            deleteTask(id)
+    suspend fun deleteTasks(taskIds: List<Long>): TaskDeletionResult {
+        val removedIds = mutableSetOf<Long>()
+        database.withTransaction {
+            // Recoger toda la jerarquía antes de que el borrado en cascada la elimine.
+            taskIds.distinct().forEach { id ->
+                removedIds.add(id)
+                taskDao.getTaskByIdImmediate(id)?.let { entity ->
+                    collectTaskIds(buildTaskWithSubtasks(entity), removedIds)
+                }
+            }
+            taskIds.distinct().forEach { taskDao.deleteTaskById(it) }
         }
+        // Un fallo de base de datos conserva también los avisos originales.
+        var reminderFailures = 0
+        removedIds.forEach { id ->
+            try {
+                alarmScheduler.cancel(id)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                // El borrado ya está confirmado: continuar con los demás avisos.
+                reminderFailures++
+            }
+        }
+        return TaskDeletionResult(reminderFailures)
     }
 
 
@@ -246,37 +329,18 @@ class TaskRepository(
     /**
      * Guarda recursivamente una tarea y sus subtareas.
      */
-    private suspend fun saveTaskWithSubtasks(task: Task, parentId: Long?): Long {
-
-        Logger.d(
-            "IBC-TaskRepository",
-            "saveTaskWithSubtasks 1: task=${task.title}, parentId=$parentId"
-        )
-
+    private suspend fun insertTaskWithSubtasks(task: Task, parentId: Long?, alarms: MutableList<Task>): Long {
         val taskEntity = task.toEntity().copy(
             id = if (task.id <= 0) 0 else task.id,
-            parentTaskId = parentId
+            parentTaskId = parentId,
+            projectId = task.projectId.takeIf { parentId == null }
         )
 
-        Logger.d("IBC-TaskRepository", "saveTaskWithSubtasks 2: ->insert taskEntity=$taskEntity")
-
         val taskId = taskDao.insertTask(taskEntity)
-        alarmScheduler.schedule(task.copy(id = taskId))
-
-
-        Logger.d("IBC-TaskRepository", "saveTaskWithSubtasks 3: <-insert taskId=$taskId")
-
-
-        // Guardamos recursivamente todas las subtareas
+        alarms.add(task.copy(id = taskId, subtasks = emptyList()))
         for (subtask in task.subtasks) {
-
-            Logger.d("IBC-TaskRepository", "saveTaskWithSubtasks 4 (for): subtask=${subtask.title}")
-
-            saveTaskWithSubtasks(subtask, taskId)
+            insertTaskWithSubtasks(subtask, taskId, alarms)
         }
-
-        Logger.d("IBC-TaskRepository", "saveTaskWithSubtasks 5: output taskId=$taskId")
-
         return taskId
     }
 
@@ -331,3 +395,7 @@ class TaskRepository(
     }
 
 }
+
+data class ProposalSaveResult(val rootIds: List<Long>, val reminderFailures: Int = 0)
+
+data class TaskDeletionResult(val reminderFailures: Int = 0)

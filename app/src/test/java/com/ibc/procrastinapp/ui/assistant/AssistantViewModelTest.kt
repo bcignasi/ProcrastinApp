@@ -9,6 +9,7 @@ import com.ibc.procrastinapp.data.ai.Message
 import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.data.repository.AssistantRepository
 import com.ibc.procrastinapp.data.repository.TaskRepository
+import com.ibc.procrastinapp.data.repository.ProposalSaveResult
 import com.ibc.procrastinapp.data.service.AssistantResponse
 import com.ibc.procrastinapp.utils.Logger
 import io.mockk.coEvery
@@ -65,6 +66,7 @@ class AssistantViewModelTest {
         every { Logger.i(any(), any()) } returns Unit
 
         taskRepository = mockk(relaxed = true)
+        coEvery { taskRepository.saveProposal(any(), any()) } returns ProposalSaveResult(listOf(100L))
         assistantRepository = mockk(relaxed = true)
 
         every { assistantRepository.messages } returns messagesFlow as StateFlow<List<Message>>
@@ -180,48 +182,129 @@ class AssistantViewModelTest {
     }
 
     @Test
-    fun `should delete old tasks and insert new ones on commit`() = testScope.runTest {
+    fun `should pass originals and proposal to the atomic operation`() = testScope.runTest {
         val oldTaskId = 1L
         val oldTask = Task(id = oldTaskId, title = "Vieja tarea")
         val newTask = Task(title = "Nueva propuesta")
 
         coEvery { taskRepository.getTask(oldTaskId) } returns oldTask
-        coEvery { taskRepository.saveTask(newTask) } returns 100L
 
-        // 1. Cargar tareas en modo edición
         viewModel.loadTasksForEditing(listOf(oldTaskId))
         advanceUntilIdle()
 
-        // 2. Verificar que originalTaskIds contiene [1]
-        val idsField = AssistantViewModel::class.java.getDeclaredField("originalTaskIds")
-        idsField.isAccessible = true
-        @Suppress("UNCHECKED_CAST")
-        assertEquals(listOf(oldTaskId), idsField.get(viewModel) as List<Long>)
-
-        // 3. El repositorio tiene la nueva tarea propuesta
         tasksFlow.value = listOf(newTask)
-
-        // 4. Ejecutar commit
         viewModel.commitTasksFromAssistant()
         advanceUntilIdle()
 
-        // 5. Verificaciones
-        coVerify { taskRepository.deleteTasks(listOf(oldTaskId)) }
-        coVerify { taskRepository.saveTask(newTask) }
+        coVerify(exactly = 1) { taskRepository.saveProposal(listOf(oldTaskId), listOf(newTask)) }
+        coVerify(exactly = 0) { taskRepository.deleteTasks(any()) }
     }
 
     @Test
     fun `should insert tasks without deleting if not in edit mode`() = testScope.runTest {
         val newTask = Task(title = "Tarea sin edición")
-        coEvery { taskRepository.saveTask(newTask) } returns 200L
 
         tasksFlow.value = listOf(newTask)
 
         viewModel.commitTasksFromAssistant()
         advanceUntilIdle()
 
-        coVerify { taskRepository.saveTask(newTask) }
+        coVerify { taskRepository.saveProposal(emptyList(), listOf(newTask)) }
         coVerify(exactly = 0) { taskRepository.deleteTasks(any()) }
+    }
+
+    @Test
+    fun `partial edit load keeps both originals and can retry the complete selection`() = testScope.runTest {
+        backgroundScope.launch(UnconfinedTestDispatcher(testScheduler)) { viewModel.uiState.collect {} }
+        val originals = mutableMapOf(1L to Task(id = 1, title = "A"), 2L to Task(id = 2, title = "B"))
+        coEvery { taskRepository.getTask(1L) } answers { originals[1L] }
+        coEvery { taskRepository.getTask(2L) } throws IllegalStateException("Temporary read failure")
+        every { assistantRepository.addUserAndAssistantMessage(any(), any()) } answers {
+            tasksFlow.value = com.ibc.procrastinapp.data.service.TaskJsonExtractor().extractTasks(secondArg())
+        }
+        coEvery { taskRepository.saveProposal(any(), any()) } answers {
+            firstArg<List<Long>>().forEach { originals.remove(it) }
+            ProposalSaveResult(listOf(10L))
+        }
+
+        viewModel.loadTasksForEditing(listOf(1L, 2L))
+        advanceUntilIdle()
+        viewModel.clearEvent() // Dismissing an error must not enable a partial replacement.
+        viewModel.commitTasksFromAssistant()
+        advanceUntilIdle()
+        assertEquals(setOf(1L, 2L), originals.keys)
+        assertTrue(tasksFlow.value.isEmpty())
+        assertTrue(viewModel.uiState.value.event is AssistantState.AssistantEvent.LoadFailed)
+
+        coEvery { taskRepository.getTask(2L) } answers { originals[2L] }
+        viewModel.loadTasksForEditing(listOf(1L, 2L))
+        advanceUntilIdle()
+        // El parser asigna IDs nuevos a la propuesta; los originales se conservan aparte.
+        assertEquals(listOf("A", "B"), tasksFlow.value.map { it.title })
+        viewModel.commitTasksFromAssistant()
+        advanceUntilIdle()
+        coVerify(exactly = 1) { taskRepository.saveProposal(listOf(1L, 2L), any()) }
+    }
+
+    @Test
+    fun `missing edit task blocks saving an existing draft until editing is cancelled`() = testScope.runTest {
+        val previous = listOf(Task(title = "Previous draft"))
+        tasksFlow.value = previous
+        coEvery { taskRepository.getTask(1L) } returns Task(id = 1, title = "A")
+        coEvery { taskRepository.getTask(2L) } returns null
+        viewModel.loadTasksForEditing(listOf(1L, 2L))
+        advanceUntilIdle()
+        viewModel.commitTasksFromAssistant()
+        advanceUntilIdle()
+        assertEquals(previous, tasksFlow.value)
+        coVerify(exactly = 0) { taskRepository.saveProposal(any(), any()) }
+
+        viewModel.cancelEdit()
+        tasksFlow.value = listOf(Task(title = "New goal"))
+        viewModel.commitTasksFromAssistant()
+        advanceUntilIdle()
+        coVerify(exactly = 1) { taskRepository.saveProposal(emptyList(), tasksFlow.value) }
+    }
+
+    @Test
+    fun `cancel during edit loading does not publish a late proposal`() = testScope.runTest {
+        val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
+        coEvery { taskRepository.getTask(1L) } coAnswers {
+            gate.await()
+            Task(id = 1, title = "Late task")
+        }
+        viewModel.loadTasksForEditing(listOf(1L))
+        runCurrent()
+        viewModel.cancelEdit()
+        gate.complete(Unit)
+        advanceUntilIdle()
+        verify(exactly = 0) { assistantRepository.addUserAndAssistantMessage(any(), any()) }
+    }
+
+    @Test
+    fun `saving waits for the entire selection and new session cancels the load`() = testScope.runTest {
+        val gate = kotlinx.coroutines.CompletableDeferred<Unit>()
+        tasksFlow.value = listOf(Task(title = "Old draft"))
+        coEvery { taskRepository.getTask(1L) } coAnswers {
+            gate.await()
+            Task(id = 1, title = "Original")
+        }
+        every { assistantRepository.initSession() } answers { tasksFlow.value = emptyList() }
+        viewModel.loadTasksForEditing(listOf(1L))
+        runCurrent()
+        viewModel.commitTasksFromAssistant()
+        runCurrent()
+        coVerify(exactly = 0) { taskRepository.saveProposal(any(), any()) }
+
+        viewModel.startNewSession()
+        runCurrent()
+        gate.complete(Unit)
+        advanceUntilIdle()
+        verify(exactly = 0) { assistantRepository.addUserAndAssistantMessage(any(), any()) }
+        tasksFlow.value = listOf(Task(title = "New session proposal"))
+        viewModel.commitTasksFromAssistant()
+        advanceUntilIdle()
+        coVerify(exactly = 1) { taskRepository.saveProposal(emptyList(), tasksFlow.value) }
     }
 
     @Test
@@ -236,9 +319,11 @@ class AssistantViewModelTest {
 
         verify { assistantRepository.clearTasks() }
 
-        val originalIdsField = AssistantViewModel::class.java.getDeclaredField("originalTaskIds")
-        originalIdsField.isAccessible = true
-        val ids = originalIdsField.get(viewModel) as List<*>
-        assertTrue(ids.isEmpty())
+        val nextProposal = listOf(Task(title = "Otra meta"))
+        tasksFlow.value = nextProposal
+        viewModel.commitTasksFromAssistant()
+        advanceUntilIdle()
+        coVerify(exactly = 1) { taskRepository.saveProposal(emptyList(), nextProposal) }
+        coVerify(exactly = 0) { taskRepository.saveProposal(listOf(oldTaskId), any()) }
     }
 }

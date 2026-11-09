@@ -45,6 +45,44 @@ class AgendaFiltersTest {
     fun tearDown() = database.close()
 
     @Test
+    fun goalsContainOnlyRootsWithFullDetailsAndEveryDescendantRegardlessOfCompletion() = runBlocking {
+        val notes = "Descripción completa de la meta, con el método y los criterios de revisión."
+        val goal = dao.insertTask(TaskEntity(title = "Meditar", notes = notes))
+        val phase = dao.insertTask(TaskEntity(title = "Primera fase", parentTaskId = goal))
+        val done = dao.insertTask(TaskEntity(title = "Sesión hecha", parentTaskId = phase, completed = true))
+        val pending = dao.insertTask(TaskEntity(title = "Sesión pendiente", parentTaskId = phase))
+        val completedGoal = dao.insertTask(TaskEntity(title = "Meta completada", completed = true))
+        val standalone = dao.insertTask(TaskEntity(title = "Meta sin pasos", notes = notes))
+
+        val goals = repository.getTasks(TaskListQueryType.GOALS).first()
+
+        assertEquals(listOf(goal, standalone, completedGoal), goals.map { it.id })
+        assertEquals(notes, goals.first().notes)
+        assertEquals(listOf(phase), goals.first().subtasks.map { it.id })
+        assertEquals(setOf(done, pending), goals.first().subtasks.single().subtasks.map { it.id }.toSet())
+        repository.setTaskCompleted(pending, true)
+        val updated = repository.getTasks(TaskListQueryType.GOALS).first().first()
+        assertTrue(updated.subtasks.single().subtasks.all { it.completed })
+        assertEquals(false, updated.completed)
+    }
+
+    @Test
+    fun completedFilterIncludesNestedTasksOnceWithoutPendingDescendants() = runBlocking {
+        val goal = dao.insertTask(TaskEntity(title = "Meta pendiente"))
+        val done = dao.insertTask(TaskEntity(title = "Bloque completado", parentTaskId = goal, completed = true))
+        val session = dao.insertTask(TaskEntity(title = "Sesión completada", parentTaskId = done, completed = true))
+        dao.insertTask(TaskEntity(title = "Sesión pendiente", parentTaskId = done))
+
+        val tasks = repository.getTasks(TaskListQueryType.COMPLETED).first()
+
+        assertEquals(setOf(done, session), tasks.map { it.id }.toSet())
+        assertEquals(2, tasks.size)
+        assertTrue(tasks.all { it.completed && it.subtasks.isEmpty() })
+        repository.setTaskCompleted(session, false)
+        assertEquals(listOf(done), repository.getTasks(TaskListQueryType.COMPLETED).first().map { it.id })
+    }
+
+    @Test
     fun todayIncludesDateOnlyAndBothEndsOfTheDayButExcludesOtherDatesAndCompleted() = runBlocking {
         val dateOnly = dao.insertTask(TaskEntity(title = "Sin hora", notify = "$today"))
         val midnight = dao.insertTask(TaskEntity(title = "Inicio", notify = "$today 00:00"))

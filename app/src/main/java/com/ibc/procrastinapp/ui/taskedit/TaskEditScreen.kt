@@ -108,6 +108,7 @@ fun TaskEditScreen(
                         onCheckedChange = { viewModel.toggleCompleted() }
                     )
                 }
+                if (uiState.saveFailed) Text(stringResource(R.string.task_edit_save_failed))
                 Button(
                     onClick = { viewModel.save(onSaved = onBack) },
                     enabled = !uiState.isSaving,

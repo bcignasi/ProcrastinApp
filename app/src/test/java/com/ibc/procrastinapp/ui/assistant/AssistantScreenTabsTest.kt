@@ -156,8 +156,9 @@ class AssistantScreenTabsTest {
 
         compose.onNodeWithText("Proposal").performClick().assertIsSelected()
         compose.onNodeWithText("Ensayar preguntas", substring = true).assertIsDisplayed()
-        compose.onNode(hasSetTextAction()).assertTextContains("Mi borrador")
+        compose.onNode(hasSetTextAction()).assertDoesNotExist()
         compose.onNodeWithText("Conversation").performClick().assertIsSelected()
+        compose.onNode(hasSetTextAction()).assertTextContains("Mi borrador")
         compose.onNodeWithText("Quiero preparar una entrevista").assertIsDisplayed()
         verify(exactly = 0) { model.startNewSession() }
     }
@@ -169,22 +170,25 @@ class AssistantScreenTabsTest {
         compose.onNodeWithText("View proposal").assertIsDisplayed().performClick()
         compose.onNodeWithText("Proposal").assertIsSelected()
         compose.onNodeWithText("Ensayar preguntas", substring = true).assertIsDisplayed()
-        compose.onNode(hasSetTextAction()).assertTextContains("Mover el lunes")
+        compose.onNode(hasSetTextAction()).assertDoesNotExist()
         compose.onNodeWithText("Conversation").performClick()
+        compose.onNode(hasSetTextAction()).assertTextContains("Mover el lunes")
         compose.onNodeWithText("View proposal").assertIsDisplayed()
     }
 
     @Test
     fun settingsReturnsToTheSameProposalAndDraftInLightMode() {
         showScreen(darkTheme = false)
-        compose.onNodeWithText("Proposal").performClick().assertIsSelected()
         compose.onNode(hasSetTextAction()).performTextInput("Conservar este borrador")
+        compose.onNodeWithText("Proposal").performClick().assertIsSelected()
         val context = RuntimeEnvironment.getApplication()
-        compose.onNodeWithContentDescription(context.getString(R.string.settings_open)).performClick()
+        compose.onNodeWithContentDescription("More options").performClick()
+        compose.onNodeWithText(context.getString(R.string.settings_title)).performClick()
         compose.onNodeWithText(context.getString(R.string.settings_appearance)).assertIsDisplayed()
         compose.onNodeWithContentDescription(context.getString(R.string.settings_back)).performClick()
         compose.onNodeWithText("Proposal").assertIsSelected()
         compose.onNodeWithText("Ensayar preguntas", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("Conversation").performClick()
         compose.onNode(hasSetTextAction()).assertTextContains("Conservar este borrador")
         verify(exactly = 0) { model.startNewSession() }
     }
@@ -229,18 +233,19 @@ class AssistantScreenTabsTest {
         showScreen(availableHeight = height, fontScale = 1.5f)
         val context = RuntimeEnvironment.getApplication()
         compose.onNodeWithContentDescription(context.getString(R.string.settings_open)).assertIsDisplayed()
-        compose.onNodeWithText("Proposal").performClick()
         compose.onNode(hasSetTextAction()).performTextInput("Borrador al cambiar de tamaño")
+        compose.onNodeWithText("Proposal").performClick()
 
         compose.runOnIdle { height.value = 240 }
         compose.onNodeWithText("Proposal").assertIsSelected()
-        compose.onNode(hasSetTextAction()).assertTextContains("Borrador al cambiar de tamaño")
-        assertInputHasEnoughVisibleHeight()
+        compose.onNode(hasSetTextAction()).assertDoesNotExist()
         compose.onNodeWithContentDescription("More options").performClick()
         compose.onNodeWithText(context.getString(R.string.settings_title)).performClick()
         compose.onNodeWithContentDescription(context.getString(R.string.settings_back)).performClick()
         compose.onNodeWithText("Proposal").assertIsSelected()
+        compose.onNodeWithText("Conversation").performClick()
         compose.onNode(hasSetTextAction()).assertTextContains("Borrador al cambiar de tamaño")
+        assertInputHasEnoughVisibleHeight()
 
         compose.runOnIdle { height.value = 640 }
         compose.onNodeWithContentDescription(context.getString(R.string.settings_open)).assertIsDisplayed()

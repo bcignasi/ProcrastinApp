@@ -16,6 +16,7 @@ import com.ibc.procrastinapp.data.model.Task
 import com.ibc.procrastinapp.ui.common.TaskPresentation
 import com.ibc.procrastinapp.ui.tasklist.TaskListResult
 import com.ibc.procrastinapp.ui.tasklist.TaskListUiState
+import com.ibc.procrastinapp.ui.tasklist.TaskListQueryType
 
 /**
  * Contenido principal de la pantalla de lista de tareas
@@ -43,18 +44,7 @@ fun TaskListContent(
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxSize()) {
-        // Traducir resultado tipado a mensaje localizado
-        when (val r = uiState.result) {
-            is TaskListResult.Completed ->
-                ErrorMessage(message = stringResource(R.string.tasklist_complete_success), isError = false)
-            is TaskListResult.CompleteFailed ->
-                ErrorMessage(message = stringResource(R.string.tasklist_complete_failed, r.message ?: ""))
-            is TaskListResult.Deleted ->
-                ErrorMessage(message = stringResource(R.string.tasklist_delete_success), isError = false)
-            is TaskListResult.DeleteFailed ->
-                ErrorMessage(message = stringResource(R.string.tasklist_delete_failed, r.message ?: ""))
-            null -> Unit
-        }
+        TaskListResultMessage(uiState.result)
 
         // Mostrar barra de selección si hay tareas seleccionadas
         if (uiState.hasSelection) {
@@ -65,7 +55,16 @@ fun TaskListContent(
         }
 
         // Lista de tareas
-        TaskList(
+        if (uiState.filter == TaskListQueryType.GOALS) {
+            GoalList(
+                tasks = uiState.tasks,
+                selectedTaskIds = uiState.selectedTaskIds,
+                onTaskClick = onTaskClick,
+                onTaskLongClick = onTaskLongClick,
+                onCompleteTask = onCompleteSingleTask,
+                referenceDate = uiState.date
+            )
+        } else TaskList(
             tasks = uiState.tasks,
             presentation = TaskPresentation.FLAT,
             referenceDate = uiState.date,
@@ -88,6 +87,24 @@ fun TaskListContent(
                 onDismiss = onDismissDialog
             )
         }
+    }
+}
+
+/** Compartido por la lista y el estado vacío: borrar la última tarea no oculta el resultado. */
+@Composable
+fun TaskListResultMessage(result: TaskListResult?) {
+    when (result) {
+        is TaskListResult.Completed ->
+            ErrorMessage(message = stringResource(R.string.tasklist_complete_success), isError = false)
+        is TaskListResult.CompleteFailed ->
+            ErrorMessage(message = stringResource(R.string.tasklist_complete_failed, result.message ?: ""))
+        is TaskListResult.Deleted ->
+            ErrorMessage(message = stringResource(R.string.tasklist_delete_success), isError = false)
+        is TaskListResult.DeleteRemindersFailed ->
+            ErrorMessage(message = stringResource(R.string.tasklist_delete_reminders_failed))
+        is TaskListResult.DeleteFailed ->
+            ErrorMessage(message = stringResource(R.string.tasklist_delete_failed, result.message ?: ""))
+        null -> Unit
     }
 }
 

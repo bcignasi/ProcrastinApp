@@ -123,8 +123,8 @@ class ProposalTaskPresentationTest {
 
         compose.onNodeWithText("1 of 1 step").assertIsDisplayed()
         compose.onNodeWithText("16:30").assertIsDisplayed()
-        compose.onNodeWithText(task.subtasks.single().notes).assertIsDisplayed()
-        compose.onNodeWithText("Show more").performScrollTo().performClick()
+        compose.onNodeWithText(task.subtasks.single().notes).assertDoesNotExist()
+        compose.onNodeWithText(task.subtasks.single().title).performScrollTo().performClick()
         compose.onNodeWithText(task.subtasks.single().notes).performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Repetition: Every Monday").performScrollTo().assertIsDisplayed()
         compose.onNodeWithText("Deadline:", substring = true).performScrollTo().assertIsDisplayed()
@@ -151,21 +151,19 @@ class ProposalTaskPresentationTest {
     }
 
     @Test
-    fun longInstructionsHaveATwoLinePreviewAndCanBeExpandedAndCollapsedWithoutLosingContent() {
+    fun taskCardOpensAndClosesLongInstructionsWithoutLosingContent() {
         val notes = "Haz un test durante 30 minutos en el recurso acordado.\n" +
             "Después revisa los errores y anota las señales que necesitas repasar.\n".repeat(5)
         show(listOf(Task(title = "Test de teoría", notes = notes, periodicity = "Lunes y jueves")))
         val layouts = mutableListOf<TextLayoutResult>()
-        compose.onNodeWithText(notes).performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
-        assertEquals(2, layouts.last().lineCount)
-        assertTrue(layouts.last().hasVisualOverflow)
+        compose.onNodeWithText(notes).assertDoesNotExist()
         compose.onNodeWithText("Repetición: Lunes y jueves").assertDoesNotExist()
-        compose.onNodeWithText("Ver más").performClick()
-        layouts.clear()
+        compose.onNodeWithText("Test de teoría").performClick()
         compose.onNodeWithText(notes).performSemanticsAction(SemanticsActions.GetTextLayoutResult) { it(layouts) }
         assertTrue(layouts.last().lineCount > 2)
         compose.onNodeWithText("Repetición: Lunes y jueves").performScrollTo().assertIsDisplayed()
-        compose.onNodeWithText("Ver menos").performScrollTo().performClick()
+        compose.onNodeWithText("Test de teoría").performScrollTo().performClick()
+        compose.onNodeWithText(notes).assertDoesNotExist()
         compose.onNodeWithText("Repetición: Lunes y jueves").assertDoesNotExist()
     }
 
@@ -176,6 +174,8 @@ class ProposalTaskPresentationTest {
         ))))
         compose.onNodeWithText("Planificado:", substring = true).assertIsDisplayed()
         compose.onNodeWithText("2030", substring = true).assertIsDisplayed()
+        compose.onNodeWithText("Instrucciones privadas").assertDoesNotExist()
+        compose.onNodeWithText("Test").performClick()
         compose.onNodeWithText("Instrucciones privadas").assertIsDisplayed()
         compose.onNodeWithText("00:00", substring = true).assertDoesNotExist()
     }

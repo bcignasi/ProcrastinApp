@@ -34,5 +34,6 @@ sealed class TaskListResult {
     object Completed : TaskListResult()
     data class CompleteFailed(val message: String?) : TaskListResult()
     object Deleted : TaskListResult()
+    object DeleteRemindersFailed : TaskListResult()
     data class DeleteFailed(val message: String?) : TaskListResult()
 }
