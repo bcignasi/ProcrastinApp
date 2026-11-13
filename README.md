@@ -1,5 +1,7 @@
 # ProcrastinApp — Agenda Inteligente contra la Procrastinación 🧠📅
 
+Desarrollé ProcrastinApp como trabajo de fin de grado en la Universitat Oberta de Catalunya (UOC). El proyecto obtuvo la calificación de **Matrícula de Honor**.
+
 Una aplicación de agenda en lenguaje natural para Android que integra inteligencia artificial con el objetivo de combatir la procrastinación. El usuario puede dialogar con un asistente virtual para generar, organizar y registrar tareas, aprobándolas antes de que se integren en su lista de pendientes.
 
 ## ✨ Características principales
@@ -165,10 +167,11 @@ Ver [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) para información detallada
 
 ## 📞 Contacto
 
-¿Preguntas o sugerencias?
-- GitHub: [@dbuendiab](https://github.com/dbuendiab)
-- Fork: [dbuendiab/ProcrastinApp](https://github.com/dbuendiab/ProcrastinApp)
-- Proyecto original: [bcignasi/ProcrastinApp](https://github.com/bcignasi/ProcrastinApp)
+Para preguntas o sugerencias sobre el proyecto original, puedes contactar con [@bcignasi](https://github.com/bcignasi).
+
+### Colaboración
+
+Puedes consultar también el [fork de @dbuendiab](https://github.com/dbuendiab/ProcrastinApp).
 
 ---
 
