@@ -59,7 +59,7 @@ La UI recibe tipos y traduce a strings localizadas con `stringResource()`.
 
 1. **Clona este repositorio**:
    ```bash
-   git clone https://github.com/ibuendiac/ProcrastinApp.git
+   git clone https://github.com/bcignasi/ProcrastinApp.git
    cd ProcrastinApp
    ```
 
@@ -168,7 +168,7 @@ Ver [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md) para información detallada
 ¿Preguntas o sugerencias?
 - GitHub: [@dbuendiab](https://github.com/dbuendiab)
 - Fork: [dbuendiab/ProcrastinApp](https://github.com/dbuendiab/ProcrastinApp)
-- Proyecto original: [ibuendiac/ProcrastinApp](https://github.com/ibuendiac/ProcrastinApp)
+- Proyecto original: [bcignasi/ProcrastinApp](https://github.com/bcignasi/ProcrastinApp)
 
 ---
 
